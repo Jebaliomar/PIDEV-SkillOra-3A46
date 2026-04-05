@@ -153,7 +153,8 @@ public class Answer {
 
     @Override
     public String toString() {
-        return
-                "id=" + id + ", " + "content=" + content + ", " + "isCorrect=" + isCorrect + ", " + "role=" + role + ", " + "questionId=" + questionId + ", " + "studentId=" + studentId + ", " + "createdAt=" + createdAt + ", " + "webPlagiarismPercent=" + webPlagiarismPercent + ", " + "aiSuspicionPercent=" + aiSuspicionPercent + ", " + "webSources=" + webSources + ", " + "pasteCount=" + pasteCount + ", " + "tabSwitchCount=" + tabSwitchCount + ", " + "lastIntegrityEventAt=" + lastIntegrityEventAt + ", " + "lastPlagiarismCheckAt=" + lastPlagiarismCheckAt ;
+        return "Answer{" +
+                "id=" + id + ", " + "content=" + content + ", " + "isCorrect=" + isCorrect + ", " + "role=" + role + ", " + "questionId=" + questionId + ", " + "studentId=" + studentId + ", " + "createdAt=" + createdAt + ", " + "webPlagiarismPercent=" + webPlagiarismPercent + ", " + "aiSuspicionPercent=" + aiSuspicionPercent + ", " + "webSources=" + webSources + ", " + "pasteCount=" + pasteCount + ", " + "tabSwitchCount=" + tabSwitchCount + ", " + "lastIntegrityEventAt=" + lastIntegrityEventAt + ", " + "lastPlagiarismCheckAt=" + lastPlagiarismCheckAt +
+                "}";
     }
 }
