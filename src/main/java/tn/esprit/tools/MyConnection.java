@@ -26,8 +26,11 @@ public class MyConnection {
             String user = properties.getProperty("db.user");
             String password = properties.getProperty("db.password");
 
+            Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(url, user, password);
             System.out.println("Connected to database skillora.");
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("MySQL JDBC driver not found in project dependencies", e);
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load database configuration", e);
         } catch (SQLException e) {
