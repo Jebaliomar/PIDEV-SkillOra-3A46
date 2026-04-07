@@ -21,8 +21,6 @@ public class ReplyService {
     }
 
     public void add(Reply reply) throws SQLException {
-        validateReplyReferences(reply);
-
         String sql = "INSERT INTO reply (post_id, parent_id, content, author_name, upvotes, created_at, updated_at, user_id) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -94,8 +92,6 @@ public class ReplyService {
     }
 
     public boolean update(Reply reply) throws SQLException {
-        validateReplyReferences(reply);
-
         String sql = "UPDATE reply SET post_id = ?, parent_id = ?, content = ?, author_name = ?, upvotes = ?, "
                 + "created_at = ?, updated_at = ?, user_id = ? WHERE id = ?";
 
@@ -156,32 +152,6 @@ public class ReplyService {
         }
 
         return reply;
-    }
-
-    private void validateReplyReferences(Reply reply) throws SQLException {
-        if (!recordExists("post", reply.getPostId())) {
-            throw new IllegalArgumentException("Post with id " + reply.getPostId() + " does not exist.");
-        }
-
-        if (reply.getParentId() != null && !recordExists("reply", reply.getParentId())) {
-            throw new IllegalArgumentException("Parent reply with id " + reply.getParentId() + " does not exist.");
-        }
-
-        if (reply.getUserId() != null && !recordExists("users", reply.getUserId())) {
-            throw new IllegalArgumentException("User with id " + reply.getUserId() + " does not exist.");
-        }
-    }
-
-    private boolean recordExists(String tableName, int id) throws SQLException {
-        String sql = "SELECT id FROM " + tableName + " WHERE id = ?";
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, id);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.next();
-            }
-        }
     }
 
     private void setNullableInteger(PreparedStatement preparedStatement, int index, Integer value) throws SQLException {

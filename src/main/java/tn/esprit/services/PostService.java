@@ -21,8 +21,6 @@ public class PostService {
     }
 
     public void add(Post post) throws SQLException {
-        validatePostReferences(post);
-
         String sql = "INSERT INTO post (type, title, topic, content, created_at, updated_at, user_id) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
@@ -93,8 +91,6 @@ public class PostService {
     }
 
     public boolean update(Post post) throws SQLException {
-        validatePostReferences(post);
-
         String sql = "UPDATE post SET type = ?, title = ?, topic = ?, content = ?, created_at = ?, updated_at = ?, user_id = ? "
                 + "WHERE id = ?";
 
@@ -139,24 +135,6 @@ public class PostService {
         }
 
         return post;
-    }
-
-    private void validatePostReferences(Post post) throws SQLException {
-        if (post.getUserId() != null && !recordExists("users", post.getUserId())) {
-            throw new IllegalArgumentException("User with id " + post.getUserId() + " does not exist.");
-        }
-    }
-
-    private boolean recordExists(String tableName, int id) throws SQLException {
-        String sql = "SELECT id FROM " + tableName + " WHERE id = ?";
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, id);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.next();
-            }
-        }
     }
 
     private void setNullableInteger(PreparedStatement preparedStatement, int index, Integer value) throws SQLException {
