@@ -1,0 +1,251 @@
+/* ============================================
+   SkillORA Desktop - DARK MODE
+   Matching website dark: bg-navy-950 (#0B1220)
+   ============================================ */
+
+/* === Main Containers === */
+.split-container {
+    -fx-background-color: #0B1220;
+}
+
+.left-panel {
+    -fx-background-color: #0B1220;
+}
+
+/* Right panel stays dark gradient in both modes */
+.right-panel {
+    -fx-background-color: linear-gradient(to bottom right, #060A14, #0F1629, #0A0E1F);
+}
+
+/* === Logo === */
+.logo-text {
+    -fx-text-fill: white;
+}
+
+/* === Typography === */
+.page-title {
+    -fx-text-fill: #F1F5F9;
+}
+
+.page-subtitle {
+    -fx-text-fill: #94A3B8;
+}
+
+/* === Form Elements === */
+.input-label {
+    -fx-text-fill: #CBD5E1;
+}
+
+.text-input, .custom-text-field {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-text-fill: #F1F5F9;
+    -fx-prompt-text-fill: #64748B;
+}
+
+.text-input:focused, .custom-text-field:focused {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #0891b2;
+    -fx-effect: dropshadow(gaussian, rgba(8,145,178,0.25), 8, 0, 0, 0);
+}
+
+.password-field {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-text-fill: #F1F5F9;
+    -fx-prompt-text-fill: #64748B;
+}
+
+.password-field:focused {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #0891b2;
+    -fx-effect: dropshadow(gaussian, rgba(8,145,178,0.25), 8, 0, 0, 0);
+}
+
+/* === Buttons === */
+.btn-primary {
+    -fx-background-color: linear-gradient(to right, #0891b2, #06b6d4);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(8,145,178,0.4), 10, 0, 0, 2);
+}
+
+.btn-primary:hover {
+    -fx-background-color: linear-gradient(to right, #0e7490, #0891b2);
+    -fx-effect: dropshadow(gaussian, rgba(8,145,178,0.5), 14, 0, 0, 3);
+}
+
+.btn-outline {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-text-fill: #E2E8F0;
+}
+
+.btn-outline:hover {
+    -fx-background-color: #334155;
+    -fx-border-color: #475569;
+}
+
+/* === Theme Toggle Button === */
+.theme-toggle {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #94A3B8;
+    -fx-border-color: #334155;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.theme-toggle:hover {
+    -fx-background-color: #334155;
+    -fx-text-fill: #F1F5F9;
+}
+
+/* === Links === */
+.link-text {
+    -fx-text-fill: #94A3B8;
+}
+
+.link-button {
+    -fx-text-fill: #22d3ee;
+}
+
+.link-button:hover {
+    -fx-text-fill: #67e8f9;
+}
+
+.forgot-link {
+    -fx-text-fill: #22d3ee;
+}
+
+.forgot-link:hover {
+    -fx-text-fill: #67e8f9;
+}
+
+/* === Checkbox === */
+.check-box {
+    -fx-text-fill: #94A3B8;
+}
+
+.check-box .box {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #475569;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #0891b2;
+    -fx-border-color: #0891b2;
+}
+
+/* === Radio Button === */
+.role-radio {
+    -fx-text-fill: #E2E8F0;
+}
+
+.role-radio .radio {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #475569;
+}
+
+.role-radio:selected .radio {
+    -fx-border-color: #0891b2;
+}
+
+.role-radio:selected .dot {
+    -fx-background-color: #0891b2;
+}
+
+.role-container {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+}
+
+.role-container:hover {
+    -fx-border-color: #0891b2;
+    -fx-background-color: #0F2A3D;
+}
+
+/* === Error / Success Messages === */
+.error-box {
+    -fx-background-color: #450A0A;
+    -fx-border-color: #7F1D1D;
+}
+
+.error-text {
+    -fx-text-fill: #FCA5A5;
+}
+
+.error-title {
+    -fx-text-fill: #FECACA;
+}
+
+.success-box {
+    -fx-background-color: #052E16;
+    -fx-border-color: #14532D;
+}
+
+.success-text {
+    -fx-text-fill: #86EFAC;
+}
+
+/* === Divider === */
+.divider-line {
+    -fx-border-color: #334155;
+}
+
+.divider-text {
+    -fx-text-fill: #64748B;
+}
+
+/* === Footer === */
+.footer-text {
+    -fx-text-fill: #64748B;
+}
+
+/* === ScrollPane === */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #334155;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #475569;
+}
+
+.scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
+/* === ComboBox === */
+.combo-box {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-text-fill: #F1F5F9;
+}
+
+.combo-box:focused {
+    -fx-border-color: #0891b2;
+}
