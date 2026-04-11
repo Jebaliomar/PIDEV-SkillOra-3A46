@@ -25,5 +25,10 @@
                 layoutY="260.0"
                 text="Ajouter Evaluation"
                 onAction="#ajouterEvaluation" />
+
+        <Button layoutX="360.0"
+                layoutY="260.0"
+                text="Afficher Liste"
+                onAction="#afficherListe" />
     </children>
 </AnchorPane>
