@@ -10,9 +10,13 @@ public class MainFX extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjouterEvaluation.fxml"));
-        Scene scene = new Scene(loader.load(), 600, 500);
+        Scene scene = new Scene(loader.load(), 1100, 600);
 
-        stage.setTitle("Ajouter Evaluation");
+        scene.getStylesheets().add(
+                getClass().getResource("/style.css").toExternalForm()
+        );
+
+        stage.setTitle("Evaluations");
         stage.setScene(scene);
         stage.show();
     }

@@ -3,32 +3,95 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="500.0" prefWidth="600.0"
+<AnchorPane prefHeight="650.0" prefWidth="1100.0"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.EvaluationController">
 
     <children>
-        <Label layoutX="40.0" layoutY="40.0" text="Title" />
-        <Label layoutX="40.0" layoutY="80.0" text="Description" />
-        <Label layoutX="40.0" layoutY="120.0" text="Type" />
-        <Label layoutX="40.0" layoutY="160.0" text="Duration" />
-        <Label layoutX="40.0" layoutY="200.0" text="Total Score" />
+        <Label layoutX="25.0" layoutY="25.0" text="Evaluations" styleClass="label-title" />
+        <Label layoutX="25.0" layoutY="78.0" text="Manage quizzes and exams" styleClass="label-subtitle" />
 
-        <TextField fx:id="titleField" layoutX="150.0" layoutY="36.0" />
-        <TextField fx:id="descriptionField" layoutX="150.0" layoutY="76.0" />
-        <TextField fx:id="typeField" layoutX="150.0" layoutY="116.0" />
-        <TextField fx:id="durationField" layoutX="150.0" layoutY="156.0" />
-        <TextField fx:id="scoreField" layoutX="150.0" layoutY="196.0" />
+        <AnchorPane layoutX="20.0" layoutY="120.0" prefHeight="430.0" prefWidth="1060.0" styleClass="card">
+            <children>
+                <Label layoutX="20.0" layoutY="20.0" text="Evaluation Form" styleClass="section-title" />
 
-        <Button layoutX="220.0"
-                layoutY="260.0"
-                text="Ajouter Evaluation"
-                onAction="#ajouterEvaluation" />
+                <Label layoutX="40.0" layoutY="90.0" text="ID" />
+                <Label layoutX="40.0" layoutY="140.0" text="Title" />
+                <Label layoutX="40.0" layoutY="190.0" text="Description" />
+                <Label layoutX="40.0" layoutY="240.0" text="Type" />
+                <Label layoutX="40.0" layoutY="290.0" text="Duration" />
+                <Label layoutX="40.0" layoutY="340.0" text="Total Score" />
 
-        <Button layoutX="360.0"
-                layoutY="260.0"
-                text="Afficher Liste"
-                onAction="#afficherListe" />
+                <TextField fx:id="idField"
+                           layoutX="180.0"
+                           layoutY="85.0"
+                           prefWidth="280.0"
+                           promptText="Auto / pour modifier"
+                           editable="false"/>
+
+                <TextField fx:id="titleField"
+                           layoutX="180.0"
+                           layoutY="135.0"
+                           prefWidth="280.0"
+                           promptText="Enter title" />
+
+                <TextField fx:id="descriptionField"
+                           layoutX="180.0"
+                           layoutY="185.0"
+                           prefWidth="280.0"
+                           promptText="Enter description" />
+
+                <TextField fx:id="typeField"
+                           layoutX="180.0"
+                           layoutY="235.0"
+                           prefWidth="280.0"
+                           promptText="QUIZ / EXAM" />
+
+                <TextField fx:id="durationField"
+                           layoutX="180.0"
+                           layoutY="285.0"
+                           prefWidth="280.0"
+                           promptText="Duration in minutes" />
+
+                <TextField fx:id="scoreField"
+                           layoutX="180.0"
+                           layoutY="335.0"
+                           prefWidth="280.0"
+                           promptText="Total score" />
+
+                <Button layoutX="520.0"
+                        layoutY="135.0"
+                        prefWidth="180.0"
+                        prefHeight="40.0"
+                        text="Ajouter"
+                        onAction="#ajouterEvaluation"
+                        styleClass="button-primary" />
+
+                <Button layoutX="520.0"
+                        layoutY="195.0"
+                        prefWidth="180.0"
+                        prefHeight="40.0"
+                        text="Modifier"
+                        onAction="#modifierEvaluation"
+                        styleClass="button-secondary" />
+
+                <Button layoutX="520.0"
+                        layoutY="255.0"
+                        prefWidth="180.0"
+                        prefHeight="40.0"
+                        text="Vider"
+                        onAction="#viderChamps"
+                        styleClass="button-secondary" />
+
+                <Button layoutX="520.0"
+                        layoutY="315.0"
+                        prefWidth="180.0"
+                        prefHeight="40.0"
+                        text="Afficher Liste"
+                        onAction="#afficherListe"
+                        styleClass="button-primary" />
+            </children>
+        </AnchorPane>
     </children>
 </AnchorPane>
