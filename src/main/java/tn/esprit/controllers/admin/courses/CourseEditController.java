@@ -1,21 +1,22 @@
 package tn.esprit.controllers.admin.courses;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
+import tn.esprit.controllers.admin.AdminShellAware;
+import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.Course;
 import tn.esprit.services.CourseService;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-public class CourseEditController {
+public class CourseEditController implements AdminShellAware {
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM d, yyyy  HH:mm");
 
     @FXML
     private TextField titleField;
@@ -32,6 +33,10 @@ public class CourseEditController {
     @FXML
     private TextArea descriptionArea;
 
+    @FXML
+    private Label editingMetaLabel;
+
+    private AdminShellController shellController;
     private CourseService courseService;
     private Course course;
 
@@ -40,22 +45,14 @@ public class CourseEditController {
         System.out.println("CourseEditController.initialize() called");
     }
 
-    public void setCourse(Course course) {
-        System.out.println("CourseEditController.setCourse() called with id=" + (course == null ? null : course.getId()));
-        this.course = course;
-        populateFields();
+    @Override
+    public void setShellController(AdminShellController shellController) {
+        this.shellController = shellController;
     }
 
-    private void populateFields() {
-        if (course == null) {
-            return;
-        }
-
-        titleField.setText(valueOrEmpty(course.getTitle()));
-        categoryField.setText(valueOrEmpty(course.getCategory()));
-        statusField.setText(valueOrEmpty(course.getStatus()));
-        thumbnailField.setText(valueOrEmpty(course.getThumbnail()));
-        descriptionArea.setText(valueOrEmpty(course.getDescription()));
+    public void setCourse(Course course) {
+        this.course = course;
+        populateFields();
     }
 
     @FXML
@@ -63,6 +60,9 @@ public class CourseEditController {
         System.out.println("CourseEditController.handleSave() triggered");
         if (course == null) {
             showWarning("No course is loaded for editing.");
+            return;
+        }
+        if (!validateForm()) {
             return;
         }
 
@@ -75,8 +75,9 @@ public class CourseEditController {
 
         try {
             getCourseService().update(course);
-            System.out.println("CourseEditController.handleSave(): updated course id=" + course.getId());
-            switchToIndex();
+            if (shellController != null) {
+                shellController.showCourseShow(course);
+            }
         } catch (IllegalStateException e) {
             showError("Database connection failed.", e);
         } catch (SQLException e) {
@@ -87,23 +88,50 @@ public class CourseEditController {
     @FXML
     private void handleCancel() {
         System.out.println("CourseEditController.handleCancel() triggered");
-        switchToIndex();
+        if (shellController != null) {
+            if (course != null) {
+                shellController.showCourseShow(course);
+            } else {
+                shellController.showCoursesIndex();
+            }
+        }
     }
 
-    private void switchToIndex() {
-        try {
-            System.out.println("CourseEditController.switchToIndex() called");
-            Parent root = FXMLLoader.load(getClass().getResource("/views/admin/courses/course_index.fxml"));
-            Stage stage = (Stage) titleField.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (IOException e) {
-            showError("Unable to return to the course list.", e);
+    private void populateFields() {
+        if (course == null) {
+            return;
         }
+
+        titleField.setText(valueOrEmpty(course.getTitle()));
+        categoryField.setText(valueOrEmpty(course.getCategory()));
+        statusField.setText(valueOrEmpty(course.getStatus()));
+        thumbnailField.setText(valueOrEmpty(course.getThumbnail()));
+        descriptionArea.setText(valueOrEmpty(course.getDescription()));
+        editingMetaLabel.setText("Created " + formatDateTime(course.getCreatedAt())
+                + "\nLast updated " + formatDateTime(course.getUpdatedAt()));
+    }
+
+    private boolean validateForm() {
+        if (titleField.getText().trim().isEmpty()) {
+            showWarning("Title is required.");
+            return false;
+        }
+        return true;
     }
 
     private String valueOrEmpty(String value) {
         return value == null ? "" : value;
+    }
+
+    private String formatDateTime(LocalDateTime value) {
+        return value == null ? "--" : DATE_TIME_FORMATTER.format(value);
+    }
+
+    private CourseService getCourseService() {
+        if (courseService == null) {
+            courseService = new CourseService();
+        }
+        return courseService;
     }
 
     private void showWarning(String message) {
@@ -118,12 +146,5 @@ public class CourseEditController {
         alert.setHeaderText(message);
         alert.setContentText(exception.getMessage());
         alert.showAndWait();
-    }
-
-    private CourseService getCourseService() {
-        if (courseService == null) {
-            courseService = new CourseService();
-        }
-        return courseService;
     }
 }

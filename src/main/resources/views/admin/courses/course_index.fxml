@@ -8,38 +8,41 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="720.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane prefHeight="780.0" prefWidth="1120.0" styleClass="module-page"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.admin.courses.CourseIndexController">
     <top>
-        <VBox spacing="16.0" BorderPane.alignment="CENTER">
-            <padding>
-                <Insets top="20.0" right="20.0" bottom="10.0" left="20.0"/>
-            </padding>
-            <HBox spacing="12.0">
-                <Label style="-fx-font-size: 22px; -fx-font-weight: bold;" text="Courses"/>
-                <Button mnemonicParsing="false" onAction="#handleAddCourse" text="Add Course"/>
+        <VBox spacing="18.0">
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <VBox spacing="5.0">
+                    <Label styleClass="page-title" text="Courses"/>
+                    <Label styleClass="page-subtitle" text="A focused desktop list view for browsing and opening course records."/>
+                </VBox>
+                <StackPane HBox.hgrow="ALWAYS"/>
+                <Button mnemonicParsing="false" onAction="#handleAddCourse" styleClass="primary-button" text="New Course"/>
             </HBox>
-            <HBox spacing="12.0">
-                <TextField fx:id="searchField" promptText="Search by title..." HBox.hgrow="ALWAYS"/>
-                <Button fx:id="viewButton" mnemonicParsing="false" onAction="#handleViewCourse" text="View"/>
-                <Button fx:id="editButton" mnemonicParsing="false" onAction="#handleEditCourse" text="Edit"/>
-                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDeleteCourse" text="Delete"/>
+
+            <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="toolbar-card">
+                <TextField fx:id="searchField" promptText="Search by title, category, or status" styleClass="search-field" HBox.hgrow="ALWAYS"/>
+                <Label fx:id="resultsLabel" styleClass="results-label" text="0 courses"/>
+                <Button fx:id="openButton" mnemonicParsing="false" onAction="#handleOpenCourse" styleClass="secondary-button" text="Open"/>
             </HBox>
         </VBox>
     </top>
     <center>
-        <VBox spacing="12.0" BorderPane.alignment="CENTER">
+        <VBox spacing="0.0" styleClass="table-card">
             <padding>
-                <Insets top="10.0" right="20.0" bottom="20.0" left="20.0"/>
+                <Insets top="8.0" right="8.0" bottom="8.0" left="8.0"/>
             </padding>
             <TableView fx:id="courseTable" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="titleColumn" prefWidth="280.0" text="Title"/>
-                    <TableColumn fx:id="categoryColumn" prefWidth="220.0" text="Category"/>
-                    <TableColumn fx:id="statusColumn" prefWidth="170.0" text="Status"/>
-                    <TableColumn fx:id="createdAtColumn" prefWidth="220.0" text="Created At"/>
+                    <TableColumn fx:id="titleColumn" prefWidth="320.0" text="Title"/>
+                    <TableColumn fx:id="categoryColumn" prefWidth="210.0" text="Category"/>
+                    <TableColumn fx:id="statusColumn" prefWidth="150.0" text="Status"/>
+                    <TableColumn fx:id="createdAtColumn" prefWidth="220.0" text="Created"/>
                 </columns>
             </TableView>
         </VBox>

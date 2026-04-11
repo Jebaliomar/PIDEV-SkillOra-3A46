@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="860.0" prefWidth="1440.0" styleClass="app-shell"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.admin.AdminShellController">
+    <left>
+        <VBox prefWidth="238.0" spacing="20.0" styleClass="sidebar">
+            <padding>
+                <Insets top="28.0" right="18.0" bottom="28.0" left="18.0"/>
+            </padding>
+            <VBox spacing="4.0">
+                <Label styleClass="sidebar-title" text="SkillORA"/>
+                <Label styleClass="sidebar-subtitle" text="Admin Desktop"/>
+            </VBox>
+
+            <VBox spacing="8.0">
+                <Button fx:id="coursesModuleButton" mnemonicParsing="false" onAction="#handleCoursesModule" styleClass="sidebar-item-selected" text="Courses"/>
+                <Button fx:id="usersModuleButton" mnemonicParsing="false" onAction="#handleUsersModule" styleClass="sidebar-item" text="Users"/>
+                <Button fx:id="eventsModuleButton" mnemonicParsing="false" onAction="#handleEventsModule" styleClass="sidebar-item" text="Events"/>
+                <Button fx:id="evaluationsModuleButton" mnemonicParsing="false" onAction="#handleEvaluationsModule" styleClass="sidebar-item" text="Evaluations"/>
+                <Button fx:id="forumModuleButton" mnemonicParsing="false" onAction="#handleForumModule" styleClass="sidebar-item" text="Forum"/>
+                <Button fx:id="rendezVousModuleButton" mnemonicParsing="false" onAction="#handleRendezVousModule" styleClass="sidebar-item" text="Rendez-vous"/>
+            </VBox>
+
+            <VBox spacing="8.0" VBox.vgrow="ALWAYS">
+                <Label styleClass="sidebar-section-label" text="Current Focus"/>
+                <Label styleClass="sidebar-helper" text="Courses are the first module fully adapted to the desktop workflow." wrapText="true"/>
+            </VBox>
+        </VBox>
+    </left>
+    <center>
+        <StackPane fx:id="contentContainer" styleClass="content-host">
+            <padding>
+                <Insets top="28.0" right="28.0" bottom="28.0" left="28.0"/>
+            </padding>
+        </StackPane>
+    </center>
+</BorderPane>

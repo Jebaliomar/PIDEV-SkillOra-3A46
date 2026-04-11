@@ -7,49 +7,82 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="720.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane prefHeight="780.0" prefWidth="1120.0" styleClass="module-page"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.admin.courses.CourseShowController">
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="12.0" BorderPane.alignment="CENTER">
-            <padding>
-                <Insets top="20.0" right="20.0" bottom="10.0" left="20.0"/>
-            </padding>
-            <Label style="-fx-font-size: 22px; -fx-font-weight: bold;" text="Course Details"/>
-            <Button mnemonicParsing="false" onAction="#handleBack" text="Back to List"/>
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
+            <Button mnemonicParsing="false" onAction="#handleBack" styleClass="secondary-button" text="Back"/>
+            <VBox spacing="4.0">
+                <Label fx:id="headerTitleLabel" styleClass="page-title" text="Course"/>
+                <Label styleClass="page-subtitle" text="Read-only detail view. Editing is only available in the dedicated edit screen."/>
+            </VBox>
+            <StackPane HBox.hgrow="ALWAYS"/>
+            <Button mnemonicParsing="false" onAction="#handleEdit" styleClass="secondary-button" text="Edit"/>
+            <Button mnemonicParsing="false" onAction="#handleDelete" styleClass="danger-button" text="Delete"/>
         </HBox>
     </top>
     <center>
-        <VBox spacing="16.0" BorderPane.alignment="CENTER">
-            <padding>
-                <Insets top="10.0" right="20.0" bottom="20.0" left="20.0"/>
-            </padding>
-            <GridPane hgap="16.0" vgap="12.0">
-                <Label style="-fx-font-weight: bold;" text="Title" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <Label fx:id="titleValueLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <VBox spacing="22.0">
+            <HBox spacing="22.0">
+                <VBox spacing="14.0" styleClass="detail-card" HBox.hgrow="ALWAYS">
+                    <Label styleClass="section-title" text="Overview"/>
 
-                <Label style="-fx-font-weight: bold;" text="Category" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <Label fx:id="categoryValueLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <VBox spacing="8.0">
+                        <Label styleClass="detail-label" text="Title"/>
+                        <Label fx:id="titleValueLabel" styleClass="detail-value-title" text="-"/>
+                    </VBox>
 
-                <Label style="-fx-font-weight: bold;" text="Status" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                <Label fx:id="statusValueLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    <HBox spacing="20.0">
+                        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="detail-label" text="Category"/>
+                            <Label fx:id="categoryValueLabel" styleClass="detail-value" text="-"/>
+                        </VBox>
+                        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="detail-label" text="Status"/>
+                            <Label fx:id="statusValueLabel" styleClass="status-pill" text="-"/>
+                        </VBox>
+                    </HBox>
 
-                <Label style="-fx-font-weight: bold;" text="Created At" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                <Label fx:id="createdAtValueLabel" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-            </GridPane>
+                    <VBox spacing="8.0">
+                        <Label styleClass="detail-label" text="Description"/>
+                        <Label fx:id="descriptionValueLabel" styleClass="detail-body" text="-" wrapText="true"/>
+                    </VBox>
+                </VBox>
 
-            <Separator/>
+                <VBox spacing="14.0" styleClass="detail-card" prefWidth="280.0">
+                    <Label styleClass="section-title" text="Metadata"/>
+                    <HBox>
+                        <Label styleClass="meta-label" text="Created"/>
+                        <StackPane HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="createdAtValueLabel" styleClass="meta-value" text="-"/>
+                    </HBox>
+                    <Separator/>
+                    <HBox>
+                        <Label styleClass="meta-label" text="Updated"/>
+                        <StackPane HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="updatedAtValueLabel" styleClass="meta-value" text="-"/>
+                    </HBox>
+                    <Separator/>
+                    <HBox>
+                        <Label styleClass="meta-label" text="Thumbnail"/>
+                        <StackPane HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="thumbnailValueLabel" styleClass="meta-value" text="-" wrapText="true"/>
+                    </HBox>
+                </VBox>
+            </HBox>
 
-            <VBox spacing="10.0" VBox.vgrow="ALWAYS">
-                <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Course Sections"/>
+            <VBox spacing="10.0" styleClass="detail-card" VBox.vgrow="ALWAYS">
+                <Label styleClass="section-title" text="Sections"/>
                 <TableView fx:id="sectionTable" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="sectionTitleColumn" prefWidth="420.0" text="Title"/>
-                        <TableColumn fx:id="positionColumn" prefWidth="140.0" text="Position"/>
-                        <TableColumn fx:id="sectionCreatedAtColumn" prefWidth="220.0" text="Created At"/>
+                        <TableColumn fx:id="sectionTitleColumn" prefWidth="500.0" text="Title"/>
+                        <TableColumn fx:id="positionColumn" prefWidth="150.0" text="Position"/>
+                        <TableColumn fx:id="sectionCreatedAtColumn" prefWidth="220.0" text="Created"/>
                     </columns>
                 </TableView>
             </VBox>

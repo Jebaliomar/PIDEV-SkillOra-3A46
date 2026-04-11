@@ -1,37 +1,43 @@
 package tn.esprit.controllers.admin.courses;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.Stage;
+import tn.esprit.controllers.admin.AdminShellAware;
+import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.Course;
 import tn.esprit.services.CourseService;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class CourseIndexController {
+public class CourseIndexController implements AdminShellAware {
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM d, yyyy  HH:mm");
 
     @FXML
     private TextField searchField;
+
+    @FXML
+    private Label resultsLabel;
+
+    @FXML
+    private Button openButton;
 
     @FXML
     private TableView<Course> courseTable;
@@ -48,15 +54,7 @@ public class CourseIndexController {
     @FXML
     private TableColumn<Course, LocalDateTime> createdAtColumn;
 
-    @FXML
-    private Button editButton;
-
-    @FXML
-    private Button deleteButton;
-
-    @FXML
-    private Button viewButton;
-
+    private AdminShellController shellController;
     private CourseService courseService;
     private final ObservableList<Course> courses = FXCollections.observableArrayList();
 
@@ -65,8 +63,13 @@ public class CourseIndexController {
         System.out.println("CourseIndexController.initialize() called");
         configureTable();
         configureSearch();
-        configureSelectionState();
+        configureActions();
         loadCourses();
+    }
+
+    @Override
+    public void setShellController(AdminShellController shellController) {
+        this.shellController = shellController;
     }
 
     private void configureTable() {
@@ -81,6 +84,16 @@ public class CourseIndexController {
                 setText(empty ? null : formatDateTime(item));
             }
         });
+        courseTable.setRowFactory(table -> {
+            TableRow<Course> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 1) {
+                    courseTable.getSelectionModel().select(row.getItem());
+                    handleOpenCourse();
+                }
+            });
+            return row;
+        });
     }
 
     private void configureSearch() {
@@ -89,25 +102,31 @@ public class CourseIndexController {
             String keyword = newValue == null ? "" : newValue.trim().toLowerCase();
             filteredCourses.setPredicate(course ->
                     keyword.isEmpty()
-                            || (course.getTitle() != null && course.getTitle().toLowerCase().contains(keyword)));
+                            || safe(course.getTitle()).toLowerCase().contains(keyword)
+                            || safe(course.getCategory()).toLowerCase().contains(keyword)
+                            || safe(course.getStatus()).toLowerCase().contains(keyword));
         });
 
         SortedList<Course> sortedCourses = new SortedList<>(filteredCourses);
         sortedCourses.comparatorProperty().bind(courseTable.comparatorProperty());
         courseTable.setItems(sortedCourses);
+
+        StringBinding resultsBinding = Bindings.createStringBinding(() -> {
+            int count = filteredCourses.size();
+            return count == 1 ? "1 course" : count + " courses";
+        }, filteredCourses);
+        resultsLabel.textProperty().bind(resultsBinding);
     }
 
-    private void configureSelectionState() {
-        editButton.disableProperty().bind(Bindings.isNull(courseTable.getSelectionModel().selectedItemProperty()));
-        deleteButton.disableProperty().bind(Bindings.isNull(courseTable.getSelectionModel().selectedItemProperty()));
-        viewButton.disableProperty().bind(Bindings.isNull(courseTable.getSelectionModel().selectedItemProperty()));
+    private void configureActions() {
+        openButton.disableProperty().bind(Bindings.isNull(courseTable.getSelectionModel().selectedItemProperty()));
     }
 
     private void loadCourses() {
         try {
             List<Course> items = getCourseService().getAll();
-            System.out.println("CourseIndexController.loadCourses(): loaded " + items.size() + " courses");
             courses.setAll(items);
+            System.out.println("CourseIndexController.loadCourses(): loaded " + items.size() + " courses");
         } catch (IllegalStateException e) {
             showError("Database connection failed.", e);
         } catch (SQLException e) {
@@ -118,86 +137,23 @@ public class CourseIndexController {
     @FXML
     private void handleAddCourse() {
         System.out.println("CourseIndexController.handleAddCourse() triggered");
-        switchScene("/views/admin/courses/course_new.fxml");
-    }
-
-    @FXML
-    private void handleEditCourse() {
-        System.out.println("CourseIndexController.handleEditCourse() triggered");
-        Course selectedCourse = courseTable.getSelectionModel().getSelectedItem();
-        if (selectedCourse == null) {
-            showWarning("Select a course to edit.");
-            return;
-        }
-
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/courses/course_edit.fxml"));
-            Parent root = loader.load();
-            CourseEditController controller = loader.getController();
-            controller.setCourse(selectedCourse);
-            setScene(root);
-        } catch (IOException e) {
-            showError("Unable to open the edit page.", e);
+        if (shellController != null) {
+            shellController.showCourseNew();
         }
     }
 
     @FXML
-    private void handleDeleteCourse() {
-        System.out.println("CourseIndexController.handleDeleteCourse() triggered");
+    private void handleOpenCourse() {
+        System.out.println("CourseIndexController.handleOpenCourse() triggered");
         Course selectedCourse = courseTable.getSelectionModel().getSelectedItem();
         if (selectedCourse == null) {
-            showWarning("Select a course to delete.");
+            showWarning("Select a course to open.");
             return;
         }
 
-        try {
-            if (getCourseService().delete(selectedCourse.getId())) {
-                System.out.println("CourseIndexController.handleDeleteCourse(): deleted course id=" + selectedCourse.getId());
-                courses.remove(selectedCourse);
-            } else {
-                showWarning("The selected course could not be deleted.");
-            }
-        } catch (IllegalStateException e) {
-            showError("Database connection failed.", e);
-        } catch (SQLException e) {
-            showError("Unable to delete the selected course.", e);
+        if (shellController != null) {
+            shellController.showCourseShow(selectedCourse);
         }
-    }
-
-    @FXML
-    private void handleViewCourse() {
-        System.out.println("CourseIndexController.handleViewCourse() triggered");
-        Course selectedCourse = courseTable.getSelectionModel().getSelectedItem();
-        if (selectedCourse == null) {
-            showWarning("Select a course to view.");
-            return;
-        }
-
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/courses/course_show.fxml"));
-            Parent root = loader.load();
-            CourseShowController controller = loader.getController();
-            controller.setCourse(selectedCourse);
-            setScene(root);
-        } catch (IOException e) {
-            showError("Unable to open the details page.", e);
-        }
-    }
-
-    private void switchScene(String resourcePath) {
-        try {
-            System.out.println("CourseIndexController.switchScene(): loading " + resourcePath);
-            Parent root = FXMLLoader.load(getClass().getResource(resourcePath));
-            setScene(root);
-        } catch (IOException e) {
-            showError("Unable to open the requested page.", e);
-        }
-    }
-
-    private void setScene(Parent root) {
-        Stage stage = (Stage) courseTable.getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.show();
     }
 
     private CourseService getCourseService() {
@@ -208,7 +164,11 @@ public class CourseIndexController {
     }
 
     private String formatDateTime(LocalDateTime value) {
-        return value == null ? "" : DATE_TIME_FORMATTER.format(value);
+        return value == null ? "--" : DATE_TIME_FORMATTER.format(value);
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 
     private void showWarning(String message) {
