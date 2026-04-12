@@ -24,9 +24,6 @@ public class ListeEvaluationController {
     private TableView<Evaluation> evaluationTable;
 
     @FXML
-    private TableColumn<Evaluation, Integer> idCol;
-
-    @FXML
     private TableColumn<Evaluation, String> titleCol;
 
     @FXML
@@ -51,7 +48,6 @@ public class ListeEvaluationController {
 
     @FXML
     public void initialize() {
-        idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
         descriptionCol.setCellValueFactory(new PropertyValueFactory<>("description"));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -70,7 +66,7 @@ public class ListeEvaluationController {
 
                 btnModifier.setOnAction(event -> {
                     Evaluation evaluation = getTableView().getItems().get(getIndex());
-                    modifierDepuisTable(evaluation);
+                    ouvrirFormulaireModification(evaluation);
                 });
 
                 btnSupprimer.setOnAction(event -> {
@@ -82,7 +78,7 @@ public class ListeEvaluationController {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
+                if (empty || getIndex() >= getTableView().getItems().size()) {
                     setGraphic(null);
                 } else {
                     setGraphic(box);
@@ -121,13 +117,17 @@ public class ListeEvaluationController {
         }
     }
 
-    private void modifierDepuisTable(Evaluation evaluation) {
+    private void ouvrirFormulaireModification(Evaluation evaluation) {
         try {
             EvaluationController.setEvaluationAModifier(evaluation);
-            Parent root = FXMLLoader.load(getClass().getResource("/AjouterEvaluation.fxml"));
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjouterEvaluation.fxml"));
+            Parent root = loader.load();
+
             evaluationTable.getScene().setRoot(root);
+
         } catch (IOException e) {
-            showError(e.getMessage());
+            showError("Erreur ouverture formulaire : " + e.getMessage());
         }
     }
 
@@ -152,10 +152,15 @@ public class ListeEvaluationController {
     @FXML
     private void retourAjout(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/AjouterEvaluation.fxml"));
+            EvaluationController.setEvaluationAModifier(null);
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjouterEvaluation.fxml"));
+            Parent root = loader.load();
+
             evaluationTable.getScene().setRoot(root);
+
         } catch (IOException e) {
-            showError(e.getMessage());
+            showError("Erreur ouverture ajout : " + e.getMessage());
         }
     }
 

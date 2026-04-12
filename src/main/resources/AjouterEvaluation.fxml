@@ -1,97 +1,169 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="650.0" prefWidth="1100.0"
+<AnchorPane prefWidth="1400.0" prefHeight="820.0"
+            stylesheets="@style.css"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.EvaluationController">
 
     <children>
-        <Label layoutX="25.0" layoutY="25.0" text="Evaluations" styleClass="label-title" />
-        <Label layoutX="25.0" layoutY="78.0" text="Manage quizzes and exams" styleClass="label-subtitle" />
 
-        <AnchorPane layoutX="20.0" layoutY="120.0" prefHeight="430.0" prefWidth="1060.0" styleClass="card">
-            <children>
-                <Label layoutX="20.0" layoutY="20.0" text="Evaluation Form" styleClass="section-title" />
+        <VBox prefWidth="1400.0"
+              prefHeight="820.0"
+              spacing="28.0"
+              alignment="TOP_LEFT">
 
-                <Label layoutX="40.0" layoutY="90.0" text="ID" />
-                <Label layoutX="40.0" layoutY="140.0" text="Title" />
-                <Label layoutX="40.0" layoutY="190.0" text="Description" />
-                <Label layoutX="40.0" layoutY="240.0" text="Type" />
-                <Label layoutX="40.0" layoutY="290.0" text="Duration" />
-                <Label layoutX="40.0" layoutY="340.0" text="Total Score" />
+            <padding>
+                <Insets top="18.0" right="24.0" bottom="24.0" left="24.0"/>
+            </padding>
 
-                <TextField fx:id="idField"
-                           layoutX="180.0"
-                           layoutY="85.0"
-                           prefWidth="280.0"
-                           promptText="Auto / pour modifier"
-                           editable="false"/>
+            <!-- Grand titre -->
+            <Label text="Create Evaluation" styleClass="page-big-title"/>
 
-                <TextField fx:id="titleField"
-                           layoutX="180.0"
-                           layoutY="135.0"
-                           prefWidth="280.0"
-                           promptText="Enter title" />
+            <!-- Card principale -->
+            <AnchorPane prefWidth="1320.0"
+                        prefHeight="680.0"
+                        styleClass="create-card">
 
-                <TextField fx:id="descriptionField"
-                           layoutX="180.0"
-                           layoutY="185.0"
-                           prefWidth="280.0"
-                           promptText="Enter description" />
+                <children>
 
-                <TextField fx:id="typeField"
-                           layoutX="180.0"
-                           layoutY="235.0"
-                           prefWidth="280.0"
-                           promptText="QUIZ / EXAM" />
+                    <!-- Champ ID caché -->
+                    <TextField fx:id="idField" visible="false" managed="false"/>
 
-                <TextField fx:id="durationField"
-                           layoutX="180.0"
-                           layoutY="285.0"
-                           prefWidth="280.0"
-                           promptText="Duration in minutes" />
+                    <VBox layoutX="28.0"
+                          layoutY="26.0"
+                          prefWidth="1260.0"
+                          spacing="22.0">
 
-                <TextField fx:id="scoreField"
-                           layoutX="180.0"
-                           layoutY="335.0"
-                           prefWidth="280.0"
-                           promptText="Total score" />
+                        <children>
 
-                <Button layoutX="520.0"
-                        layoutY="135.0"
-                        prefWidth="180.0"
-                        prefHeight="40.0"
-                        text="Ajouter"
-                        onAction="#ajouterEvaluation"
-                        styleClass="button-primary" />
+                            <!-- Title -->
+                            <VBox spacing="8.0">
+                                <children>
+                                    <Label text="Title" styleClass="form-label"/>
+                                    <TextField fx:id="titleField"
+                                               prefWidth="1240.0"
+                                               prefHeight="46.0"
+                                               promptText=""
+                                               styleClass="form-input"/>
+                                    <Label fx:id="titleErrorLabel" styleClass="error-label"/>
+                                </children>
+                            </VBox>
 
-                <Button layoutX="520.0"
-                        layoutY="195.0"
-                        prefWidth="180.0"
-                        prefHeight="40.0"
-                        text="Modifier"
-                        onAction="#modifierEvaluation"
-                        styleClass="button-secondary" />
+                            <!-- Description -->
+                            <VBox spacing="8.0">
+                                <children>
+                                    <Label text="Description" styleClass="form-label"/>
+                                    <TextArea fx:id="descriptionField"
+                                              prefWidth="1240.0"
+                                              prefHeight="95.0"
+                                              wrapText="true"
+                                              styleClass="form-textarea"/>
+                                    <Label fx:id="descriptionErrorLabel" styleClass="error-label"/>
+                                </children>
+                            </VBox>
 
-                <Button layoutX="520.0"
-                        layoutY="255.0"
-                        prefWidth="180.0"
-                        prefHeight="40.0"
-                        text="Vider"
-                        onAction="#viderChamps"
-                        styleClass="button-secondary" />
+                            <!-- Type + Duration -->
+                            <HBox spacing="24.0">
+                                <children>
 
-                <Button layoutX="520.0"
-                        layoutY="315.0"
-                        prefWidth="180.0"
-                        prefHeight="40.0"
-                        text="Afficher Liste"
-                        onAction="#afficherListe"
-                        styleClass="button-primary" />
-            </children>
-        </AnchorPane>
+                                    <VBox spacing="8.0" prefWidth="608.0">
+                                        <children>
+                                            <Label text="Type" styleClass="form-label"/>
+                                            <ComboBox fx:id="typeComboBox"
+                                                      prefWidth="608.0"
+                                                      prefHeight="46.0"
+                                                      promptText="Choose a type"
+                                                      styleClass="form-combo"/>
+                                            <Label fx:id="typeErrorLabel" styleClass="error-label"/>
+
+                                            <Button fx:id="btnUploadDocx"
+                                                    text="Upload DOCX"
+                                                    prefWidth="180.0"
+                                                    prefHeight="38.0"
+                                                    visible="false"
+                                                    managed="false"
+                                                    onAction="#uploadDocx"
+                                                    styleClass="button-secondary"/>
+
+                                            <Label fx:id="docxLabel"
+                                                   visible="false"
+                                                   managed="false"
+                                                   styleClass="upload-label"/>
+                                        </children>
+                                    </VBox>
+
+                                    <VBox spacing="8.0" prefWidth="608.0">
+                                        <children>
+                                            <Label text="Duration (minutes)" styleClass="form-label"/>
+                                            <TextField fx:id="durationField"
+                                                       prefWidth="608.0"
+                                                       prefHeight="46.0"
+                                                       styleClass="form-input"/>
+                                            <Label fx:id="durationErrorLabel" styleClass="error-label"/>
+                                        </children>
+                                    </VBox>
+
+                                </children>
+                            </HBox>
+
+                            <!-- Score -->
+                            <VBox spacing="8.0" prefWidth="608.0">
+                                <children>
+                                    <Label text="Total Score (max score)" styleClass="form-label"/>
+                                    <TextField fx:id="scoreField"
+                                               prefWidth="608.0"
+                                               prefHeight="46.0"
+                                               text="0"
+                                               styleClass="form-input"/>
+                                    <Label fx:id="scoreErrorLabel" styleClass="error-label"/>
+                                </children>
+                            </VBox>
+
+                            <!-- Boutons -->
+                            <HBox spacing="14.0">
+                                <children>
+                                    <Button fx:id="btnAjouter"
+                                            text="Save"
+                                            prefWidth="118.0"
+                                            prefHeight="46.0"
+                                            onAction="#ajouterEvaluation"
+                                            styleClass="button-save"/>
+
+                                    <Button fx:id="btnModifier"
+                                            text="Update"
+                                            prefWidth="118.0"
+                                            prefHeight="46.0"
+                                            onAction="#modifierEvaluation"
+                                            styleClass="button-save"
+                                            visible="false"
+                                            managed="false"/>
+
+                                    <Button text="Cancel"
+                                            prefWidth="118.0"
+                                            prefHeight="46.0"
+                                            onAction="#viderChamps"
+                                            styleClass="button-cancel"/>
+
+                                    <Button text="Afficher Liste"
+                                            prefWidth="150.0"
+                                            prefHeight="46.0"
+                                            onAction="#afficherListe"
+                                            styleClass="button-secondary"/>
+                                </children>
+                            </HBox>
+
+                        </children>
+                    </VBox>
+
+                </children>
+            </AnchorPane>
+
+        </VBox>
+
     </children>
 </AnchorPane>
