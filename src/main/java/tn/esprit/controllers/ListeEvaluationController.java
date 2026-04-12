@@ -9,7 +9,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import tn.esprit.entities.Evaluation;
 import tn.esprit.services.EvaluationService;
@@ -47,13 +46,16 @@ public class ListeEvaluationController {
     private TableColumn<Evaluation, String> actionCol;
 
     @FXML
-    private TextField searchField;
+    private ComboBox<String> typeFilterCombo;
 
     private final EvaluationService service = new EvaluationService();
 
     @FXML
     public void initialize() {
         evaluationTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        typeFilterCombo.getItems().addAll("Tous", "EXAM", "QUIZ");
+        typeFilterCombo.setValue("Tous");
 
         configurerColonneTitre();
         descriptionCol.setCellValueFactory(new PropertyValueFactory<>("description"));
@@ -192,20 +194,20 @@ public class ListeEvaluationController {
     }
 
     @FXML
-    private void rechercherEvaluation(KeyEvent event) {
+    private void filtrerParType() {
         try {
-            String motCle = searchField.getText();
+            String selectedType = typeFilterCombo.getValue();
 
-            if (motCle == null || motCle.trim().isEmpty()) {
+            if (selectedType == null || selectedType.equalsIgnoreCase("Tous")) {
                 chargerEvaluations();
                 return;
             }
 
-            List<Evaluation> evaluations = service.rechercherParMotCle(motCle.trim());
+            List<Evaluation> evaluations = service.filtrerParType(selectedType);
             evaluationTable.setItems(FXCollections.observableArrayList(evaluations));
 
         } catch (SQLException e) {
-            showError("Erreur recherche : " + e.getMessage());
+            showError("Erreur filtre type : " + e.getMessage());
         }
     }
 

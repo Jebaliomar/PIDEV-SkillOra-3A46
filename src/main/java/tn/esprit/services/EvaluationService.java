@@ -129,10 +129,6 @@ public class EvaluationService implements IEvaluationService<Evaluation> {
         return executeAndMapList(sql);
     }
 
-    // =========================
-    // TRI
-    // =========================
-
     @Override
     public List<Evaluation> trierParTitreAsc() throws SQLException {
         String sql = "SELECT * FROM evaluation ORDER BY title ASC";
@@ -168,10 +164,6 @@ public class EvaluationService implements IEvaluationService<Evaluation> {
         String sql = "SELECT * FROM evaluation ORDER BY created_at DESC";
         return executeAndMapList(sql);
     }
-
-    // =========================
-    // RECHERCHE / FILTRE
-    // =========================
 
     @Override
     public List<Evaluation> rechercherParMotCle(String motCle) throws SQLException {
@@ -217,10 +209,6 @@ public class EvaluationService implements IEvaluationService<Evaluation> {
         return evaluations;
     }
 
-    // =========================
-    // PAGINATION
-    // =========================
-
     @Override
     public List<Evaluation> recupererParPage(int page, int taillePage) throws SQLException {
         if (page <= 0) {
@@ -247,10 +235,6 @@ public class EvaluationService implements IEvaluationService<Evaluation> {
 
         return evaluations;
     }
-
-    // =========================
-    // STATISTIQUES
-    // =========================
 
     @Override
     public int countEvaluations() throws SQLException {
@@ -282,10 +266,6 @@ public class EvaluationService implements IEvaluationService<Evaluation> {
         return 0;
     }
 
-    // =========================
-    // RECENTES
-    // =========================
-
     @Override
     public List<Evaluation> recupererRecentes(int limite) throws SQLException {
         if (limite <= 0) {
@@ -308,42 +288,17 @@ public class EvaluationService implements IEvaluationService<Evaluation> {
         return evaluations;
     }
 
-    // =========================
-    // VALIDATION
-    // =========================
-
     @Override
     public boolean validerEvaluation(Evaluation e) {
-        if (e == null) {
-            return false;
-        }
-
-        if (e.getTitle() == null || e.getTitle().trim().isEmpty()) {
-            return false;
-        }
-
-        if (e.getDescription() == null || e.getDescription().trim().isEmpty()) {
-            return false;
-        }
-
-        if (e.getType() == null || e.getType().trim().isEmpty()) {
-            return false;
-        }
-
-        if (e.getDuration() == null || e.getDuration() <= 0) {
-            return false;
-        }
-
-        if (e.getTotalScore() == null || e.getTotalScore() < 0) {
-            return false;
-        }
+        if (e == null) return false;
+        if (e.getTitle() == null || e.getTitle().trim().isEmpty()) return false;
+        if (e.getDescription() == null || e.getDescription().trim().isEmpty()) return false;
+        if (e.getType() == null || e.getType().trim().isEmpty()) return false;
+        if (e.getDuration() == null || e.getDuration() <= 0) return false;
+        if (e.getTotalScore() == null || e.getTotalScore() < 0) return false;
 
         return true;
     }
-
-    // =========================
-    // METHODES UTILITAIRES
-    // =========================
 
     private Evaluation mapResultSetToEvaluation(ResultSet rs) throws SQLException {
         Timestamp createdAtTimestamp = rs.getTimestamp("created_at");
