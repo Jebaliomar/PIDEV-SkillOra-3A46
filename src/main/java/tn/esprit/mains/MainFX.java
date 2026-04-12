@@ -9,7 +9,7 @@ public class MainFX extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjouterEvaluation.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserAssessmentView.fxml"));
         Scene scene = new Scene(loader.load(), 1100, 600);
 
         scene.getStylesheets().add(
