@@ -364,3 +364,416 @@
     -fx-border-color: #0891b2;
     -fx-border-width: 2;
 }
+
+/* ============================================
+   ADMIN PANEL - Dashboard, User Mgmt, Stats
+   ============================================ */
+
+/* === Admin Root === */
+.admin-root {
+    -fx-background-color: #F3F4F6;
+}
+
+/* === Sidebar === */
+.sidebar {
+    -fx-background-color: #0B1220;
+}
+
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 13px;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.nav-item:hover {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #E2E8F0;
+}
+
+.nav-item-active {
+    -fx-background-color: linear-gradient(to right, #0891b2, #06b6d4) !important;
+    -fx-text-fill: white !important;
+    -fx-font-weight: bold;
+}
+
+.nav-item-danger {
+    -fx-background-color: transparent;
+    -fx-text-fill: #F87171;
+    -fx-font-size: 13px;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.nav-item-danger:hover {
+    -fx-background-color: #450A0A;
+    -fx-text-fill: #FCA5A5;
+}
+
+/* === Content Area === */
+.content-area {
+    -fx-background-color: #F3F4F6;
+}
+
+.content-padding {
+    -fx-background-color: transparent;
+}
+
+/* === Dashboard Typography === */
+.dashboard-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.dashboard-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #64748B;
+}
+
+/* === Stat Cards === */
+.stat-card {
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);
+}
+
+.stat-card-blue {
+    -fx-background-color: linear-gradient(to bottom right, #2563EB, #3B82F6);
+}
+
+.stat-card-green {
+    -fx-background-color: linear-gradient(to bottom right, #059669, #10B981);
+}
+
+.stat-card-purple {
+    -fx-background-color: linear-gradient(to bottom right, #7C3AED, #8B5CF6);
+}
+
+.stat-card-red {
+    -fx-background-color: linear-gradient(to bottom right, #DC2626, #EF4444);
+}
+
+.stat-card-orange {
+    -fx-background-color: linear-gradient(to bottom right, #EA580C, #F97316);
+}
+
+.stat-card-label {
+    -fx-text-fill: rgba(255,255,255,0.85);
+    -fx-font-size: 12px;
+}
+
+.stat-card-value {
+    -fx-text-fill: white;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+}
+
+.stat-card-desc {
+    -fx-text-fill: rgba(255,255,255,0.7);
+    -fx-font-size: 11px;
+}
+
+/* === Stat Bars (User Management) === */
+.stat-bar {
+    -fx-background-radius: 12;
+}
+
+.stat-bar-blue {
+    -fx-background-color: linear-gradient(to right, #2563EB, #3B82F6);
+}
+
+.stat-bar-orange {
+    -fx-background-color: linear-gradient(to right, #EA580C, #F97316);
+}
+
+.stat-bar-purple {
+    -fx-background-color: linear-gradient(to right, #7C3AED, #8B5CF6);
+}
+
+.stat-bar-red {
+    -fx-background-color: linear-gradient(to right, #DC2626, #EF4444);
+}
+
+/* === Chart Cards === */
+.chart-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 2);
+}
+
+.chart-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.chart-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #94A3B8;
+}
+
+/* === Charts === */
+.custom-chart {
+    -fx-background-color: transparent;
+}
+
+.custom-chart .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.custom-chart .chart-vertical-grid-lines {
+    -fx-stroke: #E5E7EB;
+}
+
+.custom-chart .chart-horizontal-grid-lines {
+    -fx-stroke: #E5E7EB;
+}
+
+.custom-chart .chart-series-line {
+    -fx-stroke: #0891b2;
+    -fx-stroke-width: 2.5;
+}
+
+.custom-chart .default-color0.chart-series-area-fill {
+    -fx-fill: linear-gradient(to bottom, rgba(8,145,178,0.3), rgba(8,145,178,0.02));
+}
+
+.custom-chart .default-color0.chart-series-area-line {
+    -fx-stroke: #0891b2;
+    -fx-stroke-width: 2.5;
+}
+
+.custom-chart .chart-line-symbol {
+    -fx-background-color: #0891b2, white;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 5;
+    -fx-padding: 5;
+}
+
+.custom-chart .axis-label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+}
+
+.custom-chart .axis {
+    -fx-tick-label-fill: #94A3B8;
+    -fx-tick-label-font-size: 10px;
+}
+
+/* Pie chart colors */
+.default-color0.chart-pie {
+    -fx-pie-color: #0891b2;
+}
+.default-color1.chart-pie {
+    -fx-pie-color: #8B5CF6;
+}
+.default-color2.chart-pie {
+    -fx-pie-color: #F97316;
+}
+.default-color3.chart-pie {
+    -fx-pie-color: #EF4444;
+}
+
+/* === User Row (Dashboard Recent) === */
+.user-row {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #F1F5F9;
+    -fx-border-radius: 10;
+}
+
+.user-row:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+.user-avatar {
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+    -fx-max-width: 40;
+    -fx-max-height: 40;
+    -fx-background-radius: 20;
+    -fx-alignment: center;
+}
+
+.avatar-admin { -fx-background-color: #F97316; }
+.avatar-professor { -fx-background-color: #8B5CF6; }
+.avatar-student { -fx-background-color: #0891b2; }
+
+.user-row-name {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.user-row-email {
+    -fx-font-size: 11px;
+    -fx-text-fill: #94A3B8;
+}
+
+.user-row-date {
+    -fx-font-size: 12px;
+    -fx-text-fill: #64748B;
+}
+
+/* === User Cards (User Management) === */
+.user-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);
+}
+
+.user-card-header {
+    -fx-background-radius: 16 16 0 0;
+}
+
+.card-header-admin { -fx-background-color: linear-gradient(to right, #EA580C, #F97316); }
+.card-header-professor { -fx-background-color: linear-gradient(to right, #7C3AED, #8B5CF6); }
+.card-header-student { -fx-background-color: linear-gradient(to right, #059669, #10B981); }
+
+.user-card-avatar {
+    -fx-min-width: 56;
+    -fx-min-height: 56;
+    -fx-max-width: 56;
+    -fx-max-height: 56;
+    -fx-background-radius: 28;
+    -fx-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 2);
+}
+
+.card-user-name {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+    -fx-text-alignment: center;
+}
+
+.card-user-email {
+    -fx-font-size: 11px;
+    -fx-text-fill: #94A3B8;
+    -fx-text-alignment: center;
+}
+
+/* === Badges === */
+.role-badge, .status-badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 10;
+    -fx-background-radius: 20;
+}
+
+.badge-admin { -fx-background-color: #FFF7ED; -fx-text-fill: #EA580C; }
+.badge-professor { -fx-background-color: #F5F3FF; -fx-text-fill: #7C3AED; }
+.badge-student { -fx-background-color: #ECFDF5; -fx-text-fill: #059669; }
+.badge-active { -fx-background-color: #DCFCE7; -fx-text-fill: #16A34A; }
+.badge-banned { -fx-background-color: #FEE2E2; -fx-text-fill: #DC2626; }
+
+/* === Card Date Labels === */
+.card-date-label {
+    -fx-font-size: 10px;
+    -fx-text-fill: #94A3B8;
+}
+
+.card-date-value {
+    -fx-font-size: 12px;
+    -fx-text-fill: #475569;
+    -fx-font-weight: 600;
+}
+
+/* === Filter Buttons === */
+.filter-btn {
+    -fx-background-color: white;
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-background-radius: 8;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 8;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+}
+
+.filter-btn:hover {
+    -fx-background-color: #F1F5F9;
+}
+
+.filter-btn-active {
+    -fx-background-color: #0891b2 !important;
+    -fx-text-fill: white !important;
+    -fx-border-color: #0891b2 !important;
+}
+
+/* === Action Buttons === */
+.btn-danger {
+    -fx-background-color: #DC2626;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 6 12;
+    -fx-cursor: hand;
+}
+
+.btn-danger:hover {
+    -fx-background-color: #B91C1C;
+}
+
+.btn-success {
+    -fx-background-color: #059669;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 6 12;
+    -fx-cursor: hand;
+}
+
+.btn-success:hover {
+    -fx-background-color: #047857;
+}
+
+.btn-danger-outline {
+    -fx-background-color: transparent;
+    -fx-text-fill: #DC2626;
+    -fx-font-size: 11px;
+    -fx-border-color: #FECACA;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 6 12;
+    -fx-cursor: hand;
+}
+
+.btn-danger-outline:hover {
+    -fx-background-color: #FEE2E2;
+}
+
+/* === Statistics Metrics === */
+.metric-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748B;
+}
+
+.metric-value {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.metric-value-green {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #059669;
+}
+
+.metric-value-red {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #DC2626;
+}
+
+.stat-highlight {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #059669;
+}

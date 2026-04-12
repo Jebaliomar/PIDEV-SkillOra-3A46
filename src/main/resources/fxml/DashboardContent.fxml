@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.DashboardController"
+            fitToWidth="true" hbarPolicy="NEVER"
+            style="-fx-background-color: transparent; -fx-background: transparent;">
+
+    <VBox spacing="24" styleClass="content-padding">
+        <padding><Insets top="30" bottom="30" left="30" right="30"/></padding>
+
+        <!-- Header -->
+        <VBox spacing="4">
+            <Label fx:id="welcomeLabel" text="Welcome back, Admin!" styleClass="dashboard-title"/>
+            <Label text="Here's what's happening with SkillORA today." styleClass="dashboard-subtitle"/>
+        </VBox>
+
+        <!-- Stat Cards Row -->
+        <HBox spacing="16" fx:id="statCardsRow">
+            <!-- Total Users -->
+            <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS" spacing="8">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Total Users" styleClass="stat-card-label"/>
+                <Label fx:id="totalUsersLabel" text="0" styleClass="stat-card-value"/>
+                <Label text="All registered accounts" styleClass="stat-card-desc"/>
+            </VBox>
+            <!-- Active Users -->
+            <VBox styleClass="stat-card, stat-card-green" HBox.hgrow="ALWAYS" spacing="8">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Active Users" styleClass="stat-card-label"/>
+                <Label fx:id="activeUsersLabel" text="0" styleClass="stat-card-value"/>
+                <Label fx:id="activePercentLabel" text="0% of total" styleClass="stat-card-desc"/>
+            </VBox>
+            <!-- New This Week -->
+            <VBox styleClass="stat-card, stat-card-purple" HBox.hgrow="ALWAYS" spacing="8">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="New This Week" styleClass="stat-card-label"/>
+                <Label fx:id="newUsersLabel" text="0" styleClass="stat-card-value"/>
+                <Label text="Strong growth trend" styleClass="stat-card-desc"/>
+            </VBox>
+            <!-- Banned Users -->
+            <VBox styleClass="stat-card, stat-card-red" HBox.hgrow="ALWAYS" spacing="8">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Banned Users" styleClass="stat-card-label"/>
+                <Label fx:id="bannedUsersLabel" text="0" styleClass="stat-card-value"/>
+                <Label fx:id="bannedPercentLabel" text="0% of total" styleClass="stat-card-desc"/>
+            </VBox>
+        </HBox>
+
+        <!-- Charts Row -->
+        <HBox spacing="16">
+            <!-- User Growth Chart -->
+            <VBox HBox.hgrow="ALWAYS" styleClass="chart-card" spacing="8">
+                <padding><Insets top="16" bottom="16" left="16" right="16"/></padding>
+                <Label text="User Growth Analytics" styleClass="chart-title"/>
+                <Label text="Last 30 days performance" styleClass="chart-subtitle"/>
+                <LineChart fx:id="growthChart" prefHeight="250" animated="false"
+                           styleClass="custom-chart">
+                    <xAxis><CategoryAxis label="" fx:id="growthXAxis"/></xAxis>
+                    <yAxis><NumberAxis label="" fx:id="growthYAxis"/></yAxis>
+                </LineChart>
+            </VBox>
+
+            <!-- User Distribution Pie -->
+            <VBox prefWidth="280" styleClass="chart-card" spacing="8">
+                <padding><Insets top="16" bottom="16" left="16" right="16"/></padding>
+                <Label text="User Distribution" styleClass="chart-title"/>
+                <PieChart fx:id="distributionChart" prefHeight="250" labelsVisible="true"
+                          legendVisible="true" animated="false" styleClass="custom-chart"/>
+            </VBox>
+        </HBox>
+
+        <!-- Recent Registrations -->
+        <VBox styleClass="chart-card" spacing="12">
+            <padding><Insets top="16" bottom="16" left="16" right="16"/></padding>
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Recent Registrations" styleClass="chart-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+            </HBox>
+            <VBox fx:id="recentUsersContainer" spacing="8"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

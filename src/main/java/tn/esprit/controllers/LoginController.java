@@ -73,11 +73,17 @@ public class LoginController implements Initializable {
                 String role = userService.getUserRole(user.getId());
                 System.out.println("Login successful! User: " + user.getFirstName() + " " + user.getLastName() + " | Role: " + role);
 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Login Successful");
-                alert.setHeaderText("Welcome back, " + user.getFirstName() + "!");
-                alert.setContentText("Role: " + role);
-                alert.showAndWait();
+                // Navigate to Admin Panel
+                AdminPanelController.setCurrentUser(user);
+                FXMLLoader dashLoader = new FXMLLoader(getClass().getResource("/fxml/AdminPanel.fxml"));
+                Parent dashRoot = dashLoader.load();
+                Scene dashScene = new Scene(dashRoot);
+                dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+                ThemeManager.applyTheme(dashScene);
+
+                Stage stage = (Stage) emailField.getScene().getWindow();
+                stage.setScene(dashScene);
+                stage.setTitle("SkillORA - Admin Panel");
             } else {
                 showError("Invalid email or password. Please try again.");
             }

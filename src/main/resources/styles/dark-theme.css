@@ -249,3 +249,138 @@
 .combo-box:focused {
     -fx-border-color: #0891b2;
 }
+
+/* ============================================
+   ADMIN PANEL - DARK MODE
+   ============================================ */
+
+.admin-root {
+    -fx-background-color: #0B1220;
+}
+
+.content-area {
+    -fx-background-color: #0B1220;
+}
+
+/* Sidebar stays dark in both modes */
+
+/* === Dashboard Typography === */
+.dashboard-title {
+    -fx-text-fill: #F1F5F9;
+}
+
+.dashboard-subtitle {
+    -fx-text-fill: #94A3B8;
+}
+
+/* === Chart Cards === */
+.chart-card {
+    -fx-background-color: #1E293B;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 6, 0, 0, 2);
+}
+
+.chart-title {
+    -fx-text-fill: #F1F5F9;
+}
+
+.chart-subtitle {
+    -fx-text-fill: #64748B;
+}
+
+/* === Charts Dark === */
+.custom-chart .chart-vertical-grid-lines {
+    -fx-stroke: #334155;
+}
+
+.custom-chart .chart-horizontal-grid-lines {
+    -fx-stroke: #334155;
+}
+
+.custom-chart .axis {
+    -fx-tick-label-fill: #64748B;
+}
+
+/* === User Row === */
+.user-row {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+}
+
+.user-row:hover {
+    -fx-background-color: #334155;
+}
+
+.user-row-name {
+    -fx-text-fill: #F1F5F9;
+}
+
+.user-row-email {
+    -fx-text-fill: #64748B;
+}
+
+.user-row-date {
+    -fx-text-fill: #94A3B8;
+}
+
+/* === User Cards === */
+.user-card {
+    -fx-background-color: #1E293B;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 2);
+}
+
+.card-user-name {
+    -fx-text-fill: #F1F5F9;
+}
+
+.card-user-email {
+    -fx-text-fill: #64748B;
+}
+
+.card-date-label {
+    -fx-text-fill: #64748B;
+}
+
+.card-date-value {
+    -fx-text-fill: #94A3B8;
+}
+
+/* === Badges Dark === */
+.badge-admin { -fx-background-color: #431407; -fx-text-fill: #FB923C; }
+.badge-professor { -fx-background-color: #2E1065; -fx-text-fill: #A78BFA; }
+.badge-student { -fx-background-color: #052E16; -fx-text-fill: #34D399; }
+.badge-active { -fx-background-color: #052E16; -fx-text-fill: #4ADE80; }
+.badge-banned { -fx-background-color: #450A0A; -fx-text-fill: #FCA5A5; }
+
+/* === Filter Buttons === */
+.filter-btn {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #94A3B8;
+    -fx-border-color: #334155;
+}
+
+.filter-btn:hover {
+    -fx-background-color: #334155;
+}
+
+/* === Metric Values === */
+.metric-label {
+    -fx-text-fill: #94A3B8;
+}
+
+.metric-value {
+    -fx-text-fill: #F1F5F9;
+}
+
+/* === Danger Outline Dark === */
+.btn-danger-outline {
+    -fx-text-fill: #FCA5A5;
+    -fx-border-color: #7F1D1D;
+}
+
+.btn-danger-outline:hover {
+    -fx-background-color: #450A0A;
+}
+
+.stat-highlight {
+    -fx-text-fill: #34D399;
+}
