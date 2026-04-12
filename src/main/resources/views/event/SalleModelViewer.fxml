@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controlles.SalleModelViewerController"
+            prefWidth="980" prefHeight="720" styleClass="root-bg">
+    <top>
+        <VBox spacing="4" styleClass="list-card">
+            <padding>
+                <Insets top="18" right="20" bottom="18" left="20"/>
+            </padding>
+            <Label fx:id="viewerTitleLabel" text="Salle 3D Viewer" styleClass="page-title"/>
+            <Label fx:id="viewerSubtitleLabel" text="Interactive 3D model preview." styleClass="page-subtitle"/>
+        </VBox>
+    </top>
+
+    <center>
+        <BorderPane styleClass="main-content-wrap">
+            <padding>
+                <Insets top="22" right="22" bottom="22" left="22"/>
+            </padding>
+            <center>
+                <WebView fx:id="modelWebView"/>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>
