@@ -42,6 +42,37 @@ public class QuestionService implements IQuestionService<Question> {
     }
 
     @Override
+    public int ajouterEtRetournerId(Question q) throws SQLException {
+        if (!validerQuestion(q)) {
+            throw new IllegalArgumentException("Les données de la question sont invalides.");
+        }
+
+        if (!evaluationExiste(q.getEvaluationId())) {
+            throw new IllegalArgumentException("L'evaluation_id n'existe pas dans la table evaluation.");
+        }
+
+        String sql = "INSERT INTO question (content, explanation, type, score, evaluation_id) VALUES (?, ?, ?, ?, ?)";
+
+        try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, q.getContent());
+            ps.setString(2, q.getExplanation());
+            ps.setString(3, q.getType());
+            ps.setInt(4, q.getScore());
+            ps.setInt(5, q.getEvaluationId());
+
+            ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+
+        throw new SQLException("Impossible de récupérer l'id de la question ajoutée.");
+    }
+
+    @Override
     public void modifier(Question q) throws SQLException {
         if (q.getId() == null) {
             throw new IllegalArgumentException("L'id de la question est obligatoire pour la modification.");
@@ -119,10 +150,6 @@ public class QuestionService implements IQuestionService<Question> {
         return executeAndMapList(sql);
     }
 
-    // =========================
-    // TRI
-    // =========================
-
     @Override
     public List<Question> trierParContenuAsc() throws SQLException {
         String sql = "SELECT * FROM question ORDER BY content ASC";
@@ -158,10 +185,6 @@ public class QuestionService implements IQuestionService<Question> {
         String sql = "SELECT * FROM question ORDER BY type DESC";
         return executeAndMapList(sql);
     }
-
-    // =========================
-    // RECHERCHE / FILTRE
-    // =========================
 
     @Override
     public List<Question> rechercherParMotCle(String motCle) throws SQLException {
@@ -245,10 +268,6 @@ public class QuestionService implements IQuestionService<Question> {
         return questions;
     }
 
-    // =========================
-    // PAGINATION
-    // =========================
-
     @Override
     public List<Question> recupererParPage(int page, int taillePage) throws SQLException {
         if (page <= 0) {
@@ -275,10 +294,6 @@ public class QuestionService implements IQuestionService<Question> {
 
         return questions;
     }
-
-    // =========================
-    // STATISTIQUES
-    // =========================
 
     @Override
     public int countQuestions() throws SQLException {
@@ -310,10 +325,6 @@ public class QuestionService implements IQuestionService<Question> {
         return 0;
     }
 
-    // =========================
-    // VALIDATION
-    // =========================
-
     @Override
     public boolean validerQuestion(Question q) {
         if (q == null) {
@@ -343,10 +354,6 @@ public class QuestionService implements IQuestionService<Question> {
         return true;
     }
 
-    // =========================
-    // CONTRÔLE MÉTIER
-    // =========================
-
     @Override
     public boolean evaluationExiste(int evaluationId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM evaluation WHERE id = ?";
@@ -363,10 +370,6 @@ public class QuestionService implements IQuestionService<Question> {
 
         return false;
     }
-
-    // =========================
-    // FONCTIONNALITÉS AVANCÉES
-    // =========================
 
     @Override
     public List<Question> topQuestions(int limite) throws SQLException {
@@ -455,10 +458,6 @@ public class QuestionService implements IQuestionService<Question> {
 
         return sommeQuestions == totalEvaluation;
     }
-
-    // =========================
-    // MÉTHODES UTILITAIRES
-    // =========================
 
     private Question mapResultSetToQuestion(ResultSet rs) throws SQLException {
         return new Question(

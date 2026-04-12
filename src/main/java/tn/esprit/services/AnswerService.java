@@ -29,6 +29,7 @@ public class AnswerService implements IAnswerService<Answer> {
         }
 
         if ("STUDENT".equalsIgnoreCase(a.getRole())
+                && a.getStudentId() != null
                 && reponseExistePourEtudiantEtQuestion(a.getStudentId(), a.getQuestionId())) {
             throw new IllegalArgumentException("Cet étudiant a déjà répondu à cette question.");
         }
@@ -58,24 +59,59 @@ public class AnswerService implements IAnswerService<Answer> {
             ps.setBoolean(2, a.getIsCorrect());
             ps.setString(3, a.getRole());
             ps.setInt(4, a.getQuestionId());
-            ps.setInt(5, a.getStudentId());
-            ps.setTimestamp(6, Timestamp.valueOf(a.getCreatedAt()));
-            ps.setInt(7, a.getWebPlagiarismPercent());
-            ps.setInt(8, a.getAiSuspicionPercent());
-            ps.setString(9, a.getWebSources());
-            ps.setInt(10, a.getPasteCount());
-            ps.setInt(11, a.getTabSwitchCount());
+
+            if (a.getStudentId() != null) {
+                ps.setInt(5, a.getStudentId());
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
+
+            if (a.getCreatedAt() != null) {
+                ps.setTimestamp(6, Timestamp.valueOf(a.getCreatedAt()));
+            } else {
+                ps.setNull(6, Types.TIMESTAMP);
+            }
+
+            if (a.getWebPlagiarismPercent() != null) {
+                ps.setInt(7, a.getWebPlagiarismPercent());
+            } else {
+                ps.setNull(7, Types.INTEGER);
+            }
+
+            if (a.getAiSuspicionPercent() != null) {
+                ps.setInt(8, a.getAiSuspicionPercent());
+            } else {
+                ps.setNull(8, Types.INTEGER);
+            }
+
+            if (a.getWebSources() != null && !a.getWebSources().trim().isEmpty()) {
+                ps.setString(9, a.getWebSources());
+            } else {
+                ps.setNull(9, Types.VARCHAR);
+            }
+
+            if (a.getPasteCount() != null) {
+                ps.setInt(10, a.getPasteCount());
+            } else {
+                ps.setNull(10, Types.INTEGER);
+            }
+
+            if (a.getTabSwitchCount() != null) {
+                ps.setInt(11, a.getTabSwitchCount());
+            } else {
+                ps.setNull(11, Types.INTEGER);
+            }
 
             if (a.getLastIntegrityEventAt() != null) {
                 ps.setTimestamp(12, Timestamp.valueOf(a.getLastIntegrityEventAt()));
             } else {
-                ps.setTimestamp(12, null);
+                ps.setNull(12, Types.TIMESTAMP);
             }
 
             if (a.getLastPlagiarismCheckAt() != null) {
                 ps.setTimestamp(13, Timestamp.valueOf(a.getLastPlagiarismCheckAt()));
             } else {
-                ps.setTimestamp(13, null);
+                ps.setNull(13, Types.TIMESTAMP);
             }
 
             ps.executeUpdate();
@@ -112,24 +148,59 @@ public class AnswerService implements IAnswerService<Answer> {
             ps.setBoolean(2, a.getIsCorrect());
             ps.setString(3, a.getRole());
             ps.setInt(4, a.getQuestionId());
-            ps.setInt(5, a.getStudentId());
-            ps.setTimestamp(6, Timestamp.valueOf(a.getCreatedAt()));
-            ps.setInt(7, a.getWebPlagiarismPercent());
-            ps.setInt(8, a.getAiSuspicionPercent());
-            ps.setString(9, a.getWebSources());
-            ps.setInt(10, a.getPasteCount());
-            ps.setInt(11, a.getTabSwitchCount());
+
+            if (a.getStudentId() != null) {
+                ps.setInt(5, a.getStudentId());
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
+
+            if (a.getCreatedAt() != null) {
+                ps.setTimestamp(6, Timestamp.valueOf(a.getCreatedAt()));
+            } else {
+                ps.setNull(6, Types.TIMESTAMP);
+            }
+
+            if (a.getWebPlagiarismPercent() != null) {
+                ps.setInt(7, a.getWebPlagiarismPercent());
+            } else {
+                ps.setNull(7, Types.INTEGER);
+            }
+
+            if (a.getAiSuspicionPercent() != null) {
+                ps.setInt(8, a.getAiSuspicionPercent());
+            } else {
+                ps.setNull(8, Types.INTEGER);
+            }
+
+            if (a.getWebSources() != null && !a.getWebSources().trim().isEmpty()) {
+                ps.setString(9, a.getWebSources());
+            } else {
+                ps.setNull(9, Types.VARCHAR);
+            }
+
+            if (a.getPasteCount() != null) {
+                ps.setInt(10, a.getPasteCount());
+            } else {
+                ps.setNull(10, Types.INTEGER);
+            }
+
+            if (a.getTabSwitchCount() != null) {
+                ps.setInt(11, a.getTabSwitchCount());
+            } else {
+                ps.setNull(11, Types.INTEGER);
+            }
 
             if (a.getLastIntegrityEventAt() != null) {
                 ps.setTimestamp(12, Timestamp.valueOf(a.getLastIntegrityEventAt()));
             } else {
-                ps.setTimestamp(12, null);
+                ps.setNull(12, Types.TIMESTAMP);
             }
 
             if (a.getLastPlagiarismCheckAt() != null) {
                 ps.setTimestamp(13, Timestamp.valueOf(a.getLastPlagiarismCheckAt()));
             } else {
-                ps.setTimestamp(13, null);
+                ps.setNull(13, Types.TIMESTAMP);
             }
 
             ps.setInt(14, a.getId());
@@ -188,10 +259,6 @@ public class AnswerService implements IAnswerService<Answer> {
         return executeAndMapList(sql);
     }
 
-    // =========================
-    // TRI
-    // =========================
-
     @Override
     public List<Answer> trierParDateAsc() throws SQLException {
         String sql = "SELECT * FROM answer ORDER BY created_at ASC";
@@ -215,10 +282,6 @@ public class AnswerService implements IAnswerService<Answer> {
         String sql = "SELECT * FROM answer ORDER BY ai_suspicion_percent DESC, id ASC";
         return executeAndMapList(sql);
     }
-
-    // =========================
-    // RECHERCHE / FILTRE
-    // =========================
 
     @Override
     public List<Answer> rechercherParMotCle(String motCle) throws SQLException {
@@ -317,10 +380,6 @@ public class AnswerService implements IAnswerService<Answer> {
         return answers;
     }
 
-    // =========================
-    // PAGINATION
-    // =========================
-
     @Override
     public List<Answer> recupererParPage(int page, int taillePage) throws SQLException {
         if (page <= 0) {
@@ -347,10 +406,6 @@ public class AnswerService implements IAnswerService<Answer> {
 
         return answers;
     }
-
-    // =========================
-    // STATISTIQUES
-    // =========================
 
     @Override
     public int countAnswers() throws SQLException {
@@ -427,10 +482,6 @@ public class AnswerService implements IAnswerService<Answer> {
         return 0;
     }
 
-    // =========================
-    // VALIDATION
-    // =========================
-
     @Override
     public boolean validerAnswer(Answer a) {
         if (a == null) return false;
@@ -438,8 +489,12 @@ public class AnswerService implements IAnswerService<Answer> {
         if (a.getIsCorrect() == null) return false;
         if (a.getRole() == null || a.getRole().trim().isEmpty()) return false;
         if (a.getQuestionId() == null || a.getQuestionId() <= 0) return false;
-        if (a.getStudentId() == null || a.getStudentId() <= 0) return false;
 
+        if ("QUIZ_OPTION".equalsIgnoreCase(a.getRole())) {
+            return true;
+        }
+
+        if (a.getStudentId() == null || a.getStudentId() <= 0) return false;
         if (a.getWebPlagiarismPercent() == null || a.getWebPlagiarismPercent() < 0 || a.getWebPlagiarismPercent() > 100) return false;
         if (a.getAiSuspicionPercent() == null || a.getAiSuspicionPercent() < 0 || a.getAiSuspicionPercent() > 100) return false;
         if (a.getPasteCount() == null || a.getPasteCount() < 0) return false;
@@ -447,10 +502,6 @@ public class AnswerService implements IAnswerService<Answer> {
 
         return true;
     }
-
-    // =========================
-    // CONTRÔLE MÉTIER
-    // =========================
 
     @Override
     public boolean questionExiste(int questionId) throws SQLException {
@@ -486,10 +537,6 @@ public class AnswerService implements IAnswerService<Answer> {
 
         return false;
     }
-
-    // =========================
-    // FONCTIONNALITÉS AVANCÉES
-    // =========================
 
     @Override
     public List<Answer> recupererRecentes(int limite) throws SQLException {
@@ -621,14 +668,76 @@ public class AnswerService implements IAnswerService<Answer> {
         return coherencePlagiat && coherenceIntegrite;
     }
 
-    // =========================
-    // MÉTHODES UTILITAIRES
-    // =========================
+    public List<Answer> recupererOptionsQuizParQuestion(int questionId) throws SQLException {
+        String sql = "SELECT * FROM answer WHERE question_id = ? AND role = 'QUIZ_OPTION' ORDER BY id ASC";
+        List<Answer> answers = new ArrayList<>();
+
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, questionId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    answers.add(mapResultSetToAnswer(rs));
+                }
+            }
+        }
+
+        return answers;
+    }
+
+    public void supprimerOptionsQuizParQuestion(int questionId) throws SQLException {
+        String sql = "DELETE FROM answer WHERE question_id = ? AND role = 'QUIZ_OPTION'";
+
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, questionId);
+            ps.executeUpdate();
+        }
+    }
+
+    public void enregistrerOptionsQuiz(int questionId,
+                                       String optionA,
+                                       String optionB,
+                                       String optionC,
+                                       String optionD,
+                                       String bonneReponse) throws SQLException {
+
+        supprimerOptionsQuizParQuestion(questionId);
+
+        ajouterOptionQuiz(questionId, optionA, "A".equalsIgnoreCase(bonneReponse));
+        ajouterOptionQuiz(questionId, optionB, "B".equalsIgnoreCase(bonneReponse));
+        ajouterOptionQuiz(questionId, optionC, "C".equalsIgnoreCase(bonneReponse));
+        ajouterOptionQuiz(questionId, optionD, "D".equalsIgnoreCase(bonneReponse));
+    }
+
+    private void ajouterOptionQuiz(int questionId, String contenu, boolean isCorrect) throws SQLException {
+        Answer a = new Answer();
+        a.setContent(contenu);
+        a.setIsCorrect(isCorrect);
+        a.setRole("QUIZ_OPTION");
+        a.setQuestionId(questionId);
+        a.setStudentId(null);
+        a.setCreatedAt(LocalDateTime.now());
+        a.setWebPlagiarismPercent(null);
+        a.setAiSuspicionPercent(null);
+        a.setWebSources(null);
+        a.setPasteCount(null);
+        a.setTabSwitchCount(null);
+        a.setLastIntegrityEventAt(null);
+        a.setLastPlagiarismCheckAt(null);
+
+        ajouter(a);
+    }
 
     private Answer mapResultSetToAnswer(ResultSet rs) throws SQLException {
         Timestamp createdAt = rs.getTimestamp("created_at");
         Timestamp lastIntegrity = rs.getTimestamp("last_integrity_event_at");
         Timestamp lastPlagiarism = rs.getTimestamp("last_plagiarism_check_at");
+
+        Integer studentId = rs.getObject("student_id") != null ? rs.getInt("student_id") : null;
+        Integer webPlagiarismPercent = rs.getObject("web_plagiarism_percent") != null ? rs.getInt("web_plagiarism_percent") : null;
+        Integer aiSuspicionPercent = rs.getObject("ai_suspicion_percent") != null ? rs.getInt("ai_suspicion_percent") : null;
+        Integer pasteCount = rs.getObject("paste_count") != null ? rs.getInt("paste_count") : null;
+        Integer tabSwitchCount = rs.getObject("tab_switch_count") != null ? rs.getInt("tab_switch_count") : null;
 
         return new Answer(
                 rs.getInt("id"),
@@ -636,13 +745,13 @@ public class AnswerService implements IAnswerService<Answer> {
                 rs.getBoolean("is_correct"),
                 rs.getString("role"),
                 rs.getInt("question_id"),
-                rs.getInt("student_id"),
+                studentId,
                 createdAt != null ? createdAt.toLocalDateTime() : null,
-                rs.getInt("web_plagiarism_percent"),
-                rs.getInt("ai_suspicion_percent"),
+                webPlagiarismPercent,
+                aiSuspicionPercent,
                 rs.getString("web_sources"),
-                rs.getInt("paste_count"),
-                rs.getInt("tab_switch_count"),
+                pasteCount,
+                tabSwitchCount,
                 lastIntegrity != null ? lastIntegrity.toLocalDateTime() : null,
                 lastPlagiarism != null ? lastPlagiarism.toLocalDateTime() : null
         );

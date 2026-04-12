@@ -7,6 +7,8 @@ import java.util.Map;
 public interface IQuestionService<T> {
 
     void ajouter(T t) throws SQLException;
+    int ajouterEtRetournerId(T t) throws SQLException;
+
     void modifier(T t) throws SQLException;
     void supprimer(T t) throws SQLException;
     T chercherParId(int id) throws SQLException;

@@ -604,4 +604,48 @@
     .button-cancel:hover {
         -fx-background-color: #2d3f61;
     }
+
+    /* =========================
+       CARD CENTRÉE
+       ========================= */
+    .card-centered {
+        -fx-background-color: #0b1730;
+        -fx-background-radius: 20;
+        -fx-border-radius: 20;
+        -fx-border-color: #1f3a68;
+        -fx-padding: 20;
+
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 25, 0.2, 0, 10);
+    }
+
+    /* =========================
+       CONTENEUR QUESTIONS
+       ========================= */
+    .question-container {
+        -fx-padding: 25;
+    }
+
+    /* =========================
+       CARTE QUESTION
+       ========================= */
+    .question-card {
+        -fx-background-color: #0b1730;
+        -fx-background-radius: 16;
+        -fx-border-radius: 16;
+        -fx-border-color: #22365b;
+        -fx-padding: 20;
+
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 20, 0.2, 0, 5);
+    }
+
+    .question-card:hover {
+        -fx-background-color: #122347;
+    }
+
+    /* BONNE REPONSE */
+    .correct-label {
+        -fx-text-fill: #22c55e;
+        -fx-font-size: 14px;
+        -fx-font-weight: bold;
+    }
 }
