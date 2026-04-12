@@ -40,9 +40,6 @@ public class ListeEvaluationController {
     private TableColumn<Evaluation, Integer> scoreCol;
 
     @FXML
-    private TableColumn<Evaluation, String> docxCol;
-
-    @FXML
     private TableColumn<Evaluation, String> actionCol;
 
     @FXML
@@ -63,9 +60,7 @@ public class ListeEvaluationController {
         durationCol.setCellValueFactory(new PropertyValueFactory<>("duration"));
         scoreCol.setCellValueFactory(new PropertyValueFactory<>("totalScore"));
 
-        configurerColonneDocx();
         configurerColonneActions();
-
         chargerEvaluations();
     }
 
@@ -77,10 +72,16 @@ public class ListeEvaluationController {
 
             {
                 link.setOnAction(e -> {
+                    if (getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
+                        return;
+                    }
+
                     Evaluation evaluation = getTableView().getItems().get(getIndex());
 
                     if ("QUIZ".equalsIgnoreCase(evaluation.getType())) {
                         ouvrirQuiz(evaluation);
+                    } else if ("EXAM".equalsIgnoreCase(evaluation.getType())) {
+                        ouvrirDocumentDocx(evaluation);
                     }
                 });
             }
@@ -89,7 +90,7 @@ public class ListeEvaluationController {
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
 
-                if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
+                if (empty || item == null || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
                     setText(null);
                     setGraphic(null);
                     return;
@@ -97,7 +98,12 @@ public class ListeEvaluationController {
 
                 Evaluation evaluation = getTableView().getItems().get(getIndex());
 
-                if ("QUIZ".equalsIgnoreCase(evaluation.getType())) {
+                boolean quizClickable = "QUIZ".equalsIgnoreCase(evaluation.getType());
+                boolean examClickable = "EXAM".equalsIgnoreCase(evaluation.getType())
+                        && evaluation.getDocxPath() != null
+                        && !evaluation.getDocxPath().trim().isEmpty();
+
+                if (quizClickable || examClickable) {
                     link.setText(item);
                     setText(null);
                     setGraphic(link);
@@ -109,53 +115,17 @@ public class ListeEvaluationController {
         });
     }
 
-    private void configurerColonneDocx() {
-        docxCol.setCellValueFactory(data -> new SimpleStringProperty("DOCX"));
-
-        docxCol.setCellFactory(param -> new TableCell<>() {
-            private final Button btnDocx = new Button("Voir DOCX");
-
-            {
-                btnDocx.getStyleClass().add("button-primary");
-                btnDocx.setPrefWidth(95);
-
-                btnDocx.setOnAction(event -> {
-                    Evaluation evaluation = getTableView().getItems().get(getIndex());
-                    ouvrirDocumentDocx(evaluation);
-                });
-            }
-
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-
-                if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
-                    setGraphic(null);
-                    return;
-                }
-
-                Evaluation evaluation = getTableView().getItems().get(getIndex());
-
-                if ("EXAM".equalsIgnoreCase(evaluation.getType())
-                        && evaluation.getDocxPath() != null
-                        && !evaluation.getDocxPath().trim().isEmpty()) {
-                    setGraphic(btnDocx);
-                } else {
-                    setGraphic(null);
-                }
-            }
-        });
-    }
-
     private void configurerColonneActions() {
         actionCol.setCellValueFactory(data -> new SimpleStringProperty("Actions"));
 
         actionCol.setCellFactory(param -> new TableCell<>() {
             private final Button btnModifier = new Button("Modifier");
             private final Button btnSupprimer = new Button("Supprimer");
-            private final HBox box = new HBox(10, btnModifier, btnSupprimer);
+            private final HBox box = new HBox(14, btnModifier, btnSupprimer);
 
             {
+                box.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 8;");
+
                 btnModifier.getStyleClass().add("button-secondary");
                 btnSupprimer.getStyleClass().add("button-danger");
 
