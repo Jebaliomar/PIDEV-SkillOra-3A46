@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.salle.controller.SalleFormController"
+      spacing="18" styleClass="root-bg">
+    <padding>
+        <Insets top="22" right="24" bottom="20" left="24"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <VBox spacing="4">
+            <Label fx:id="formTitleLabel" text="Add Salle" styleClass="page-title"/>
+            <Label text="Create a new salle." styleClass="page-subtitle"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="ID:" styleClass="result-label"/>
+        <Label fx:id="idValueLabel" text="New" styleClass="result-count"/>
+    </HBox>
+
+    <VBox spacing="14" styleClass="list-card">
+        <padding>
+            <Insets top="16" right="16" bottom="16" left="16"/>
+        </padding>
+
+        <GridPane hgap="12" vgap="10">
+            <Label text="Nom salle" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="form-label"/>
+            <TextField fx:id="nameField" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="form-input"/>
+
+            <Label text="Location salle" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="form-label"/>
+            <TextField fx:id="locationField" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="form-input"/>
+
+            <Label text="Max participants" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="form-label"/>
+            <TextField fx:id="maxParticipantsField" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="form-input"/>
+
+            <Label text="Duree" GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="form-label"/>
+            <TextField fx:id="durationField" GridPane.columnIndex="1" GridPane.rowIndex="3" styleClass="form-input"/>
+
+            <Label text="Equipement" GridPane.columnIndex="0" GridPane.rowIndex="4" styleClass="form-label"/>
+            <TextArea fx:id="equipmentField" prefRowCount="3" GridPane.columnIndex="1" GridPane.rowIndex="4" styleClass="form-input"/>
+
+            <Label text="Image 3D" GridPane.columnIndex="0" GridPane.rowIndex="5" styleClass="form-label"/>
+            <TextField fx:id="image3dField" GridPane.columnIndex="1" GridPane.rowIndex="5" styleClass="form-input"/>
+
+            <Label text="Event ID" GridPane.columnIndex="0" GridPane.rowIndex="6" styleClass="form-label"/>
+            <TextField fx:id="eventIdField" GridPane.columnIndex="1" GridPane.rowIndex="6" styleClass="form-input"/>
+        </GridPane>
+
+        <HBox alignment="CENTER_RIGHT" spacing="8">
+            <Button text="Cancel" onAction="#onCancel" styleClass="btn-secondary"/>
+            <Button text="Save" onAction="#onSave" styleClass="btn-primary"/>
+        </HBox>
+    </VBox>
+</VBox>
+
