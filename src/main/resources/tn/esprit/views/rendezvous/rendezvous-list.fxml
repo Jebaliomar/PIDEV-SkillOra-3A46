@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.rendezvous.RendezVousController"
+            style="-fx-background-color: linear-gradient(to bottom, #010a24, #020f38);">
+
+    <top>
+        <VBox spacing="14.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="16.0" right="18.0" bottom="10.0" left="18.0" />
+            </padding>
+
+            <HBox spacing="10.0" style="-fx-background-color: #0f1b38; -fx-background-radius: 12; -fx-padding: 10;">
+                <Button mnemonicParsing="false" onAction="#goToMenu" text="Menu"
+                        style="-fx-background-color: #1f2f57; -fx-text-fill: #e2e8f0; -fx-font-weight: bold;" />
+                <Button mnemonicParsing="false" onAction="#goToSlots" text="Availability Slots"
+                        style="-fx-background-color: #1f2f57; -fx-text-fill: #e2e8f0; -fx-font-weight: bold;" />
+                <Button mnemonicParsing="false" onAction="#goToRendezVous" text="RendezVous"
+                        style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <TextField fx:id="searchField" promptText="Search (id, student, professor, slot, status...)"
+                           prefWidth="370.0"
+                           style="-fx-background-color: #1e2d4d; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #94a3b8;" />
+            </HBox>
+
+            <VBox spacing="8.0" style="-fx-background-color: linear-gradient(to right, #172554, #0b2f8a); -fx-background-radius: 18; -fx-padding: 26;">
+                <Label text="Mes Rendez-vous"
+                       style="-fx-font-size: 42px; -fx-font-weight: 800; -fx-text-fill: #e2e8f0;" />
+                <Label text="Consultez, modifiez et gérez vos rendez-vous."
+                       style="-fx-font-size: 15px; -fx-text-fill: #bfdbfe;" />
+            </VBox>
+
+            <HBox spacing="12.0">
+                <Button fx:id="filterAllBtn" onAction="#setFilterAll" text="All rendez-vous"
+                        prefHeight="70.0" HBox.hgrow="ALWAYS"
+                        style="-fx-font-size: 16px; -fx-font-weight: 700;" />
+                <Button fx:id="filterPendingBtn" onAction="#setFilterPending" text="Pending items"
+                        prefHeight="70.0" HBox.hgrow="ALWAYS"
+                        style="-fx-font-size: 16px; -fx-font-weight: 700;" />
+                <Button fx:id="filterFinalBtn" onAction="#setFilterFinal" text="Final status"
+                        prefHeight="70.0" HBox.hgrow="ALWAYS"
+                        style="-fx-font-size: 16px; -fx-font-weight: 700;" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="10.0">
+            <padding>
+                <Insets top="8.0" right="18.0" bottom="12.0" left="18.0" />
+            </padding>
+            <Label text="Cards des Rendez-vous" style="-fx-text-fill: #e2e8f0; -fx-font-size: 18px; -fx-font-weight: bold;" />
+            <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+                <content>
+                    <VBox fx:id="cardsContainer" spacing="12.0" style="-fx-padding: 8;" />
+                </content>
+            </ScrollPane>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="10.0" style="-fx-padding: 12 18 16 18;">
+            <Button mnemonicParsing="false" onAction="#refreshRendezVous" text="Refresh"
+                    style="-fx-background-color: #1e293b; -fx-text-fill: #e2e8f0; -fx-font-weight: bold;" />
+            <Button mnemonicParsing="false" onAction="#handleCreate" text="Ajouter"
+                    style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold;" />
+            <Button mnemonicParsing="false" onAction="#handleEdit" text="Modifier"
+                    style="-fx-background-color: #16a34a; -fx-text-fill: white; -fx-font-weight: bold;" />
+            <Button mnemonicParsing="false" onAction="#handleDelete" text="Supp"
+                    style="-fx-background-color: #dc2626; -fx-text-fill: white; -fx-font-weight: bold;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: #93c5fd; -fx-font-size: 13px;" />
+        </HBox>
+    </bottom>
+</BorderPane>
