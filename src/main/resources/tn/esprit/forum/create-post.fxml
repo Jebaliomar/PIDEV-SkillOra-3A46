@@ -31,6 +31,8 @@
                 </Label>
                 <Label text="Create a new post using only the necessary input fields."
                        style="-fx-text-fill: #52627a;"/>
+                <Label fx:id="currentUserLabel"
+                       style="-fx-text-fill: #2d5f8b; -fx-font-weight: bold;"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
         </HBox>

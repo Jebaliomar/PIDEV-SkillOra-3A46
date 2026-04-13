@@ -9,6 +9,7 @@ import javafx.stage.Stage;
 import tn.esprit.controllers.forum.CreatePostController;
 import tn.esprit.controllers.forum.PostDetailsController;
 import tn.esprit.controllers.forum.PostOverviewController;
+import tn.esprit.entities.User;
 import tn.esprit.services.PostService;
 import tn.esprit.services.ReplyService;
 import tn.esprit.services.UserService;
@@ -22,6 +23,8 @@ public class ForumCrudLauncher extends Application {
 
     private static final double WINDOW_WIDTH = 980;
     private static final double WINDOW_HEIGHT = 720;
+    private static final int STATIC_USER_ID = 1;
+    private static final String STATIC_USERNAME = "Forum User";
 
     private final Map<Integer, String> usernameCache = new HashMap<>();
 
@@ -29,6 +32,7 @@ public class ForumCrudLauncher extends Application {
     private PostService postService;
     private ReplyService replyService;
     private UserService userService;
+    private User currentUser;
 
     public static void main(String[] args) {
         launch(args);
@@ -42,6 +46,7 @@ public class ForumCrudLauncher extends Application {
             this.postService = new PostService();
             this.replyService = new ReplyService();
             this.userService = new UserService();
+            this.currentUser = createStaticUser();
         } catch (RuntimeException exception) {
             showError("Database connection failed", exception.getMessage());
             throw exception;
@@ -108,6 +113,14 @@ public class ForumCrudLauncher extends Application {
         return replyService;
     }
 
+    public User getCurrentUser() {
+        return currentUser;
+    }
+
+    public String getCurrentUserDisplay() {
+        return currentUser.getUsername() + " (ID: " + currentUser.getId() + ")";
+    }
+
     public String resolveUsername(Integer userId) {
         if (userId == null) {
             return "Unknown user";
@@ -124,6 +137,14 @@ public class ForumCrudLauncher extends Application {
         } catch (SQLException exception) {
             return "User #" + userId;
         }
+    }
+
+    private User createStaticUser() {
+        User user = new User();
+        user.setId(STATIC_USER_ID);
+        user.setUsername(STATIC_USERNAME);
+        usernameCache.put(user.getId(), user.getUsername());
+        return user;
     }
 
     public void showInfo(String title, String message) {

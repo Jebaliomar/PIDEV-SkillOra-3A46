@@ -20,10 +20,14 @@ public class PostOverviewController {
     @FXML
     private VBox postsContainer;
 
+    @FXML
+    private Label currentUserLabel;
+
     private ForumCrudLauncher application;
 
     public void setApplication(ForumCrudLauncher application) {
         this.application = application;
+        currentUserLabel.setText("Current user: " + application.getCurrentUserDisplay());
     }
 
     public void loadPosts() {

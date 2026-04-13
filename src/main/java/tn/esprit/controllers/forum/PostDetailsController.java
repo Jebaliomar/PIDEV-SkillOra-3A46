@@ -49,7 +49,7 @@ public class PostDetailsController {
     private VBox repliesContainer;
 
     @FXML
-    private TextField replyUserField;
+    private Label currentReplyUserLabel;
 
     @FXML
     private TextArea replyContentArea;
@@ -59,6 +59,7 @@ public class PostDetailsController {
 
     public void setApplication(ForumCrudLauncher application) {
         this.application = application;
+        currentReplyUserLabel.setText(application.getCurrentUserDisplay());
     }
 
     public void loadPost(int postId) {
@@ -101,16 +102,15 @@ public class PostDetailsController {
 
             reply.setPostId(post.getId());
             reply.setParentId(null);
-            reply.setAuthorName(valueOrFallback(replyUserField.getText(), "Anonymous"));
+            reply.setAuthorName(application.getCurrentUser().getUsername());
             reply.setContent(replyContent);
             reply.setUpvotes(0);
             reply.setCreatedAt(now);
             reply.setUpdatedAt(now);
-            reply.setUserId(null);
+            reply.setUserId(application.getCurrentUser().getId());
 
             application.getReplyService().add(reply);
 
-            replyUserField.clear();
             replyContentArea.clear();
             loadReplies();
             application.showInfo("Reply added", "Your reply was added successfully.");

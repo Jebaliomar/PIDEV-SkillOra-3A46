@@ -28,6 +28,8 @@
                 </Label>
                 <Label text="Browse posts and open one to see its details and replies."
                        style="-fx-text-fill: #52627a;"/>
+                <Label fx:id="currentUserLabel"
+                       style="-fx-text-fill: #2d5f8b; -fx-font-weight: bold;"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Create Post" onAction="#handleCreatePost"/>

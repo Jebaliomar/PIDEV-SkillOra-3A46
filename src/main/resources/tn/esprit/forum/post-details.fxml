@@ -94,7 +94,8 @@
                         </Label>
                         <VBox spacing="6">
                             <Label text="User"/>
-                            <TextField fx:id="replyUserField" promptText="User name"/>
+                            <Label fx:id="currentReplyUserLabel"
+                                   style="-fx-text-fill: #2d5f8b; -fx-font-weight: bold;"/>
                         </VBox>
                         <VBox spacing="6">
                             <Label text="Reply"/>

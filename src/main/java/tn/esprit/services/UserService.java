@@ -1,5 +1,6 @@
 package tn.esprit.services;
 
+import tn.esprit.entities.User;
 import tn.esprit.tools.MyConnection;
 
 import java.sql.Connection;
@@ -36,5 +37,45 @@ public class UserService {
         }
 
         return "User #" + userId;
+    }
+
+    public User getById(Integer userId) throws SQLException {
+        if (userId == null) {
+            return null;
+        }
+
+        String sql = "SELECT id, username FROM `user` WHERE id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapUser(resultSet);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public User getFirstUser() throws SQLException {
+        String sql = "SELECT id, username FROM `user` ORDER BY id ASC LIMIT 1";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            if (resultSet.next()) {
+                return mapUser(resultSet);
+            }
+        }
+
+        return null;
+    }
+
+    private User mapUser(ResultSet resultSet) throws SQLException {
+        User user = new User();
+        user.setId(resultSet.getInt("id"));
+        user.setUsername(resultSet.getString("username"));
+        return user;
     }
 }

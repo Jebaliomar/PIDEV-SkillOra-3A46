@@ -1,6 +1,7 @@
 package tn.esprit.controllers.forum;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import tn.esprit.entities.Post;
@@ -23,10 +24,14 @@ public class CreatePostController {
     @FXML
     private TextArea contentArea;
 
+    @FXML
+    private Label currentUserLabel;
+
     private ForumCrudLauncher application;
 
     public void setApplication(ForumCrudLauncher application) {
         this.application = application;
+        currentUserLabel.setText("Posting as: " + application.getCurrentUserDisplay());
     }
 
     @FXML
@@ -59,7 +64,7 @@ public class CreatePostController {
             post.setContent(content);
             post.setCreatedAt(now);
             post.setUpdatedAt(now);
-            post.setUserId(null);
+            post.setUserId(application.getCurrentUser().getId());
 
             application.getPostService().add(post);
             application.showInfo("Post created", "Post #" + post.getId() + " was created successfully.");
