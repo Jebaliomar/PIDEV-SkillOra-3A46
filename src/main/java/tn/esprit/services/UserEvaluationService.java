@@ -311,4 +311,110 @@ public class UserEvaluationService implements IUserEvaluationService {
             }
         }
     }
+
+    @Override
+    public List<UserEvaluation> getSubmittedUserEvaluationsByEvaluationId(int evaluationId) throws SQLException {
+        List<UserEvaluation> list = new ArrayList<>();
+
+        String sql = "SELECT * FROM user_evaluation " +
+                "WHERE evaluation_id = ? AND submitted_at IS NOT NULL " +
+                "ORDER BY submitted_at DESC";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, evaluationId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UserEvaluation ue = new UserEvaluation();
+
+                    ue.setId(rs.getInt("id"));
+                    ue.setUserId(rs.getInt("user_id"));
+                    ue.setEvaluationId(rs.getInt("evaluation_id"));
+
+                    Timestamp startedAt = rs.getTimestamp("started_at");
+                    if (startedAt != null) {
+                        ue.setStartedAt(startedAt.toLocalDateTime());
+                    }
+
+                    Timestamp submittedAt = rs.getTimestamp("submitted_at");
+                    if (submittedAt != null) {
+                        ue.setSubmittedAt(submittedAt.toLocalDateTime());
+                    }
+
+                    int score = rs.getInt("score");
+                    if (!rs.wasNull()) {
+                        ue.setScore(score);
+                    }
+
+                    ue.setAiFeedback(rs.getString("ai_feedback"));
+
+                    Timestamp aiCorrectedAt = rs.getTimestamp("ai_corrected_at");
+                    if (aiCorrectedAt != null) {
+                        ue.setAiCorrectedAt(aiCorrectedAt.toLocalDateTime());
+                    }
+
+                    boolean corrected = rs.getBoolean("is_corrected");
+                    if (!rs.wasNull()) {
+                        ue.setIsCorrected(corrected);
+                    }
+
+                    list.add(ue);
+                }
+            }
+        }
+
+        return list;
+    }
+
+    @Override
+    public String getUserFullNameById(int userId) throws SQLException {
+        String sql = "SELECT first_name, last_name FROM users WHERE id = ?";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String firstName = rs.getString("first_name");
+                    String lastName = rs.getString("last_name");
+
+                    String fullName = ((firstName != null ? firstName : "") + " " +
+                            (lastName != null ? lastName : "")).trim();
+
+                    if (!fullName.isEmpty()) {
+                        return fullName;
+                    }
+                }
+            }
+        }
+
+        return "Utilisateur #" + userId;
+    }
+
+    private String getNullableColumn(ResultSet rs, String... columnNames) {
+        for (String columnName : columnNames) {
+            try {
+                return rs.getString(columnName);
+            } catch (SQLException ignored) {
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean hasSubmittedResponses(int evaluationId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM user_evaluation WHERE evaluation_id = ? AND submitted_at IS NOT NULL";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, evaluationId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+
+        return false;
+    }
 }

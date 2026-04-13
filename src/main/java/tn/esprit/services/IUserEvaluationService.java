@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface IUserEvaluationService {
-
     List<Object[]> getUserEvaluationsWithEvaluation(int userId) throws SQLException;
 
     Integer findUserEvaluationId(int userId, int evaluationId) throws SQLException;
@@ -18,4 +17,10 @@ public interface IUserEvaluationService {
     UserEvaluation getByUserIdAndEvaluationId(int userId, int evaluationId) throws SQLException;
 
     void saveOrUpdate(UserEvaluation ue) throws SQLException;
+
+    List<UserEvaluation> getSubmittedUserEvaluationsByEvaluationId(int evaluationId) throws SQLException;
+
+    String getUserFullNameById(int userId) throws SQLException;
+
+    boolean hasSubmittedResponses(int evaluationId) throws SQLException;
 }

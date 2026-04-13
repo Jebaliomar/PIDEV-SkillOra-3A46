@@ -201,3 +201,35 @@
     -fx-text-fill: #cbd5e1;
     -fx-opacity: 1;
 }
+
+.pagination-box {
+    -fx-padding: 10 0 4 0;
+}
+
+.pagination-button {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 10;
+    -fx-border-color: #334155;
+    -fx-border-radius: 10;
+    -fx-cursor: hand;
+}
+
+.pagination-button:hover {
+    -fx-background-color: #334155;
+}
+
+.pagination-button:disabled {
+    -fx-background-color: #475569;
+    -fx-text-fill: #94a3b8;
+    -fx-opacity: 1;
+}
+
+.pagination-label {
+    -fx-text-fill: #cbd5e1;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}

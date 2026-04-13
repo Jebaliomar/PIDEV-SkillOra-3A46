@@ -7,11 +7,16 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import tn.esprit.entities.Evaluation;
 import tn.esprit.services.EvaluationService;
+import tn.esprit.services.UserEvaluationService;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -45,7 +50,11 @@ public class ListeEvaluationController {
     @FXML
     private ComboBox<String> typeFilterCombo;
 
+    @FXML
+    private TextField searchField;
+
     private final EvaluationService service = new EvaluationService();
+    private final UserEvaluationService userEvaluationService = new UserEvaluationService();
 
     @FXML
     public void initialize() {
@@ -119,15 +128,25 @@ public class ListeEvaluationController {
         actionCol.setCellValueFactory(data -> new SimpleStringProperty("Actions"));
 
         actionCol.setCellFactory(param -> new TableCell<>() {
+            private final Button btnVoirReponses = new Button("Voir réponses");
             private final Button btnModifier = new Button("Modifier");
             private final Button btnSupprimer = new Button("Supprimer");
-            private final HBox box = new HBox(14, btnModifier, btnSupprimer);
+
+            private final HBox finishedBox = new HBox(10, btnVoirReponses, btnSupprimer);
+            private final HBox notFinishedBox = new HBox(10, btnModifier, btnSupprimer);
 
             {
-                box.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 8;");
+                finishedBox.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 8;");
+                notFinishedBox.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 8;");
 
+                btnVoirReponses.getStyleClass().add("button-primary");
                 btnModifier.getStyleClass().add("button-secondary");
                 btnSupprimer.getStyleClass().add("button-danger");
+
+                btnVoirReponses.setOnAction(event -> {
+                    Evaluation evaluation = getTableView().getItems().get(getIndex());
+                    ouvrirFenetreReponses(evaluation);
+                });
 
                 btnModifier.setOnAction(event -> {
                     Evaluation evaluation = getTableView().getItems().get(getIndex());
@@ -146,8 +165,22 @@ public class ListeEvaluationController {
 
                 if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
                     setGraphic(null);
-                } else {
-                    setGraphic(box);
+                    return;
+                }
+
+                Evaluation evaluation = getTableView().getItems().get(getIndex());
+
+                try {
+                    boolean finished = userEvaluationService.hasSubmittedResponses(evaluation.getId());
+
+                    if (finished) {
+                        setGraphic(finishedBox);
+                    } else {
+                        setGraphic(notFinishedBox);
+                    }
+
+                } catch (SQLException e) {
+                    setGraphic(notFinishedBox);
                 }
             }
         });
@@ -164,20 +197,41 @@ public class ListeEvaluationController {
     }
 
     @FXML
-    private void filtrerParType() {
-        try {
-            String selectedType = typeFilterCombo.getValue();
+    private void handleSearch(KeyEvent event) {
+        rechercherEtFiltrer();
+    }
 
-            if (selectedType == null || selectedType.equalsIgnoreCase("Tous")) {
-                chargerEvaluations();
-                return;
+    @FXML
+    private void filtrerParType() {
+        rechercherEtFiltrer();
+    }
+
+    private void rechercherEtFiltrer() {
+        try {
+            String motCle = searchField != null ? searchField.getText().trim() : "";
+            String selectedType = typeFilterCombo != null ? typeFilterCombo.getValue() : "Tous";
+
+            List<Evaluation> evaluations;
+
+            boolean hasKeyword = motCle != null && !motCle.isEmpty();
+            boolean hasType = selectedType != null && !selectedType.equalsIgnoreCase("Tous");
+
+            if (hasKeyword) {
+                evaluations = service.rechercherParMotCle(motCle);
+            } else {
+                evaluations = service.recuperer();
             }
 
-            List<Evaluation> evaluations = service.filtrerParType(selectedType);
+            if (hasType) {
+                evaluations = evaluations.stream()
+                        .filter(e -> e.getType() != null && e.getType().equalsIgnoreCase(selectedType))
+                        .toList();
+            }
+
             evaluationTable.setItems(FXCollections.observableArrayList(evaluations));
 
         } catch (SQLException e) {
-            showError("Erreur filtre type : " + e.getMessage());
+            showError("Erreur recherche/filtre : " + e.getMessage());
         }
     }
 
@@ -205,7 +259,7 @@ public class ListeEvaluationController {
             if (response == ButtonType.OK) {
                 try {
                     service.supprimer(evaluation);
-                    chargerEvaluations();
+                    rechercherEtFiltrer();
                 } catch (SQLException e) {
                     showError("Erreur suppression : " + e.getMessage());
                 }
@@ -250,6 +304,26 @@ public class ListeEvaluationController {
 
         } catch (IOException e) {
             showError("Erreur ouverture quiz : " + e.getMessage());
+        }
+    }
+
+    private void ouvrirFenetreReponses(Evaluation evaluation) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserResponsesView.fxml"));
+            Parent root = loader.load();
+
+            UserResponsesController controller = loader.getController();
+            controller.setEvaluation(evaluation);
+
+            Stage stage = new Stage();
+            stage.setTitle("Réponses utilisateur");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.setResizable(true);
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            showError("Erreur ouverture réponses : " + e.getMessage());
         }
     }
 

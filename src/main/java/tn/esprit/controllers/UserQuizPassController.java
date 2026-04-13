@@ -80,7 +80,7 @@ public class UserQuizPassController {
 
                 int total = getTotalQuestions();
                 int score = ue.getScore() != null ? ue.getScore() : 0;
-                subtitleLabel.setText("Quiz déjà complété - Score : " + score + "/" + total);
+                subtitleLabel.setText("Quiz déjà complété - Cliquez sur View result pour voir la correction");
 
                 disableAllAnswers();
             }
@@ -233,12 +233,11 @@ public class UserQuizPassController {
 
         ue.setSubmittedAt(LocalDateTime.now());
         ue.setScore(score);
-        ue.setAiFeedback("Quiz completed");
+        ue.setAiFeedback(buildSelectedAnswersPayload());
         ue.setIsCorrected(true);
 
         userEvaluationService.saveOrUpdate(ue);
     }
-
     private int getTotalQuestions() {
         return answersMap.size();
     }
@@ -267,5 +266,27 @@ public class UserQuizPassController {
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.show();
+    }
+
+    private String buildSelectedAnswersPayload() {
+        StringBuilder sb = new StringBuilder("QUIZ_ANSWERS|");
+
+        boolean first = true;
+        for (Map.Entry<Integer, ToggleGroup> entry : answersMap.entrySet()) {
+            Toggle selected = entry.getValue().getSelectedToggle();
+
+            if (selected != null) {
+                Answer a = (Answer) selected.getUserData();
+
+                if (!first) {
+                    sb.append(",");
+                }
+
+                sb.append(entry.getKey()).append(":").append(a.getId());
+                first = false;
+            }
+        }
+
+        return sb.toString();
     }
 }

@@ -14,7 +14,7 @@
             stylesheets="@user-pass-assessment.css"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="tn.esprit.controllers.UserExamPassController">
+            fx:controller="tn.esprit.controllers.UserExamResultController">
 
     <children>
         <VBox spacing="16.0"
@@ -29,20 +29,13 @@
             </padding>
 
             <children>
-                <HBox alignment="CENTER_LEFT" styleClass="pass-header">
+                <VBox spacing="8.0" styleClass="pass-header">
                     <children>
-                        <VBox spacing="8.0">
-                            <children>
-                                <Label fx:id="titleLabel" text="Exam" styleClass="pass-title"/>
-                                <Label fx:id="subtitleLabel" text="Rédigez votre réponse" styleClass="pass-subtitle"/>
-                            </children>
-                        </VBox>
-
-                        <Region HBox.hgrow="ALWAYS"/>
-
-                        <Label fx:id="timerLabel" text="00:00" styleClass="timer-label"/>
+                        <Label fx:id="titleLabel" text="Exam Result" styleClass="pass-title"/>
+                        <Label fx:id="subtitleLabel" text="Votre examen soumis" styleClass="pass-subtitle"/>
+                        <Label fx:id="scoreLabel" text="Score : -" styleClass="pass-subtitle"/>
                     </children>
-                </HBox>
+                </VBox>
 
                 <Label text="Document de l'examen" styleClass="section-label"/>
 
@@ -50,13 +43,12 @@
                           editable="false"
                           wrapText="true"
                           VBox.vgrow="ALWAYS"
-                          prefHeight="280.0"
-                          promptText="Le contenu de l'examen s'affichera ici..."/>
+                          prefHeight="260.0"/>
 
                 <Label text="Votre réponse" styleClass="section-label"/>
 
                 <TextArea fx:id="answerArea"
-                          promptText="Écrivez votre réponse ici..."
+                          editable="false"
                           wrapText="true"
                           prefHeight="180.0"/>
 
@@ -66,11 +58,6 @@
                         <Button text="Back"
                                 onAction="#handleBack"
                                 styleClass="secondary-button"/>
-
-                        <Button fx:id="submitButton"
-                                text="Submit"
-                                onAction="#handleSubmitExam"
-                                styleClass="primary-button"/>
                     </children>
                 </HBox>
             </children>

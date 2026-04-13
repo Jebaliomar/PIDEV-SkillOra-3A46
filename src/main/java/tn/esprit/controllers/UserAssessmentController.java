@@ -36,10 +36,22 @@ public class UserAssessmentController {
     @FXML
     private Button btnQuiz;
 
+    @FXML
+    private Button prevPageButton;
+    @FXML
+    private Button nextPageButton;
+    @FXML
+    private Label pageLabel;
+
     private final IUserEvaluationService service = new UserEvaluationService();
     private List<Object[]> allData = new ArrayList<>();
+    private List<Object[]> filteredData = new ArrayList<>();
 
     private final int connectedUserId = 1;
+
+    private int currentPage = 1;
+    private final int itemsPerPage = 4;
+    private String currentFilter = "ALL";
 
     @FXML
     public void initialize() {
@@ -86,8 +98,27 @@ public class UserAssessmentController {
         applyFilter("QUIZ");
     }
 
+    @FXML
+    public void handlePreviousPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            refreshPage();
+        }
+    }
+
+    @FXML
+    public void handleNextPage() {
+        int totalPages = getTotalPages();
+        if (currentPage < totalPages) {
+            currentPage++;
+            refreshPage();
+        }
+    }
+
     private void applyFilter(String filter) {
-        evaluationContainer.getChildren().clear();
+        currentFilter = filter;
+        currentPage = 1;
+        filteredData.clear();
 
         for (Object[] row : allData) {
             Evaluation evaluation = (Evaluation) row[0];
@@ -113,9 +144,60 @@ public class UserAssessmentController {
             };
 
             if (show) {
-                evaluationContainer.getChildren().add(createCard(evaluation, userEvaluation, status));
+                filteredData.add(row);
             }
         }
+
+        refreshPage();
+    }
+
+    private void refreshPage() {
+        evaluationContainer.getChildren().clear();
+
+        if (filteredData.isEmpty()) {
+            Label emptyLabel = new Label("No assessments found.");
+            emptyLabel.getStyleClass().add("section-subtitle");
+            evaluationContainer.getChildren().add(emptyLabel);
+            updatePaginationControls();
+            return;
+        }
+
+        int fromIndex = (currentPage - 1) * itemsPerPage;
+        int toIndex = Math.min(fromIndex + itemsPerPage, filteredData.size());
+
+        if (fromIndex >= filteredData.size()) {
+            currentPage = 1;
+            fromIndex = 0;
+            toIndex = Math.min(itemsPerPage, filteredData.size());
+        }
+
+        List<Object[]> pageItems = filteredData.subList(fromIndex, toIndex);
+
+        for (Object[] row : pageItems) {
+            Evaluation evaluation = (Evaluation) row[0];
+            UserEvaluation userEvaluation = (UserEvaluation) row[1];
+            String status = getStatus(userEvaluation);
+
+            evaluationContainer.getChildren().add(createCard(evaluation, userEvaluation, status));
+        }
+
+        updatePaginationControls();
+    }
+
+    private void updatePaginationControls() {
+        int totalPages = getTotalPages();
+
+        pageLabel.setText("Page " + currentPage + " / " + totalPages);
+
+        prevPageButton.setDisable(currentPage <= 1);
+        nextPageButton.setDisable(currentPage >= totalPages);
+    }
+
+    private int getTotalPages() {
+        if (filteredData.isEmpty()) {
+            return 1;
+        }
+        return (int) Math.ceil((double) filteredData.size() / itemsPerPage);
     }
 
     private String getStatus(UserEvaluation ue) {
@@ -241,26 +323,31 @@ public class UserAssessmentController {
     }
 
     private void openResultPage(Evaluation evaluation, UserEvaluation userEvaluation) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Résultat");
-        alert.setHeaderText(evaluation.getTitle());
+        try {
+            if ("QUIZ".equalsIgnoreCase(evaluation.getType())) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserQuizResultView.fxml"));
+                Parent root = loader.load();
 
-        int totalQuestions = getQuestionCountForEvaluation(evaluation.getId());
-        int score = 0;
+                UserQuizResultController controller = loader.getController();
+                controller.setUserId(connectedUserId);
+                controller.setEvaluation(evaluation);
 
-        if (userEvaluation != null && userEvaluation.getScore() != null) {
-            score = userEvaluation.getScore().intValue();
+                evaluationContainer.getScene().setRoot(root);
+
+            } else if ("EXAM".equalsIgnoreCase(evaluation.getType())) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserExamResultView.fxml"));
+                Parent root = loader.load();
+
+                UserExamResultController controller = loader.getController();
+                controller.setUserId(connectedUserId);
+                controller.setEvaluation(evaluation);
+
+                evaluationContainer.getScene().setRoot(root);
+            }
+
+        } catch (IOException e) {
+            showError("Erreur ouverture résultat : " + e.getMessage());
         }
-
-        String message = "Type : " + evaluation.getType()
-                + "\nScore : " + score + "/" + totalQuestions;
-
-        if (userEvaluation != null) {
-            message += "\nFeedback : " + (userEvaluation.getAiFeedback() != null ? userEvaluation.getAiFeedback() : "Aucun");
-        }
-
-        alert.setContentText(message);
-        alert.show();
     }
 
     private void setActiveButton(Button activeButton) {
