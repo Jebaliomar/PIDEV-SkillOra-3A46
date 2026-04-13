@@ -22,9 +22,10 @@
                 <VBox styleClass="profile-header-card" spacing="16">
                     <padding><Insets top="32" right="32" bottom="32" left="32"/></padding>
                     <HBox spacing="24" alignment="CENTER_LEFT">
-                        <StackPane>
-                            <Circle radius="56" styleClass="avatar-large"/>
+                        <StackPane fx:id="avatarHolder" prefWidth="180" prefHeight="180" minWidth="180" minHeight="180" styleClass="avatar-3d-holder">
+                            <Circle fx:id="avatarRing" radius="78" styleClass="avatar-large"/>
                             <Label fx:id="avatarInitials" styleClass="avatar-initials-large"/>
+                            <Label fx:id="avatarEmojiLabel" styleClass="avatar-picker-emoji" visible="false" managed="false"/>
                         </StackPane>
                         <VBox spacing="6" HBox.hgrow="ALWAYS">
                             <Label fx:id="fullNameLabel" text="Full Name" styleClass="profile-name"/>

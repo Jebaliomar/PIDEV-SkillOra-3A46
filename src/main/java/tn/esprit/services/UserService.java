@@ -36,8 +36,8 @@ public class UserService {
         String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(12))
                 .replaceFirst("^\\$2a\\$", "\\$2y\\$");
 
-        String sql = "INSERT INTO users (email, username, password, first_name, last_name, is_active, is_verified, created_at, profile_completed, face_id_enabled) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (email, username, password, first_name, last_name, is_active, is_verified, created_at, profile_completed, face_id_enabled, avatar_type) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ps.setString(1, user.getEmail());
@@ -50,6 +50,7 @@ public class UserService {
         ps.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now()));
         ps.setInt(9, 0);     // profile_completed = false
         ps.setBoolean(10, false);
+        ps.setString(11, user.getAvatarType());
         ps.executeUpdate();
 
         // Get the generated user ID
@@ -171,6 +172,14 @@ public class UserService {
         ps.setString(9, user.getUniversity());
         ps.setString(10, user.getCountry());
         ps.setInt(11, user.getId());
+        ps.executeUpdate();
+    }
+
+    public void updateAvatar(int userId, String avatarType) throws SQLException {
+        String sql = "UPDATE users SET avatar_type = ? WHERE id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, avatarType);
+        ps.setInt(2, userId);
         ps.executeUpdate();
     }
 

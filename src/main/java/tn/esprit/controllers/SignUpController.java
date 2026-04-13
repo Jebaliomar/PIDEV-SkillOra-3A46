@@ -7,6 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.services.UserService;
@@ -128,11 +129,19 @@ public class SignUpController implements Initializable {
                 return;
             }
 
+            // Open avatar picker first
+            String avatar = pickAvatar();
+            if (avatar == null) {
+                showError("Please select a 3D avatar to finish registration.");
+                return;
+            }
+
             User user = new User();
             user.setEmail(email);
             user.setPassword(password);
             user.setFirstName(firstName);
             user.setLastName(lastName);
+            user.setAvatarType(avatar);
 
             userService.register(user, role);
 
@@ -141,6 +150,26 @@ public class SignUpController implements Initializable {
 
         } catch (Exception e) {
             showError("Registration failed: " + e.getMessage());
+        }
+    }
+
+    private String pickAvatar() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AvatarPicker.fxml"));
+            Parent root = loader.load();
+            AvatarPickerController ctrl = loader.getController();
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.setTitle("Select Your Avatar");
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+            ThemeManager.applyTheme(scene);
+            dialog.setScene(scene);
+            dialog.showAndWait();
+            return ctrl.getConfirmedFilename();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

@@ -912,3 +912,76 @@
 .settings-tabs .tab-header-background {
     -fx-background-color: transparent;
 }
+
+/* Avatar picker cards */
+.avatar-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 14;
+    -fx-border-width: 2;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0, 0, 2);
+}
+
+.avatar-card:hover {
+    -fx-border-color: #0891b2;
+    -fx-effect: dropshadow(gaussian, rgba(8,145,178,0.25), 12, 0, 0, 4);
+}
+
+.avatar-card-selected {
+    -fx-border-color: #0891b2;
+    -fx-background-color: #E0F2FE;
+    -fx-effect: dropshadow(gaussian, rgba(8,145,178,0.4), 14, 0, 0, 4);
+}
+
+.avatar-card-viewer {
+    -fx-background-color: linear-gradient(to bottom, #F8FAFC, #E0F2FE);
+    -fx-background-radius: 10;
+}
+
+.avatar-card-label {
+    -fx-text-fill: #334155;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-max-width: Infinity;
+}
+
+.avatar-3d-holder {
+    -fx-background-color: linear-gradient(to bottom, rgba(8,145,178,0.08), rgba(139,92,246,0.08));
+    -fx-background-radius: 16;
+}
+
+.filter-btn-active {
+    -fx-background-color: #0891b2;
+    -fx-text-fill: white;
+    -fx-border-color: #0891b2;
+}
+
+.avatar-picker-ring {
+    -fx-fill: radial-gradient(center 40% 40%, radius 80%, rgba(255,255,255,0.85), rgba(255,255,255,0.15));
+    -fx-stroke: rgba(255,255,255,0.9);
+    -fx-stroke-width: 3;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 4);
+}
+
+.avatar-picker-emoji {
+    -fx-text-fill: white;
+    -fx-font-size: 42px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 6, 0, 0, 2);
+}
+
+/* Avatar palettes (picker and profile) */
+.avatar-palette-0 { -fx-background-color: linear-gradient(to bottom right, #0891b2, #22d3ee); }
+.avatar-palette-1 { -fx-background-color: linear-gradient(to bottom right, #8B5CF6, #c084fc); }
+.avatar-palette-2 { -fx-background-color: linear-gradient(to bottom right, #F97316, #fbbf24); }
+.avatar-palette-3 { -fx-background-color: linear-gradient(to bottom right, #10b981, #6ee7b7); }
+.avatar-palette-4 { -fx-background-color: linear-gradient(to bottom right, #ef4444, #fb7185); }
+.avatar-palette-5 { -fx-background-color: linear-gradient(to bottom right, #3b82f6, #60a5fa); }
+.avatar-palette-6 { -fx-background-color: linear-gradient(to bottom right, #ec4899, #f9a8d4); }
+.avatar-palette-7 { -fx-background-color: linear-gradient(to bottom right, #14b8a6, #5eead4); }
+.avatar-palette-8 { -fx-background-color: linear-gradient(to bottom right, #6366f1, #a5b4fc); }
+.avatar-palette-9 { -fx-background-color: linear-gradient(to bottom right, #d97706, #fcd34d); }
+.avatar-palette-10 { -fx-background-color: linear-gradient(to bottom right, #0ea5e9, #7dd3fc); }

@@ -2,11 +2,18 @@ package tn.esprit.controllers;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.services.UserService;
+import tn.esprit.tools.AvatarService;
+import tn.esprit.tools.ThemeManager;
 
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
@@ -19,6 +26,7 @@ public class SettingsController implements Initializable {
     @FXML private HBox errorBox;
     @FXML private Label errorLabel;
 
+    @FXML private Label currentAvatarLabel;
     @FXML private TextField firstNameField;
     @FXML private TextField lastNameField;
     @FXML private ComboBox<String> genderCombo;
@@ -53,6 +61,7 @@ public class SettingsController implements Initializable {
         User u = StudentLayoutController.getCurrentUser();
         if (u == null) return;
 
+        updateAvatarLabel(u.getAvatarType());
         firstNameField.setText(safe(u.getFirstName()));
         lastNameField.setText(safe(u.getLastName()));
         genderCombo.setValue(u.getGender());
@@ -120,6 +129,44 @@ public class SettingsController implements Initializable {
             showSuccess("Your settings have been saved.");
         } catch (Exception e) {
             showError("Could not save: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    public void handleChangeAvatar() {
+        hideMessages();
+        User u = StudentLayoutController.getCurrentUser();
+        if (u == null) return;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AvatarPicker.fxml"));
+            Parent root = loader.load();
+            AvatarPickerController ctrl = loader.getController();
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.setTitle("Select Your Avatar");
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+            ThemeManager.applyTheme(scene);
+            dialog.setScene(scene);
+            dialog.showAndWait();
+
+            String picked = ctrl.getConfirmedFilename();
+            if (picked != null) {
+                userService.updateAvatar(u.getId(), picked);
+                u.setAvatarType(picked);
+                updateAvatarLabel(picked);
+                showSuccess("Avatar updated. It will appear on your profile.");
+            }
+        } catch (Exception e) {
+            showError("Could not open avatar picker: " + e.getMessage());
+        }
+    }
+
+    private void updateAvatarLabel(String avatarType) {
+        if (avatarType == null || avatarType.isEmpty()) {
+            currentAvatarLabel.setText("No avatar selected");
+        } else {
+            currentAvatarLabel.setText("Current: " + AvatarService.displayName(avatarType));
         }
     }
 

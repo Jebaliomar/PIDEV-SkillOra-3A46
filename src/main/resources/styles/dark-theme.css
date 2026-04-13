@@ -441,3 +441,35 @@
 .settings-tabs .tab:selected .tab-label {
     -fx-text-fill: #22d3ee;
 }
+
+.avatar-card {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+}
+
+.avatar-card:hover {
+    -fx-border-color: #22d3ee;
+}
+
+.avatar-card-selected {
+    -fx-background-color: #164E63;
+    -fx-border-color: #22d3ee;
+}
+
+.avatar-card-viewer {
+    -fx-background-color: linear-gradient(to bottom, #0F1629, #164E63);
+}
+
+.avatar-card-label {
+    -fx-text-fill: #E2E8F0;
+}
+
+.avatar-3d-holder {
+    -fx-background-color: linear-gradient(to bottom, rgba(34,211,238,0.1), rgba(167,139,250,0.1));
+}
+
+.filter-btn-active {
+    -fx-background-color: #22d3ee;
+    -fx-text-fill: #0B1220;
+    -fx-border-color: #22d3ee;
+}
