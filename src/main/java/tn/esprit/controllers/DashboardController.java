@@ -13,6 +13,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import tn.esprit.entities.User;
 import tn.esprit.services.UserService;
+import tn.esprit.tools.UserGalaxy;
 
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +33,8 @@ public class DashboardController implements Initializable {
     @FXML private LineChart<String, Number> growthChart;
     @FXML private PieChart distributionChart;
     @FXML private VBox recentUsersContainer;
+    @FXML private StackPane galaxyContainer;
+    @FXML private Label galaxyCountLabel;
 
     private final UserService userService = new UserService();
 
@@ -41,6 +44,7 @@ public class DashboardController implements Initializable {
         loadGrowthChart();
         loadDistributionChart();
         loadRecentUsers();
+        loadGalaxy();
 
         User current = AdminPanelController.getCurrentUser();
         if (current != null) {
@@ -112,6 +116,20 @@ public class DashboardController implements Initializable {
                 String role = (String) users.get(i).get("role");
                 recentUsersContainer.getChildren().add(createUserRow(user, role));
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadGalaxy() {
+        try {
+            List<Map<String, Object>> users = userService.getGalaxyUsers();
+            UserGalaxy galaxy = new UserGalaxy();
+            StackPane galaxyPane = galaxy.build(users, 900, 520);
+            galaxyPane.prefWidthProperty().bind(galaxyContainer.widthProperty());
+            galaxyPane.prefHeightProperty().bind(galaxyContainer.heightProperty());
+            galaxyContainer.getChildren().setAll(galaxyPane);
+            galaxyCountLabel.setText(users.size() + " users");
         } catch (Exception e) {
             e.printStackTrace();
         }

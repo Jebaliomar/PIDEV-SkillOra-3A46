@@ -75,6 +75,46 @@
             </VBox>
         </HBox>
 
+        <!-- User Galaxy -->
+        <VBox styleClass="chart-card" spacing="12"
+              style="-fx-background-color: linear-gradient(to bottom right, #0a0a1a, #1a0a2e); -fx-background-radius: 12;">
+            <padding><Insets top="16" bottom="16" left="16" right="16"/></padding>
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <VBox spacing="2">
+                    <Label text="User Galaxy" style="-fx-text-fill: #e5e7eb; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                    <Label text="Every star is a user - drag to orbit, scroll to zoom, click a star"
+                           style="-fx-text-fill: #9ca3af; -fx-font-size: 11px;"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="galaxyCountLabel" text="0 users"
+                       style="-fx-text-fill: #c4b5fd; -fx-background-color: rgba(124,58,237,0.18); -fx-padding: 4 10 4 10; -fx-background-radius: 12; -fx-font-size: 11px;"/>
+            </HBox>
+            <HBox spacing="14" alignment="CENTER_LEFT">
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Region prefWidth="10" prefHeight="10" style="-fx-background-color: #ffd700; -fx-background-radius: 5;"/>
+                    <Label text="Admin" style="-fx-text-fill: #9ca3af; -fx-font-size: 10px;"/>
+                </HBox>
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Region prefWidth="10" prefHeight="10" style="-fx-background-color: #34d399; -fx-background-radius: 5;"/>
+                    <Label text="Active" style="-fx-text-fill: #9ca3af; -fx-font-size: 10px;"/>
+                </HBox>
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Region prefWidth="10" prefHeight="10" style="-fx-background-color: #60a5fa; -fx-background-radius: 5;"/>
+                    <Label text="New" style="-fx-text-fill: #9ca3af; -fx-font-size: 10px;"/>
+                </HBox>
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Region prefWidth="10" prefHeight="10" style="-fx-background-color: #ff3333; -fx-background-radius: 5;"/>
+                    <Label text="Banned" style="-fx-text-fill: #9ca3af; -fx-font-size: 10px;"/>
+                </HBox>
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Region prefWidth="10" prefHeight="10" style="-fx-background-color: #6b7280; -fx-background-radius: 5;"/>
+                    <Label text="Inactive" style="-fx-text-fill: #9ca3af; -fx-font-size: 10px;"/>
+                </HBox>
+            </HBox>
+            <StackPane fx:id="galaxyContainer" prefHeight="520" minHeight="520"
+                       style="-fx-background-color: #05060f; -fx-background-radius: 10;"/>
+        </VBox>
+
         <!-- Recent Registrations -->
         <VBox styleClass="chart-card" spacing="12">
             <padding><Insets top="16" bottom="16" left="16" right="16"/></padding>

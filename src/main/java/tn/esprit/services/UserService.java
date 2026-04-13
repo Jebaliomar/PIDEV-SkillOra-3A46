@@ -295,6 +295,30 @@ public class UserService {
         return result;
     }
 
+    public List<Map<String, Object>> getGalaxyUsers() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String sql = "SELECT u.id, u.first_name, u.last_name, u.is_active, u.created_at, " +
+                     "COALESCE(ur.role, 'student') as user_role, " +
+                     "DATEDIFF(NOW(), u.created_at) as days_old " +
+                     "FROM users u LEFT JOIN user_roles ur ON u.id = ur.user_id " +
+                     "ORDER BY u.created_at DESC";
+        Statement st = connection.createStatement();
+        ResultSet rs = st.executeQuery(sql);
+        while (rs.next()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("id", rs.getInt("id"));
+            String first = rs.getString("first_name");
+            String last = rs.getString("last_name");
+            row.put("name", ((first != null ? first : "") + " " + (last != null ? last : "")).trim());
+            String role = rs.getString("user_role");
+            row.put("role", "admin".equalsIgnoreCase(role) ? "admin" : "user");
+            row.put("banned", rs.getInt("is_active") == 0);
+            row.put("daysOld", rs.getInt("days_old"));
+            result.add(row);
+        }
+        return result;
+    }
+
     // ==================== USER MANAGEMENT ====================
 
     public void banUser(int userId) throws SQLException {
