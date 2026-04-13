@@ -55,6 +55,17 @@
     -fx-font-weight: 600;
 }
 
+.field-error {
+    -fx-text-fill: #fca5a5;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+.field-invalid {
+    -fx-border-color: #ef4444;
+    -fx-effect: dropshadow(gaussian, rgba(239, 68, 68, 0.20), 10, 0.2, 0, 0);
+}
+
 .salle-card {
     -fx-background-color: #121b31;
     -fx-background-radius: 26;
@@ -406,6 +417,10 @@
 .theme-light .day-label,
 .theme-light .stat-label {
     -fx-text-fill: #667a9c;
+}
+
+.theme-light .field-error {
+    -fx-text-fill: #dc2626;
 }
 
 .theme-light .salle-media-box {
