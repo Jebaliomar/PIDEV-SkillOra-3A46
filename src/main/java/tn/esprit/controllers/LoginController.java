@@ -104,6 +104,23 @@ public class LoginController implements Initializable {
     }
 
     @FXML
+    public void goToForgotPassword() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ForgotPassword.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+            ThemeManager.applyTheme(scene);
+
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Forgot password - SkillORA");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
     public void goToSignUp() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SignUp.fxml"));
