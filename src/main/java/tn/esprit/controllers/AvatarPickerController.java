@@ -1,7 +1,5 @@
 package tn.esprit.controllers;
 
-import javafx.animation.Interpolator;
-import javafx.animation.RotateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -11,9 +9,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
-import javafx.util.Duration;
+import tn.esprit.tools.Avatar3D;
 import tn.esprit.tools.AvatarService;
 
 import java.net.URL;
@@ -78,32 +75,16 @@ public class AvatarPickerController implements Initializable {
         card.getStyleClass().add("avatar-card");
         card.setSpacing(10);
         card.setPadding(new Insets(12));
-        card.setPrefWidth(200);
+        card.setPrefWidth(210);
         card.setAlignment(Pos.CENTER);
 
-        StackPane viewerHolder = new StackPane();
-        viewerHolder.setPrefSize(184, 220);
-        viewerHolder.setMinSize(184, 220);
-        viewerHolder.getStyleClass().addAll("avatar-card-viewer", avatarPaletteClass(filename));
-
-        Circle ring = new Circle(74);
-        ring.getStyleClass().add("avatar-picker-ring");
-
-        Label emoji = new Label(avatarEmoji(filename));
-        emoji.getStyleClass().add("avatar-picker-emoji");
-
-        RotateTransition spin = new RotateTransition(Duration.seconds(8), ring);
-        spin.setByAngle(360);
-        spin.setInterpolator(Interpolator.LINEAR);
-        spin.setCycleCount(RotateTransition.INDEFINITE);
-        spin.play();
-
-        viewerHolder.getChildren().addAll(ring, emoji);
+        StackPane viewer = Avatar3D.buildViewer(filename, 186, 230);
+        viewer.getStyleClass().add("avatar-card-viewer");
 
         Label name = new Label(AvatarService.displayName(filename));
         name.getStyleClass().add("avatar-card-label");
 
-        card.getChildren().addAll(viewerHolder, name);
+        card.getChildren().addAll(viewer, name);
 
         card.setOnMouseClicked(e -> {
             if (selectedCard != null) {
@@ -139,22 +120,5 @@ public class AvatarPickerController implements Initializable {
 
     public String getConfirmedFilename() {
         return confirmedFilename;
-    }
-
-    static String avatarPaletteClass(String filename) {
-        if (filename == null) return "avatar-palette-0";
-        int hash = Math.abs(filename.hashCode()) % 11;
-        return "avatar-palette-" + hash;
-    }
-
-    static String avatarEmoji(String filename) {
-        if (filename == null) return "?";
-        boolean female = filename.toLowerCase().startsWith("female");
-        int idx = 0;
-        for (char c : filename.toCharArray()) if (Character.isDigit(c)) { idx = c - '0'; break; }
-        String[] male = {"M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"};
-        String[] fem = {"F1", "F2", "F3"};
-        if (female) return fem[Math.min(idx, fem.length - 1)];
-        return male[Math.min(idx, male.length - 1)];
     }
 }

@@ -1,15 +1,12 @@
 package tn.esprit.controllers;
 
-import javafx.animation.Interpolator;
-import javafx.animation.RotateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
-import javafx.util.Duration;
 import tn.esprit.entities.User;
-import tn.esprit.tools.AvatarService;
+import tn.esprit.tools.Avatar3D;
 
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
@@ -19,7 +16,6 @@ public class ProfileController implements Initializable {
 
     @FXML private Label avatarInitials;
     @FXML private Circle avatarRing;
-    @FXML private Label avatarEmojiLabel;
     @FXML private StackPane avatarHolder;
     @FXML private Label fullNameLabel;
     @FXML private Label fieldLabel;
@@ -47,22 +43,19 @@ public class ProfileController implements Initializable {
         if (!last.isEmpty()) initials += last.charAt(0);
         avatarInitials.setText(initials.toUpperCase());
 
-        // 3D avatar placeholder: spin a labeled circle
         String avatarType = u.getAvatarType();
         if (avatarType != null && !avatarType.isEmpty()) {
-            avatarInitials.setVisible(false);
-            avatarInitials.setManaged(false);
-            avatarEmojiLabel.setVisible(true);
-            avatarEmojiLabel.setManaged(true);
-            avatarEmojiLabel.setText(AvatarPickerController.avatarEmoji(avatarType));
-            avatarHolder.getStyleClass().add(AvatarPickerController.avatarPaletteClass(avatarType));
+            try {
+                javafx.scene.layout.StackPane viewer = Avatar3D.buildViewer(avatarType, 200, 240);
+                avatarHolder.getChildren().setAll(viewer);
+                avatarInitials.setVisible(false);
+                avatarInitials.setManaged(false);
+                avatarRing.setVisible(false);
+                avatarRing.setManaged(false);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
-
-        RotateTransition spin = new RotateTransition(Duration.seconds(10), avatarRing);
-        spin.setByAngle(360);
-        spin.setInterpolator(Interpolator.LINEAR);
-        spin.setCycleCount(RotateTransition.INDEFINITE);
-        spin.play();
 
         fieldLabel.setText(u.getFieldOfStudy() != null && !u.getFieldOfStudy().isEmpty() ? u.getFieldOfStudy() : "Student at SkillORA");
         universityLabel.setText(u.getUniversity() != null ? u.getUniversity() : "—");

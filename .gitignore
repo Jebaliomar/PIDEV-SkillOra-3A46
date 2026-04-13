@@ -1,5 +1,6 @@
 target/
 avatars/
+src/main/resources/avatars/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
