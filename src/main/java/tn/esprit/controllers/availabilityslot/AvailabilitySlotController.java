@@ -12,6 +12,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -43,7 +44,7 @@ public class AvailabilitySlotController {
     private TextField searchField;
 
     @FXML
-    private VBox cardsContainer;
+    private FlowPane cardsContainer;
 
     @FXML
     private Button filterAllBtn;
@@ -157,6 +158,8 @@ public class AvailabilitySlotController {
         VBox card = new VBox(8);
         String borderColor = selected ? "#38bdf8" : "#1f3b70";
         card.setStyle("-fx-background-color: #0f1b38; -fx-border-color: " + borderColor + "; -fx-border-width: 1.4; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 14;");
+        card.setPrefWidth(540);
+        card.setMinWidth(520);
 
         HBox header = new HBox(8);
         Label idLabel = new Label("Slot #" + slot.getId());
@@ -264,8 +267,8 @@ public class AvailabilitySlotController {
     }
 
     @FXML
-    private void goToMenu(ActionEvent event) {
-        switchScene(event, "/tn/esprit/views/menu.fxml", "SkillOra - Menu");
+    private void goToEvents(ActionEvent event) {
+        showWarning("Events", "Events page is not implemented yet.");
     }
 
     @FXML

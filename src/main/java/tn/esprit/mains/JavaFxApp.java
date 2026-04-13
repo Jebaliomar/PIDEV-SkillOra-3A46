@@ -12,14 +12,14 @@ public class JavaFxApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(
-                JavaFxApp.class.getResource("/tn/esprit/views/menu.fxml")
+                JavaFxApp.class.getResource("/tn/esprit/views/rendezvous/rendezvous-list.fxml")
         );
 
-        Scene scene = new Scene(fxmlLoader.load(), 900, 560);
-        stage.setTitle("SkillOra - Menu");
+        Scene scene = new Scene(fxmlLoader.load(), 1160, 740);
+        stage.setTitle("SkillOra - RendezVous");
         stage.setScene(scene);
-        stage.setMinWidth(860);
-        stage.setMinHeight(520);
+        stage.setMinWidth(1000);
+        stage.setMinHeight(640);
         stage.show();
     }
 
