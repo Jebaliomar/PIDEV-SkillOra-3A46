@@ -73,9 +73,20 @@ public class LoginController implements Initializable {
                 String role = userService.getUserRole(user.getId());
                 System.out.println("Login successful! User: " + user.getFirstName() + " " + user.getLastName() + " | Role: " + role);
 
-                // Navigate to Admin Panel
-                AdminPanelController.setCurrentUser(user);
-                FXMLLoader dashLoader = new FXMLLoader(getClass().getResource("/fxml/AdminPanel.fxml"));
+                // Route by role: students go to student layout, admins/professors to admin panel
+                String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
+                boolean isStudent = normalizedRole.equals("student");
+
+                String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
+                String title = isStudent ? "SkillORA" : "SkillORA - Admin Panel";
+
+                if (isStudent) {
+                    StudentLayoutController.setCurrentUser(user);
+                } else {
+                    AdminPanelController.setCurrentUser(user);
+                }
+
+                FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
                 Parent dashRoot = dashLoader.load();
                 Scene dashScene = new Scene(dashRoot);
                 dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
@@ -83,7 +94,7 @@ public class LoginController implements Initializable {
 
                 Stage stage = (Stage) emailField.getScene().getWindow();
                 stage.setScene(dashScene);
-                stage.setTitle("SkillORA - Admin Panel");
+                stage.setTitle(title);
             } else {
                 showError("Invalid email or password. Please try again.");
             }

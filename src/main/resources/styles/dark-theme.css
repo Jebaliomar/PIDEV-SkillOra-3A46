@@ -384,3 +384,60 @@
 .stat-highlight {
     -fx-text-fill: #34D399;
 }
+
+/* === STUDENT LAYOUT DARK === */
+.student-header {
+    -fx-background-color: #0F1629;
+    -fx-border-color: #1E293B;
+}
+
+.student-nav-btn {
+    -fx-text-fill: #94A3B8;
+}
+
+.student-nav-btn:hover {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #22d3ee;
+}
+
+.student-nav-btn-active {
+    -fx-background-color: #164E63;
+    -fx-text-fill: #22d3ee;
+}
+
+.header-username {
+    -fx-text-fill: #E2E8F0;
+}
+
+.cta-card {
+    -fx-background-color: linear-gradient(to right, #0F1629, #164E63);
+}
+
+.profile-header-card {
+    -fx-background-color: #1E293B;
+}
+
+.profile-name {
+    -fx-text-fill: #F1F5F9;
+}
+
+.profile-field, .profile-meta {
+    -fx-text-fill: #94A3B8;
+}
+
+.profile-stat-box {
+    -fx-background-color: #0F1629;
+    -fx-border-color: #334155;
+}
+
+.settings-tabs .tab-label {
+    -fx-text-fill: #94A3B8;
+}
+
+.settings-tabs .tab:selected {
+    -fx-background-color: #164E63;
+}
+
+.settings-tabs .tab:selected .tab-label {
+    -fx-text-fill: #22d3ee;
+}

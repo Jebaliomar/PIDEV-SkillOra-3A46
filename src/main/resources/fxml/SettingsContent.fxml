@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<ScrollPane fitToWidth="true" styleClass="scroll-pane"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.SettingsController">
+    <VBox spacing="24">
+        <padding><Insets top="40" right="60" bottom="60" left="60"/></padding>
+
+        <VBox spacing="6">
+            <Label text="Account Settings" styleClass="dashboard-title"/>
+            <Label text="Manage your profile, contact, education and account details" styleClass="dashboard-subtitle"/>
+        </VBox>
+
+        <HBox fx:id="successBox" styleClass="success-box" visible="false" managed="false">
+            <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+            <Label fx:id="successLabel" styleClass="success-text"/>
+        </HBox>
+        <HBox fx:id="errorBox" styleClass="error-box" visible="false" managed="false">
+            <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+            <Label fx:id="errorLabel" styleClass="error-text"/>
+        </HBox>
+
+        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="settings-tabs">
+
+            <!-- Personal Info -->
+            <Tab text="Personal Info">
+                <VBox spacing="18" styleClass="chart-card">
+                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+
+                    <VBox spacing="6">
+                        <Label text="First Name" styleClass="input-label"/>
+                        <TextField fx:id="firstNameField" styleClass="text-input" promptText="First name"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Last Name" styleClass="input-label"/>
+                        <TextField fx:id="lastNameField" styleClass="text-input" promptText="Last name"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Gender" styleClass="input-label"/>
+                        <ComboBox fx:id="genderCombo" styleClass="combo-box" promptText="Select gender"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Date of Birth" styleClass="input-label"/>
+                        <DatePicker fx:id="dobPicker" styleClass="combo-box"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Bio (max 500 chars)" styleClass="input-label"/>
+                        <TextArea fx:id="bioArea" styleClass="text-input" prefRowCount="4" wrapText="true" promptText="Tell us about yourself"/>
+                    </VBox>
+                </VBox>
+            </Tab>
+
+            <!-- Contact Details -->
+            <Tab text="Contact Details">
+                <VBox spacing="18" styleClass="chart-card">
+                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+
+                    <VBox spacing="6">
+                        <Label text="Country Code" styleClass="input-label"/>
+                        <ComboBox fx:id="countryCodeCombo" styleClass="combo-box" promptText="Select country code"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Phone Number" styleClass="input-label"/>
+                        <TextField fx:id="phoneField" styleClass="text-input" promptText="e.g. 12345678"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Country" styleClass="input-label"/>
+                        <TextField fx:id="countryField" styleClass="text-input" promptText="Country"/>
+                    </VBox>
+                </VBox>
+            </Tab>
+
+            <!-- Education -->
+            <Tab text="Education">
+                <VBox spacing="18" styleClass="chart-card">
+                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+
+                    <VBox spacing="6">
+                        <Label text="Field of Study" styleClass="input-label"/>
+                        <TextField fx:id="fieldOfStudyField" styleClass="text-input" promptText="e.g. Computer Science"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="University" styleClass="input-label"/>
+                        <TextField fx:id="universityField" styleClass="text-input" promptText="University name"/>
+                    </VBox>
+                </VBox>
+            </Tab>
+
+            <!-- Account -->
+            <Tab text="Account">
+                <VBox spacing="18" styleClass="chart-card">
+                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+
+                    <VBox spacing="6">
+                        <Label text="Email (read-only)" styleClass="input-label"/>
+                        <TextField fx:id="emailField" styleClass="text-input" editable="false"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Account Type" styleClass="input-label"/>
+                        <Label fx:id="accountTypeBadge" text="Student" styleClass="badge-student"/>
+                    </VBox>
+                    <VBox spacing="6">
+                        <Label text="Member Since" styleClass="input-label"/>
+                        <Label fx:id="memberSinceLabel" styleClass="metric-value"/>
+                    </VBox>
+                    <Separator/>
+                    <VBox spacing="6">
+                        <Label text="Change Password" styleClass="input-label"/>
+                        <PasswordField fx:id="currentPasswordField" styleClass="password-field" promptText="Current password"/>
+                        <PasswordField fx:id="newPasswordField" styleClass="password-field" promptText="New password"/>
+                        <Button text="Update Password" onAction="#handleChangePassword" styleClass="btn-outline"/>
+                    </VBox>
+                </VBox>
+            </Tab>
+        </TabPane>
+
+        <HBox spacing="14">
+            <Button text="Save Changes" onAction="#handleSave" styleClass="btn-primary"/>
+            <Button text="Cancel" onAction="#handleCancel" styleClass="btn-outline"/>
+        </HBox>
+    </VBox>
+</ScrollPane>

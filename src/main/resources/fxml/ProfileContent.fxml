@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.Circle?>
+
+<ScrollPane fitToWidth="true" styleClass="scroll-pane"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.ProfileController">
+    <VBox spacing="0">
+
+        <!-- Cover photo -->
+        <StackPane styleClass="cover-photo" prefHeight="220"/>
+
+        <HBox spacing="28">
+            <padding><Insets top="0" right="60" bottom="60" left="60"/></padding>
+
+            <!-- Left: main profile card -->
+            <VBox spacing="24" HBox.hgrow="ALWAYS">
+
+                <!-- Profile header card overlapping cover -->
+                <VBox styleClass="profile-header-card" spacing="16">
+                    <padding><Insets top="32" right="32" bottom="32" left="32"/></padding>
+                    <HBox spacing="24" alignment="CENTER_LEFT">
+                        <StackPane>
+                            <Circle radius="56" styleClass="avatar-large"/>
+                            <Label fx:id="avatarInitials" styleClass="avatar-initials-large"/>
+                        </StackPane>
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label fx:id="fullNameLabel" text="Full Name" styleClass="profile-name"/>
+                            <Label fx:id="fieldLabel" text="Field of study" styleClass="profile-field"/>
+                            <HBox spacing="10">
+                                <Label fx:id="roleBadge" text="Student" styleClass="badge-student"/>
+                                <Label fx:id="universityLabel" text="University" styleClass="profile-meta"/>
+                                <Label fx:id="countryLabel" text="Country" styleClass="profile-meta"/>
+                            </HBox>
+                        </VBox>
+                        <Button text="Edit Profile" onAction="#goToSettings" styleClass="btn-primary"/>
+                    </HBox>
+
+                    <!-- Stats row -->
+                    <HBox spacing="16">
+                        <VBox styleClass="profile-stat-box" HBox.hgrow="ALWAYS">
+                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                            <Label text="Courses" styleClass="metric-label"/>
+                            <Label text="12" styleClass="metric-value"/>
+                        </VBox>
+                        <VBox styleClass="profile-stat-box" HBox.hgrow="ALWAYS">
+                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                            <Label text="Hours" styleClass="metric-label"/>
+                            <Label text="84" styleClass="metric-value"/>
+                        </VBox>
+                        <VBox styleClass="profile-stat-box" HBox.hgrow="ALWAYS">
+                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                            <Label text="Certificates" styleClass="metric-label"/>
+                            <Label text="5" styleClass="metric-value"/>
+                        </VBox>
+                        <VBox styleClass="profile-stat-box" HBox.hgrow="ALWAYS">
+                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                            <Label text="Badges" styleClass="metric-label"/>
+                            <Label text="8" styleClass="metric-value"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- About section -->
+                <VBox styleClass="chart-card" spacing="14">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="About" styleClass="chart-title"/>
+                    <Label fx:id="bioLabel" text="No bio yet." styleClass="profile-meta" wrapText="true"/>
+                    <Separator/>
+                    <GridPane hgap="32" vgap="10">
+                        <Label text="Email:" styleClass="metric-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="emailLabel" styleClass="metric-value" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        <Label text="Phone:" styleClass="metric-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="phoneLabel" styleClass="metric-value" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <Label text="Date of Birth:" styleClass="metric-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <Label fx:id="dobLabel" styleClass="metric-value" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <Label text="Member Since:" styleClass="metric-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <Label fx:id="memberSinceLabel" styleClass="metric-value" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <Label text="Gender:" styleClass="metric-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <Label fx:id="genderLabel" styleClass="metric-value" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </VBox>
+            </VBox>
+
+            <!-- Right sidebar -->
+            <VBox spacing="20" prefWidth="320">
+                <VBox styleClass="chart-card" spacing="10">
+                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                    <Label text="Learning Streak" styleClass="chart-title"/>
+                    <Label text="7 days" styleClass="metric-value"/>
+                    <Label text="Keep it going!" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" spacing="10">
+                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                    <Label text="Achievements" styleClass="chart-title"/>
+                    <FlowPane hgap="10" vgap="10">
+                        <Label text="First Course" styleClass="badge-active"/>
+                        <Label text="Fast Learner" styleClass="badge-professor"/>
+                        <Label text="On Fire" styleClass="badge-admin"/>
+                        <Label text="Top 10%" styleClass="badge-student"/>
+                    </FlowPane>
+                </VBox>
+                <VBox styleClass="chart-card" spacing="10">
+                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                    <Label text="Top Skills" styleClass="chart-title"/>
+                    <VBox spacing="8">
+                        <Label text="JavaScript" styleClass="metric-label"/>
+                        <ProgressBar progress="0.85" maxWidth="Infinity"/>
+                        <Label text="Python" styleClass="metric-label"/>
+                        <ProgressBar progress="0.7" maxWidth="Infinity"/>
+                        <Label text="UI / UX" styleClass="metric-label"/>
+                        <ProgressBar progress="0.6" maxWidth="Infinity"/>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </HBox>
+    </VBox>
+</ScrollPane>
