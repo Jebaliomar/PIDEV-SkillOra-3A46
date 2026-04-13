@@ -2,9 +2,10 @@ package tn.esprit.controllers.forum;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -21,38 +22,17 @@ public class PostDetailsController {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    @FXML
-    private Label titleValueLabel;
-
-    @FXML
-    private Label idValueLabel;
-
-    @FXML
-    private Label typeValueLabel;
-
-    @FXML
-    private Label topicValueLabel;
-
-    @FXML
-    private Label contentValueLabel;
-
-    @FXML
-    private Label userValueLabel;
-
-    @FXML
-    private Label createdAtValueLabel;
-
-    @FXML
-    private Label updatedAtValueLabel;
-
-    @FXML
-    private VBox repliesContainer;
-
-    @FXML
-    private Label currentReplyUserLabel;
-
-    @FXML
-    private TextArea replyContentArea;
+    @FXML private Label titleValueLabel;
+    @FXML private Label idValueLabel;
+    @FXML private Label typeValueLabel;
+    @FXML private Label topicValueLabel;
+    @FXML private Label contentValueLabel;
+    @FXML private Label userValueLabel;
+    @FXML private Label createdAtValueLabel;
+    @FXML private Label updatedAtValueLabel;
+    @FXML private VBox repliesContainer;
+    @FXML private Label currentReplyUserLabel;
+    @FXML private TextArea replyContentArea;
 
     private ForumCrudLauncher application;
     private Post post;
@@ -70,7 +50,6 @@ public class PostDetailsController {
                 application.showOverviewScene();
                 return;
             }
-
             populatePostDetails();
             loadReplies();
         } catch (SQLException exception) {
@@ -86,9 +65,7 @@ public class PostDetailsController {
 
     @FXML
     private void handleAddReply() {
-        if (post == null) {
-            return;
-        }
+        if (post == null) return;
 
         String replyContent = replyContentArea.getText().trim();
         if (replyContent.isEmpty()) {
@@ -122,6 +99,8 @@ public class PostDetailsController {
     private void populatePostDetails() {
         titleValueLabel.setText(valueOrFallback(post.getTitle(), "Untitled post"));
         idValueLabel.setText(String.valueOf(post.getId()));
+
+        // Style type as a badge via label text — the FXML label already has badge styling
         typeValueLabel.setText(valueOrFallback(post.getType(), "-"));
         topicValueLabel.setText(valueOrFallback(post.getTopic(), "-"));
         contentValueLabel.setText(valueOrFallback(post.getContent(), "-"));
@@ -150,23 +129,77 @@ public class PostDetailsController {
     }
 
     private VBox createReplyCard(Reply reply) {
-        VBox card = new VBox(6);
-        card.setPadding(new Insets(14));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #d7deea; -fx-border-radius: 12;");
+        VBox card = new VBox(0);
+        card.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-background-radius: 12;" +
+                        "-fx-border-color: #e2e8f0;" +
+                        "-fx-border-radius: 12;" +
+                        "-fx-border-width: 1;"
+        );
 
-        Label authorLabel = new Label("User: " + valueOrFallback(reply.getAuthorName(), "Anonymous"));
-        authorLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
+        // ── Header ───────────────────────────────────────────
+        HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(14, 16, 12, 16));
+        header.setStyle(
+                "-fx-background-color: #f8faff;" +
+                        "-fx-background-radius: 12 12 0 0;"
+        );
 
+        // Avatar circle
+        String authorName = valueOrFallback(reply.getAuthorName(), "Anonymous");
+        String initial = authorName.substring(0, 1).toUpperCase();
+
+        Label avatar = new Label(initial);
+        avatar.setStyle(
+                "-fx-background-color: #ede9fe;" +
+                        "-fx-text-fill: #6366f1;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 12px;" +
+                        "-fx-background-radius: 50;" +
+                        "-fx-min-width: 30; -fx-max-width: 30;" +
+                        "-fx-min-height: 30; -fx-max-height: 30;" +
+                        "-fx-alignment: center;"
+        );
+
+        Label authorLabel = new Label(authorName);
+        authorLabel.setFont(Font.font("System", FontWeight.BOLD, 13));
+        authorLabel.setStyle("-fx-text-fill: #1e293b;");
+
+        // Date if available
+        if (reply.getCreatedAt() != null) {
+            Label dateLabel = new Label("· " + DATE_FORMATTER.format(reply.getCreatedAt()));
+            dateLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
+            header.getChildren().addAll(avatar, authorLabel, dateLabel);
+        } else {
+            header.getChildren().addAll(avatar, authorLabel);
+        }
+
+        // ── Divider ──────────────────────────────────────────
+        javafx.scene.layout.Region divider = new javafx.scene.layout.Region();
+        divider.setPrefHeight(1);
+        divider.setMaxHeight(1);
+        divider.setStyle("-fx-background-color: #e2e8f0;");
+
+        // ── Content ──────────────────────────────────────────
         Label contentLabel = new Label(valueOrFallback(reply.getContent(), "-"));
         contentLabel.setWrapText(true);
+        contentLabel.setStyle("-fx-text-fill: #334155; -fx-font-size: 14px; -fx-line-spacing: 2;");
+        VBox contentBox = new VBox(contentLabel);
+        contentBox.setPadding(new Insets(14, 16, 16, 16));
 
-        card.getChildren().addAll(authorLabel, contentLabel);
+        card.getChildren().addAll(header, divider, contentBox);
         return card;
     }
 
     private Label createEmptyState(String message) {
         Label label = new Label(message);
-        label.setStyle("-fx-text-fill: #52627a; -fx-font-size: 15;");
+        label.setStyle(
+                "-fx-text-fill: #94a3b8;" +
+                        "-fx-font-size: 13px;" +
+                        "-fx-padding: 16 0 8 0;"
+        );
         label.setWrapText(true);
         return label;
     }
@@ -176,9 +209,6 @@ public class PostDetailsController {
     }
 
     private String valueOrFallback(String value, String fallback) {
-        if (value == null || value.isBlank()) {
-            return fallback;
-        }
-        return value.trim();
+        return (value == null || value.isBlank()) ? fallback : value.trim();
     }
 }

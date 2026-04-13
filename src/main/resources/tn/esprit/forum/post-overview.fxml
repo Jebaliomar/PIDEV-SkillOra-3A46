@@ -13,34 +13,49 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.forum.PostOverviewController"
-            style="-fx-background-color: #eef3f8;">
+            style="-fx-background-color: #f0f4f9;">
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="12"
-              style="-fx-background-color: white; -fx-border-color: transparent transparent #d7deea transparent;">
+        <HBox alignment="CENTER_LEFT" spacing="16"
+              style="-fx-background-color: white;
+                     -fx-border-color: transparent transparent #e2e8f0 transparent;
+                     -fx-border-width: 0 0 1 0;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20"/>
+                <Insets top="18" right="28" bottom="18" left="28"/>
             </padding>
-            <VBox spacing="6">
-                <Label text="Posts Overview">
+            <VBox spacing="3">
+                <Label text="Community Forum"
+                       style="-fx-text-fill: #0f172a; -fx-font-weight: 700;">
                     <font>
-                        <Font size="28"/>
+                        <Font size="24"/>
                     </font>
                 </Label>
-                <Label text="Browse posts and open one to see its details and replies."
-                       style="-fx-text-fill: #52627a;"/>
+                <Label text="Browse posts and open one to see details and replies."
+                       style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
                 <Label fx:id="currentUserLabel"
-                       style="-fx-text-fill: #2d5f8b; -fx-font-weight: bold;"/>
+                       style="-fx-text-fill: #3b82f6; -fx-font-weight: 700; -fx-font-size: 12px;"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Create Post" onAction="#handleCreatePost"/>
+            <Button text="+ Create Post" onAction="#handleCreatePost"
+                    style="-fx-background-color: #3b82f6;
+                           -fx-text-fill: white;
+                           -fx-font-weight: 700;
+                           -fx-font-size: 14px;
+                           -fx-background-radius: 10;
+                           -fx-border-radius: 10;
+                           -fx-cursor: hand;
+                           -fx-padding: 10 20 10 20;
+                           -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.35), 10, 0, 0, 3);"/>
         </HBox>
     </top>
     <center>
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background-color: transparent; -fx-background: transparent;
+                           -fx-border-color: transparent;">
             <content>
-                <VBox fx:id="postsContainer" spacing="14">
+                <VBox fx:id="postsContainer" spacing="14" alignment="TOP_CENTER">
                     <padding>
-                        <Insets top="20" right="20" bottom="20" left="20"/>
+                        <Insets top="28" right="40" bottom="40" left="40"/>
                     </padding>
                 </VBox>
             </content>
