@@ -28,20 +28,24 @@
                 <VBox spacing="8.0">
                     <Label styleClass="field-label" text="Title"/>
                     <TextField fx:id="titleField" promptText="Lesson title"/>
+                    <Label fx:id="titleErrorLabel" managed="false" styleClass="form-error" text="" visible="false"/>
                 </VBox>
                 <HBox spacing="16.0">
                     <VBox spacing="8.0" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Type"/>
                         <ComboBox fx:id="typeComboBox"/>
+                        <Label fx:id="typeErrorLabel" managed="false" styleClass="form-error" text="" visible="false"/>
                     </VBox>
                     <VBox spacing="8.0" HBox.hgrow="ALWAYS">
                         <Label styleClass="field-label" text="Position"/>
                         <TextField fx:id="positionField" promptText="Lesson order"/>
+                        <Label fx:id="positionErrorLabel" managed="false" styleClass="form-error" text="" visible="false"/>
                     </VBox>
                 </HBox>
                 <VBox fx:id="contentBox" spacing="8.0">
                     <Label styleClass="field-label" text="Content"/>
                     <TextArea fx:id="contentArea" prefHeight="260.0" promptText="Lesson content for TEXT lessons" wrapText="true"/>
+                    <Label fx:id="contentErrorLabel" managed="false" styleClass="form-error" text="" visible="false"/>
                 </VBox>
                 <VBox fx:id="fileBox" spacing="10.0" managed="false" visible="false">
                     <Label styleClass="field-label" text="File"/>
@@ -49,6 +53,7 @@
                         <Button mnemonicParsing="false" onAction="#handleChooseFile" styleClass="secondary-button" text="Choose File"/>
                         <Label fx:id="selectedFileLabel" styleClass="detail-body" text="No file selected"/>
                     </HBox>
+                    <Label fx:id="fileErrorLabel" managed="false" styleClass="form-error" text="" visible="false"/>
                 </VBox>
             </VBox>
             <VBox spacing="16.0" prefWidth="280.0">

@@ -48,6 +48,21 @@ public class LessonEditController implements AdminShellAware {
     @FXML
     private Label selectedFileLabel;
 
+    @FXML
+    private Label titleErrorLabel;
+
+    @FXML
+    private Label typeErrorLabel;
+
+    @FXML
+    private Label positionErrorLabel;
+
+    @FXML
+    private Label contentErrorLabel;
+
+    @FXML
+    private Label fileErrorLabel;
+
     private AdminShellController shellController;
     private LessonService lessonService;
     private Course course;
@@ -105,9 +120,12 @@ public class LessonEditController implements AdminShellAware {
             showError("Lesson context is missing.", new IllegalStateException("No lesson was provided."));
             return;
         }
+        if (!validateForm()) {
+            return;
+        }
         lesson.setTitle(titleField.getText().trim());
         lesson.setType(typeComboBox.getValue());
-        lesson.setPosition(parseInteger(positionField.getText()));
+        lesson.setPosition(Integer.parseInt(positionField.getText().trim()));
         lesson.setUpdatedAt(LocalDateTime.now());
 
         try {
@@ -137,9 +155,13 @@ public class LessonEditController implements AdminShellAware {
         if (textType) {
             selectedFile = null;
             selectedFileLabel.setText("No file selected");
-            lesson.setFilePath(null);
+            if (lesson != null) {
+                lesson.setFilePath(null);
+            }
+            clearError(fileErrorLabel);
         } else if (selectedFile == null && (lesson == null || lesson.getFilePath() == null || lesson.getFilePath().isBlank())) {
             selectedFileLabel.setText("No file selected");
+            clearError(contentErrorLabel);
         }
     }
 
@@ -176,6 +198,105 @@ public class LessonEditController implements AdminShellAware {
     private Integer parseInteger(String value) {
         String trimmed = value == null ? "" : value.trim();
         return trimmed.isEmpty() ? null : Integer.parseInt(trimmed);
+    }
+
+    private boolean validateForm() {
+        clearErrors();
+        boolean valid = true;
+
+        String title = titleField.getText() == null ? "" : titleField.getText().trim();
+        String type = typeComboBox.getValue();
+        String position = positionField.getText() == null ? "" : positionField.getText().trim();
+
+        if (title.isEmpty()) {
+            setError(titleErrorLabel, "Title is required.");
+            valid = false;
+        }
+
+        if (type == null || type.isBlank()) {
+            setError(typeErrorLabel, "Type is required.");
+            valid = false;
+        }
+
+        if (position.isEmpty()) {
+            setError(positionErrorLabel, "Position is required.");
+            valid = false;
+        } else {
+            try {
+                if (Integer.parseInt(position) <= 0) {
+                    setError(positionErrorLabel, "Position must be a positive number.");
+                    valid = false;
+                }
+            } catch (NumberFormatException e) {
+                setError(positionErrorLabel, "Position must be a positive number.");
+                valid = false;
+            }
+        }
+
+        if ("TEXT".equals(type)) {
+            if (contentArea.getText() == null || contentArea.getText().trim().isEmpty()) {
+                setError(contentErrorLabel, "Content is required for text lessons.");
+                valid = false;
+            }
+        } else if ("PDF".equals(type)) {
+            if (selectedFile == null && (lesson == null || lesson.getFilePath() == null || lesson.getFilePath().isBlank())) {
+                setError(fileErrorLabel, "Please choose a PDF file.");
+                valid = false;
+            } else if (selectedFile != null && !isPdfFile(selectedFile)) {
+                setError(fileErrorLabel, "Selected file must be a PDF.");
+                valid = false;
+            } else if (selectedFile == null && lesson != null && !isPdfPath(lesson.getFilePath())) {
+                setError(fileErrorLabel, "Current lesson file is not a PDF.");
+                valid = false;
+            }
+        } else if ("VIDEO".equals(type)) {
+            if (selectedFile == null && (lesson == null || lesson.getFilePath() == null || lesson.getFilePath().isBlank())) {
+                setError(fileErrorLabel, "Please choose a video file.");
+                valid = false;
+            } else if (selectedFile != null && !isVideoFile(selectedFile.getName())) {
+                setError(fileErrorLabel, "Selected file must be a supported video.");
+                valid = false;
+            } else if (selectedFile == null && lesson != null && !isVideoFile(lesson.getFilePath())) {
+                setError(fileErrorLabel, "Current lesson file is not a supported video.");
+                valid = false;
+            }
+        }
+
+        return valid;
+    }
+
+    private boolean isPdfFile(File file) {
+        return file != null && isPdfPath(file.getName());
+    }
+
+    private boolean isPdfPath(String path) {
+        return path != null && path.toLowerCase().endsWith(".pdf");
+    }
+
+    private boolean isVideoFile(String fileName) {
+        String lower = fileName == null ? "" : fileName.toLowerCase();
+        return lower.endsWith(".mp4") || lower.endsWith(".mov") || lower.endsWith(".m4v")
+                || lower.endsWith(".mkv") || lower.endsWith(".webm");
+    }
+
+    private void clearErrors() {
+        clearError(titleErrorLabel);
+        clearError(typeErrorLabel);
+        clearError(positionErrorLabel);
+        clearError(contentErrorLabel);
+        clearError(fileErrorLabel);
+    }
+
+    private void setError(Label label, String message) {
+        label.setText(message);
+        label.setManaged(true);
+        label.setVisible(true);
+    }
+
+    private void clearError(Label label) {
+        label.setText("");
+        label.setManaged(false);
+        label.setVisible(false);
     }
 
     private LessonService getLessonService() {

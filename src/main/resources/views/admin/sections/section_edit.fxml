@@ -26,10 +26,12 @@
                 <VBox spacing="8.0">
                     <Label styleClass="field-label" text="Title"/>
                     <TextField fx:id="titleField" promptText="Section title"/>
+                    <Label fx:id="titleErrorLabel" managed="false" styleClass="form-error" text="" visible="false"/>
                 </VBox>
                 <VBox spacing="8.0">
                     <Label styleClass="field-label" text="Position"/>
                     <TextField fx:id="positionField" promptText="Section order"/>
+                    <Label fx:id="positionErrorLabel" managed="false" styleClass="form-error" text="" visible="false"/>
                 </VBox>
             </VBox>
             <VBox spacing="16.0" prefWidth="260.0">

@@ -259,7 +259,8 @@
 }
 
 .text-field,
-.text-area {
+.text-area,
+.combo-box {
     -fx-background-color: rgba(255,255,255,0.94);
     -fx-background-radius: 14;
     -fx-border-color: rgba(255,255,255,0.38);
@@ -271,9 +272,24 @@
 }
 
 .text-field:focused,
-.text-area:focused {
+.text-area:focused,
+.combo-box:focused {
     -fx-border-color: rgba(59, 130, 246, 0.45);
     -fx-background-color: white;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: #111827;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.form-error {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #dc2626;
 }
 
 .search-field {

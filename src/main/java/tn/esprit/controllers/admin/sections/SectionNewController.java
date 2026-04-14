@@ -2,6 +2,7 @@ package tn.esprit.controllers.admin.sections;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import tn.esprit.controllers.admin.AdminShellAware;
 import tn.esprit.controllers.admin.AdminShellController;
@@ -19,6 +20,12 @@ public class SectionNewController implements AdminShellAware {
 
     @FXML
     private TextField positionField;
+
+    @FXML
+    private Label titleErrorLabel;
+
+    @FXML
+    private Label positionErrorLabel;
 
     private AdminShellController shellController;
     private CourseSectionService courseSectionService;
@@ -39,9 +46,12 @@ public class SectionNewController implements AdminShellAware {
             if (course == null || course.getId() == null) {
                 throw new IllegalStateException("No course was provided.");
             }
+            if (!validateForm()) {
+                return;
+            }
             CourseSection section = new CourseSection();
             section.setTitle(titleField.getText().trim());
-            section.setPosition(parseInteger(positionField.getText()));
+            section.setPosition(Integer.parseInt(positionField.getText().trim()));
             section.setCourseId(course.getId());
             section.setCreatedAt(LocalDateTime.now());
             section.setUpdatedAt(LocalDateTime.now());
@@ -56,6 +66,34 @@ public class SectionNewController implements AdminShellAware {
         }
     }
 
+    private boolean validateForm() {
+        clearErrors();
+        boolean valid = true;
+        String title = titleField.getText() == null ? "" : titleField.getText().trim();
+        String position = positionField.getText() == null ? "" : positionField.getText().trim();
+
+        if (title.isEmpty()) {
+            setError(titleErrorLabel, "Title is required.");
+            valid = false;
+        }
+
+        if (position.isEmpty()) {
+            setError(positionErrorLabel, "Position is required.");
+            valid = false;
+        } else {
+            try {
+                if (Integer.parseInt(position) <= 0) {
+                    setError(positionErrorLabel, "Position must be a positive number.");
+                    valid = false;
+                }
+            } catch (NumberFormatException e) {
+                setError(positionErrorLabel, "Position must be a positive number.");
+                valid = false;
+            }
+        }
+        return valid;
+    }
+
     @FXML
     private void handleCancel() {
         if (shellController != null && course != null) {
@@ -63,9 +101,21 @@ public class SectionNewController implements AdminShellAware {
         }
     }
 
-    private Integer parseInteger(String value) {
-        String trimmed = value == null ? "" : value.trim();
-        return trimmed.isEmpty() ? null : Integer.parseInt(trimmed);
+    private void setError(Label label, String message) {
+        label.setText(message);
+        label.setManaged(true);
+        label.setVisible(true);
+    }
+
+    private void clearErrors() {
+        clearError(titleErrorLabel);
+        clearError(positionErrorLabel);
+    }
+
+    private void clearError(Label label) {
+        label.setText("");
+        label.setManaged(false);
+        label.setVisible(false);
     }
 
     private CourseSectionService getCourseSectionService() {
