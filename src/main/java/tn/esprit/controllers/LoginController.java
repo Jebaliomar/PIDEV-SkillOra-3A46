@@ -9,7 +9,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
+import tn.esprit.services.FaceIdService;
 import tn.esprit.services.UserService;
+import tn.esprit.tools.FaceIdServer;
 import tn.esprit.tools.ThemeManager;
 
 import java.io.IOException;
@@ -26,6 +28,7 @@ public class LoginController implements Initializable {
     @FXML private Button themeToggleBtn;
 
     private final UserService userService = new UserService();
+    private final FaceIdService faceIdService = new FaceIdService();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -100,6 +103,66 @@ public class LoginController implements Initializable {
             }
         } catch (Exception e) {
             showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    public void handleFaceIdLogin() {
+        hideError();
+        String email = emailField.getText() == null ? "" : emailField.getText().trim();
+        if (email.isEmpty()) {
+            showError("Enter your email first - we need to know whose face to verify.");
+            return;
+        }
+        try {
+            User user = userService.getByEmail(email);
+            if (user == null) {
+                showError("No account found for this email.");
+                return;
+            }
+            double[] stored = faceIdService.getDescriptor(user.getId());
+            if (stored == null) {
+                showError("This account has no Face ID registered.");
+                return;
+            }
+            if (user.getIsActive() == 0) {
+                showError("Your account has been deactivated.");
+                return;
+            }
+
+            FaceIdServer.get();
+            FaceIdDialogController ctrl = FaceIdDialogController.show(
+                    FaceIdServer.SessionType.VERIFY,
+                    "Verify your face",
+                    "Scan this QR with your phone, then take a selfie. Your phone must be on the same Wi-Fi.",
+                    email);
+            if (ctrl == null || !ctrl.isConfirmed() || ctrl.getDescriptor() == null) {
+                return;
+            }
+            double dist = FaceIdService.distance(stored, ctrl.getDescriptor());
+            if (dist >= FaceIdService.MATCH_THRESHOLD) {
+                showError("Face did not match. (distance " + String.format("%.2f", dist) + ")");
+                return;
+            }
+
+            String role = userService.getUserRole(user.getId());
+            String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
+            boolean isStudent = normalizedRole.equals("student");
+            String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
+            String title = isStudent ? "SkillORA" : "SkillORA - Admin Panel";
+            if (isStudent) StudentLayoutController.setCurrentUser(user);
+            else AdminPanelController.setCurrentUser(user);
+
+            FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent dashRoot = dashLoader.load();
+            Scene dashScene = new Scene(dashRoot);
+            dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+            ThemeManager.applyTheme(dashScene);
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            stage.setScene(dashScene);
+            stage.setTitle(title);
+        } catch (Exception e) {
+            showError("Face login failed: " + e.getMessage());
         }
     }
 

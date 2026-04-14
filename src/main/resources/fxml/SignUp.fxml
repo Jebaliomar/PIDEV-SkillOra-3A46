@@ -103,6 +103,18 @@
 
                 <Region prefHeight="10"/>
 
+                <!-- Face ID (optional) -->
+                <VBox spacing="6">
+                    <Label text="Face ID (optional)" styleClass="input-label"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button fx:id="faceIdBtn" text="Add Face ID" onAction="#handleFaceIdRegister"
+                                style="-fx-background-color: linear-gradient(to right, #7c3aed, #22d3ee); -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 16 10 16; -fx-background-radius: 10; -fx-cursor: hand;"/>
+                        <Label fx:id="faceIdStatus" text="Not set" style="-fx-text-fill: #6b7280; -fx-font-size: 12px;"/>
+                    </HBox>
+                </VBox>
+
+                <Region prefHeight="10"/>
+
                 <!-- Sign Up Button -->
                 <Button text="Create Account" onAction="#handleSignUp" styleClass="btn-primary" maxWidth="Infinity" prefHeight="44"/>
 

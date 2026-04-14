@@ -10,7 +10,9 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
+import tn.esprit.services.FaceIdService;
 import tn.esprit.services.UserService;
+import tn.esprit.tools.FaceIdServer;
 import tn.esprit.tools.ThemeManager;
 
 import java.io.IOException;
@@ -32,8 +34,12 @@ public class SignUpController implements Initializable {
     @FXML private HBox successBox;
     @FXML private Label successLabel;
     @FXML private Button themeToggleBtn;
+    @FXML private Button faceIdBtn;
+    @FXML private Label faceIdStatus;
 
     private final UserService userService = new UserService();
+    private final FaceIdService faceIdService = new FaceIdService();
+    private double[] pendingFaceDescriptor;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -145,8 +151,18 @@ public class SignUpController implements Initializable {
 
             userService.register(user, role);
 
+            if (pendingFaceDescriptor != null) {
+                User created = userService.getByEmail(email);
+                if (created != null) {
+                    faceIdService.saveDescriptor(created.getId(), pendingFaceDescriptor);
+                }
+            }
+
             showSuccess("Account created successfully! You can now sign in.");
             clearForm();
+            pendingFaceDescriptor = null;
+            faceIdStatus.setText("Not set");
+            faceIdStatus.setStyle("-fx-text-fill: #6b7280; -fx-font-size: 12px;");
 
         } catch (Exception e) {
             showError("Registration failed: " + e.getMessage());
@@ -170,6 +186,32 @@ public class SignUpController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @FXML
+    public void handleFaceIdRegister() {
+        hideError();
+        String email = emailField.getText() == null ? "" : emailField.getText().trim();
+        if (email.isEmpty()) {
+            showError("Enter your email first - it identifies your face on the phone.");
+            return;
+        }
+        try {
+            FaceIdServer.get();
+        } catch (Exception e) {
+            showError("Face ID server failed: " + e.getMessage());
+            return;
+        }
+        FaceIdDialogController ctrl = FaceIdDialogController.show(
+                FaceIdServer.SessionType.REGISTER,
+                "Register your face",
+                "Scan this QR with your phone, then take a selfie. Your phone must be on the same Wi-Fi.",
+                email);
+        if (ctrl != null && ctrl.isConfirmed() && ctrl.getDescriptor() != null) {
+            pendingFaceDescriptor = ctrl.getDescriptor();
+            faceIdStatus.setText("Face captured");
+            faceIdStatus.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 12px; -fx-font-weight: bold;");
         }
     }
 
