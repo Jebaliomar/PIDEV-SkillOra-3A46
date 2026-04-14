@@ -11,6 +11,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.services.PasswordResetService;
+import tn.esprit.tools.RightPanelAnimator;
 import tn.esprit.tools.ThemeManager;
 
 import java.io.IOException;
@@ -23,6 +24,11 @@ public class ForgotPasswordController {
     @FXML private Label errorLabel;
 
     private final PasswordResetService resetService = new PasswordResetService();
+
+    @FXML
+    public void initialize() {
+        emailField.sceneProperty().addListener((obs, o, n) -> { if (n != null) RightPanelAnimator.attach(n); });
+    }
 
     @FXML
     public void handleSend() {

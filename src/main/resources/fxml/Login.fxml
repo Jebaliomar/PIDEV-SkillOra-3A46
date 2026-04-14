@@ -21,7 +21,7 @@
             </StackPane>
             <Label text="SkillORA" styleClass="logo-text"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button fx:id="themeToggleBtn" text="Moon" onAction="#toggleTheme" styleClass="theme-toggle"
+            <Button fx:id="themeToggleBtn" onAction="#toggleTheme" styleClass="theme-toggle"
                     prefWidth="38" prefHeight="38"/>
         </HBox>
 

@@ -41,8 +41,8 @@
             <Region VBox.vgrow="ALWAYS"/>
 
             <!-- Theme Toggle -->
-            <Button fx:id="themeToggleBtn" text="Moon" onAction="#toggleTheme"
-                    styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
+            <Button fx:id="themeToggleBtn" onAction="#toggleTheme"
+                    styleClass="nav-item" alignment="CENTER" prefHeight="40" prefWidth="40"/>
 
             <Region prefHeight="8"/>
 

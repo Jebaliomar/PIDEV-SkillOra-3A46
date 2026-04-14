@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
+import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
 import java.net.URL;
@@ -94,7 +95,8 @@ public class StudentLayoutController implements Initializable {
 
     private void updateThemeButton() {
         if (themeToggleBtn == null) return;
-        themeToggleBtn.setText(ThemeManager.isDarkMode() ? "Sun" : "Moon");
+        themeToggleBtn.setText("");
+        themeToggleBtn.setGraphic(ThemeManager.isDarkMode() ? ThemeIcon.sun() : ThemeIcon.moon());
     }
 
     @FXML

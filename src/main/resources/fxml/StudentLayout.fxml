@@ -21,7 +21,7 @@
 
             <Region prefWidth="20"/>
 
-            <Button fx:id="themeToggleBtn" text="Moon" onAction="#toggleTheme" styleClass="theme-toggle"/>
+            <Button fx:id="themeToggleBtn" onAction="#toggleTheme" styleClass="theme-toggle"/>
             <Label fx:id="userNameLabel" styleClass="header-username"/>
             <Button text="Sign Out" onAction="#handleLogout" styleClass="btn-outline"/>
         </HBox>

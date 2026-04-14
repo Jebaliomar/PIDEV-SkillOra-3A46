@@ -13,6 +13,8 @@ import tn.esprit.entities.User;
 import tn.esprit.services.FaceIdService;
 import tn.esprit.services.UserService;
 import tn.esprit.tools.FaceIdServer;
+import tn.esprit.tools.RightPanelAnimator;
+import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
 import java.io.IOException;
@@ -44,6 +46,7 @@ public class SignUpController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         updateThemeButton();
+        themeToggleBtn.sceneProperty().addListener((obs, o, n) -> { if (n != null) RightPanelAnimator.attach(n); });
     }
 
     @FXML
@@ -53,11 +56,8 @@ public class SignUpController implements Initializable {
     }
 
     private void updateThemeButton() {
-        if (ThemeManager.isDarkMode()) {
-            themeToggleBtn.setText("Sun");
-        } else {
-            themeToggleBtn.setText("Moon");
-        }
+        themeToggleBtn.setText("");
+        themeToggleBtn.setGraphic(ThemeManager.isDarkMode() ? ThemeIcon.sun() : ThemeIcon.moon());
         if (themeToggleBtn.getScene() != null) {
             ThemeManager.applyTheme(themeToggleBtn.getScene());
         }

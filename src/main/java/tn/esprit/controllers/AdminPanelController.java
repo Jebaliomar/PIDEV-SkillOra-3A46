@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
+import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
 import java.io.IOException;
@@ -102,7 +103,8 @@ public class AdminPanelController implements Initializable {
     }
 
     private void updateThemeButton() {
-        themeToggleBtn.setText(ThemeManager.isDarkMode() ? "   Sun" : "   Moon");
+        themeToggleBtn.setText("");
+        themeToggleBtn.setGraphic(ThemeManager.isDarkMode() ? ThemeIcon.sun() : ThemeIcon.moon());
         if (themeToggleBtn.getScene() != null) {
             ThemeManager.applyTheme(themeToggleBtn.getScene());
         }

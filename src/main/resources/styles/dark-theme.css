@@ -13,13 +13,28 @@
 }
 
 /* Right panel stays dark gradient in both modes */
+/* Dark theme right panel - deep night with harbor/violet glow */
 .right-panel {
-    -fx-background-color: linear-gradient(to bottom right, #060A14, #0F1629, #0A0E1F);
+    -fx-background-color: linear-gradient(to bottom right, #050714 0%, #0a0f24 30%, #1a0a2e 70%, #0a1428 100%);
+}
+
+.right-panel-title {
+    -fx-text-fill: #67e8f9;
+}
+
+.right-panel-subtitle {
+    -fx-text-fill: #94a3b8;
+}
+
+.decorative-circle {
+    -fx-fill: radial-gradient(center 50% 50%, radius 60%, #22d3ee, transparent);
+    -fx-opacity: 0.45;
+    -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.5), 80, 0.25, 0, 0);
 }
 
 /* === Logo === */
 .logo-text {
-    -fx-text-fill: white;
+    -fx-text-fill: #22d3ee;
 }
 
 /* === Typography === */
