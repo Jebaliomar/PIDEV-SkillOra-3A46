@@ -376,14 +376,27 @@
     -fx-background-color: #F3F4F6;
 }
 
-/* === Sidebar === */
+/* === Sidebar (light) === */
 .sidebar {
-    -fx-background-color: #0B1220;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-brand {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0891b2;
+}
+
+.sidebar-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: #64748b;
 }
 
 .nav-item {
     -fx-background-color: transparent;
-    -fx-text-fill: #94A3B8;
+    -fx-text-fill: #475569;
     -fx-font-size: 13px;
     -fx-background-radius: 10;
     -fx-cursor: hand;
@@ -391,8 +404,8 @@
 }
 
 .nav-item:hover {
-    -fx-background-color: #1E293B;
-    -fx-text-fill: #E2E8F0;
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #0f172a;
 }
 
 .nav-item-active {
@@ -403,7 +416,7 @@
 
 .nav-item-danger {
     -fx-background-color: transparent;
-    -fx-text-fill: #F87171;
+    -fx-text-fill: #dc2626;
     -fx-font-size: 13px;
     -fx-background-radius: 10;
     -fx-cursor: hand;
@@ -411,8 +424,8 @@
 }
 
 .nav-item-danger:hover {
-    -fx-background-color: #450A0A;
-    -fx-text-fill: #FCA5A5;
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #b91c1c;
 }
 
 /* === Content Area === */
@@ -812,10 +825,45 @@
 }
 
 .header-username {
-    -fx-text-fill: #334155;
+    -fx-background-color: linear-gradient(to right, rgba(8,145,178,0.08), rgba(124,58,237,0.08));
+    -fx-background-radius: 22;
+    -fx-border-color: rgba(8,145,178,0.25);
+    -fx-border-radius: 22;
+    -fx-border-width: 1;
+    -fx-text-fill: #0e7490;
     -fx-font-weight: bold;
     -fx-font-size: 13px;
+    -fx-padding: 6 14 6 10;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 8;
 }
+.header-username:hover {
+    -fx-background-color: linear-gradient(to right, rgba(8,145,178,0.16), rgba(124,58,237,0.16));
+    -fx-border-color: rgba(8,145,178,0.5);
+}
+.header-username .arrow-button { -fx-padding: 0 2 0 4; }
+.header-username .arrow { -fx-background-color: #0891b2; }
+.header-username .context-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.18), 18, 0, 0, 6);
+    -fx-padding: 6;
+}
+.header-username .menu-item {
+    -fx-background-radius: 8;
+    -fx-padding: 8 14 8 12;
+}
+.header-username .menu-item .label {
+    -fx-text-fill: #334155;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+.header-username .menu-item:focused, .header-username .menu-item:hover {
+    -fx-background-color: linear-gradient(to right, rgba(8,145,178,0.12), rgba(124,58,237,0.12));
+}
+.header-username .menu-item:focused .label { -fx-text-fill: #0e7490; }
 
 /* Hero */
 .hero-card {

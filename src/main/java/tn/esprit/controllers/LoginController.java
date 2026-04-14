@@ -12,6 +12,7 @@ import tn.esprit.entities.User;
 import tn.esprit.services.FaceIdService;
 import tn.esprit.services.UserService;
 import tn.esprit.tools.FaceIdServer;
+import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
@@ -24,6 +25,8 @@ public class LoginController implements Initializable {
 
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
+    @FXML private TextField passwordShowField;
+    @FXML private Button passwordEyeBtn;
     @FXML private CheckBox rememberMeCheck;
     @FXML private HBox errorBox;
     @FXML private Label errorLabel;
@@ -37,6 +40,7 @@ public class LoginController implements Initializable {
         // Apply saved theme on load & update button icon
         updateThemeButton();
         themeToggleBtn.sceneProperty().addListener((obs, o, n) -> { if (n != null) RightPanelAnimator.attach(n); });
+        PasswordToggle.wire(passwordField, passwordShowField, passwordEyeBtn);
     }
 
     @FXML

@@ -12,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.services.PasswordResetService;
+import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
 import tn.esprit.tools.ThemeManager;
 
@@ -22,7 +23,11 @@ public class ResetPasswordController {
     @FXML private TextField emailField;
     @FXML private TextField codeField;
     @FXML private PasswordField newPasswordField;
+    @FXML private TextField newPasswordShowField;
+    @FXML private Button newPasswordEyeBtn;
     @FXML private PasswordField confirmPasswordField;
+    @FXML private TextField confirmPasswordShowField;
+    @FXML private Button confirmPasswordEyeBtn;
     @FXML private Button resetBtn;
     @FXML private HBox errorBox;
     @FXML private Label errorLabel;
@@ -34,6 +39,8 @@ public class ResetPasswordController {
     @FXML
     public void initialize() {
         emailField.sceneProperty().addListener((obs, o, n) -> { if (n != null) RightPanelAnimator.attach(n); });
+        PasswordToggle.wire(newPasswordField, newPasswordShowField, newPasswordEyeBtn);
+        PasswordToggle.wire(confirmPasswordField, confirmPasswordShowField, confirmPasswordEyeBtn);
     }
 
     public void setEmail(String email) {

@@ -16,13 +16,16 @@
             <Region HBox.hgrow="ALWAYS"/>
 
             <Button text="Home" onAction="#showHome" fx:id="navHome" styleClass="student-nav-btn"/>
-            <Button text="Profile" onAction="#showProfile" fx:id="navProfile" styleClass="student-nav-btn"/>
-            <Button text="Settings" onAction="#showSettings" fx:id="navSettings" styleClass="student-nav-btn"/>
 
             <Region prefWidth="20"/>
 
             <Button fx:id="themeToggleBtn" onAction="#toggleTheme" styleClass="theme-toggle"/>
-            <Label fx:id="userNameLabel" styleClass="header-username"/>
+            <MenuButton fx:id="userMenu" styleClass="header-username">
+                <items>
+                    <MenuItem fx:id="menuProfile" text="Profile" onAction="#showProfile"/>
+                    <MenuItem fx:id="menuSettings" text="Settings" onAction="#showSettings"/>
+                </items>
+            </MenuButton>
             <Button text="Sign Out" onAction="#handleLogout" styleClass="btn-outline"/>
         </HBox>
     </top>

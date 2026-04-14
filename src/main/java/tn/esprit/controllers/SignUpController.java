@@ -13,6 +13,7 @@ import tn.esprit.entities.User;
 import tn.esprit.services.FaceIdService;
 import tn.esprit.services.UserService;
 import tn.esprit.tools.FaceIdServer;
+import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
@@ -27,7 +28,11 @@ public class SignUpController implements Initializable {
     @FXML private TextField lastNameField;
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
+    @FXML private TextField passwordShowField;
+    @FXML private Button passwordEyeBtn;
     @FXML private PasswordField confirmPasswordField;
+    @FXML private TextField confirmPasswordShowField;
+    @FXML private Button confirmPasswordEyeBtn;
     @FXML private RadioButton studentRadio;
     @FXML private RadioButton professorRadio;
     @FXML private ToggleGroup roleGroup;
@@ -47,6 +52,8 @@ public class SignUpController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         updateThemeButton();
         themeToggleBtn.sceneProperty().addListener((obs, o, n) -> { if (n != null) RightPanelAnimator.attach(n); });
+        PasswordToggle.wire(passwordField, passwordShowField, passwordEyeBtn);
+        PasswordToggle.wire(confirmPasswordField, confirmPasswordShowField, confirmPasswordEyeBtn);
     }
 
     @FXML

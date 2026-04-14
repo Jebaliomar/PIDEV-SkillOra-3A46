@@ -21,8 +21,8 @@
                     <Label text="S" styleClass="logo-icon"/>
                 </StackPane>
                 <VBox spacing="0">
-                    <Label text="SkillORA" style="-fx-font-size:17px; -fx-font-weight:bold; -fx-text-fill:white;"/>
-                    <Label text="Admin Panel" style="-fx-font-size:11px; -fx-text-fill:#64748B;"/>
+                    <Label text="SkillORA" styleClass="sidebar-brand"/>
+                    <Label text="Admin Panel" styleClass="sidebar-subtitle"/>
                 </VBox>
             </HBox>
 

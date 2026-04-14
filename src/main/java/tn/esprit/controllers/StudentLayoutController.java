@@ -6,10 +6,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
+import tn.esprit.tools.AppIcons;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
@@ -21,9 +23,9 @@ public class StudentLayoutController implements Initializable {
     @FXML private StackPane contentArea;
     @FXML private Button themeToggleBtn;
     @FXML private Button navHome;
-    @FXML private Button navProfile;
-    @FXML private Button navSettings;
-    @FXML private Label userNameLabel;
+    @FXML private MenuButton userMenu;
+    @FXML private MenuItem menuProfile;
+    @FXML private MenuItem menuSettings;
 
     private static User currentUser;
     private static StudentLayoutController instance;
@@ -43,9 +45,14 @@ public class StudentLayoutController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         instance = this;
-        if (currentUser != null && userNameLabel != null) {
-            userNameLabel.setText(currentUser.getFirstName() + " " + currentUser.getLastName());
+        if (userMenu != null) {
+            userMenu.setGraphic(AppIcons.user());
+            if (currentUser != null) {
+                userMenu.setText(currentUser.getFirstName() + " " + currentUser.getLastName());
+            }
         }
+        if (menuProfile != null) menuProfile.setGraphic(AppIcons.user());
+        if (menuSettings != null) menuSettings.setGraphic(AppIcons.gear());
         updateThemeButton();
         showHome();
     }
@@ -59,13 +66,13 @@ public class StudentLayoutController implements Initializable {
     @FXML
     public void showProfile() {
         loadContent("/fxml/ProfileContent.fxml");
-        setActiveNav(navProfile);
+        setActiveNav(null);
     }
 
     @FXML
     public void showSettings() {
         loadContent("/fxml/SettingsContent.fxml");
-        setActiveNav(navSettings);
+        setActiveNav(null);
     }
 
     private void loadContent(String fxmlPath) {
@@ -79,10 +86,10 @@ public class StudentLayoutController implements Initializable {
     }
 
     private void setActiveNav(Button active) {
-        for (Button b : new Button[]{navHome, navProfile, navSettings}) {
+        for (Button b : new Button[]{navHome}) {
             b.getStyleClass().remove("student-nav-btn-active");
         }
-        if (!active.getStyleClass().contains("student-nav-btn-active")) {
+        if (active != null && !active.getStyleClass().contains("student-nav-btn-active")) {
             active.getStyleClass().add("student-nav-btn-active");
         }
     }
