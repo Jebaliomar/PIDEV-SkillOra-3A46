@@ -14,7 +14,7 @@
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.front.home.FrontBrowseCoursesController">
     <top>
-        <VBox spacing="18.0">
+        <VBox maxWidth="1240.0" spacing="20.0">
             <VBox spacing="6.0">
                 <Label styleClass="page-title" text="Browse Courses"/>
                 <Label styleClass="page-subtitle" text="Search, filter, and sort the full course catalog."/>
@@ -32,7 +32,7 @@
         </VBox>
     </top>
     <center>
-        <HBox spacing="22.0">
+        <HBox maxWidth="1240.0" spacing="24.0">
             <VBox prefWidth="250.0" spacing="14.0" styleClass="front-filter-card">
                 <Label styleClass="section-title" text="Categories"/>
                 <Label styleClass="front-section-subtitle" text="Refine the course list by topic." wrapText="true"/>
@@ -45,7 +45,7 @@
                 </HBox>
                 <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="front-scroll-pane" VBox.vgrow="ALWAYS">
                     <content>
-                        <FlowPane fx:id="coursesGrid" prefWrapLength="860.0"/>
+                        <FlowPane fx:id="coursesGrid" prefWrapLength="930.0"/>
                     </content>
                 </ScrollPane>
             </VBox>

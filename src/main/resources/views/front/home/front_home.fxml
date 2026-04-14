@@ -12,7 +12,7 @@
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.front.home.FrontHomeController">
     <content>
-        <VBox fillWidth="true" spacing="24.0" styleClass="module-page">
+        <VBox fillWidth="true" maxWidth="1160.0" spacing="30.0" styleClass="module-page">
             <HBox alignment="CENTER_LEFT" spacing="12.0">
                 <VBox spacing="6.0">
                     <Label styleClass="page-title" text="Home"/>
@@ -20,7 +20,7 @@
                 </VBox>
             </HBox>
 
-            <VBox spacing="18.0" styleClass="front-section-card">
+            <VBox spacing="22.0" styleClass="front-section-card">
                 <HBox alignment="CENTER_LEFT" spacing="12.0">
                     <VBox spacing="4.0">
                         <Label styleClass="section-title" text="Latest Courses"/>
@@ -29,7 +29,7 @@
                     <Region HBox.hgrow="ALWAYS"/>
                     <Button mnemonicParsing="false" onAction="#handleViewAll" styleClass="primary-button" text="View All"/>
                 </HBox>
-                <FlowPane fx:id="latestCoursesPane" prefWrapLength="980.0"/>
+                <FlowPane fx:id="latestCoursesPane" prefWrapLength="1040.0"/>
             </VBox>
         </VBox>
     </content>

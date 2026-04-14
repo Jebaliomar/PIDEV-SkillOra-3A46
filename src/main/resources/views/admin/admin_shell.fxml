@@ -12,13 +12,13 @@
            fx:controller="tn.esprit.controllers.admin.AdminShellController">
     <BorderPane styleClass="app-shell">
         <left>
-            <StackPane fx:id="sidebarShell" prefWidth="258.0" maxWidth="258.0" styleClass="sidebar-shell">
+            <StackPane fx:id="sidebarShell" prefWidth="276.0" maxWidth="276.0" styleClass="sidebar-shell">
                 <BorderPane.margin>
-                    <Insets top="18.0" right="12.0" bottom="18.0" left="18.0"/>
+                    <Insets top="20.0" right="14.0" bottom="20.0" left="20.0"/>
                 </BorderPane.margin>
                 <VBox spacing="22.0" styleClass="sidebar">
                     <padding>
-                        <Insets top="28.0" right="18.0" bottom="26.0" left="18.0"/>
+                        <Insets top="30.0" right="20.0" bottom="28.0" left="20.0"/>
                     </padding>
                     <VBox spacing="4.0">
                         <Label styleClass="sidebar-title" text="SkillORA"/>
@@ -45,10 +45,10 @@
         <center>
             <StackPane fx:id="contentContainer" styleClass="content-host">
                 <BorderPane.margin>
-                    <Insets top="18.0" right="18.0" bottom="18.0" left="12.0"/>
+                    <Insets top="20.0" right="20.0" bottom="20.0" left="14.0"/>
                 </BorderPane.margin>
                 <padding>
-                    <Insets top="24.0" right="24.0" bottom="24.0" left="24.0"/>
+                    <Insets top="28.0" right="30.0" bottom="28.0" left="30.0"/>
                 </padding>
             </StackPane>
         </center>

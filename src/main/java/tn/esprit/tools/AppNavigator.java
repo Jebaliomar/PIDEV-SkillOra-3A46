@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public final class AppNavigator {
 
@@ -31,6 +32,7 @@ public final class AppNavigator {
             FXMLLoader loader = new FXMLLoader(AppNavigator.class.getResource(resourcePath));
             Parent root = loader.load();
             Scene scene = new Scene(root, Math.max(stage.getWidth(), 1240), Math.max(stage.getHeight(), 760));
+            scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/atlantafx/base/theme/primer-light.css")).toExternalForm());
             scene.getStylesheets().add(AppNavigator.class.getResource("/styles/macos-theme.css").toExternalForm());
             stage.setScene(scene);
             stage.show();
