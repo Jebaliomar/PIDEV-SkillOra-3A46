@@ -8,6 +8,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import tn.esprit.controllers.front.courses.FrontCourseConsumeController;
+import tn.esprit.controllers.front.courses.FrontCourseShowController;
+import tn.esprit.entities.Course;
+import tn.esprit.entities.Lesson;
 import tn.esprit.tools.AppNavigator;
 
 public class FrontShellController {
@@ -90,6 +94,25 @@ public class FrontShellController {
 
     public void showBrowseCourses() {
         handleBrowseCourses();
+    }
+
+    public void showCourseShow(Course course) {
+        setActiveModule(browseCoursesNavButton);
+        loadContent("/views/front/courses/front_course_show.fxml", controller -> {
+            if (controller instanceof FrontCourseShowController courseShowController) {
+                courseShowController.setCourse(course);
+            }
+        });
+    }
+
+    public void showCourseConsume(Course course, Lesson lesson) {
+        setActiveModule(browseCoursesNavButton);
+        loadContent("/views/front/courses/front_course_consume.fxml", controller -> {
+            if (controller instanceof FrontCourseConsumeController consumeController) {
+                consumeController.setCourse(course);
+                consumeController.setInitialLesson(lesson);
+            }
+        });
     }
 
     private void showPlaceholder(String title, String message) {

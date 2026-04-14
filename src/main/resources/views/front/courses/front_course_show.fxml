@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="front-scroll-pane"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.front.courses.FrontCourseShowController">
+    <content>
+        <VBox spacing="24.0" styleClass="module-page">
+            <HBox spacing="28.0" styleClass="front-course-hero">
+                <VBox spacing="14.0" HBox.hgrow="ALWAYS">
+                    <Label fx:id="categoryLabel" styleClass="front-course-hero-category" text="Category"/>
+                    <Label fx:id="courseTitleLabel" styleClass="front-course-hero-title" text="Course Title" wrapText="true"/>
+                    <Label fx:id="descriptionLabel" styleClass="front-course-hero-description" text="Course description" wrapText="true"/>
+                </VBox>
+                <StackPane prefWidth="280.0" minWidth="280.0" maxWidth="280.0" styleClass="front-course-hero-thumb-shell">
+                    <ImageView fx:id="thumbnailImageView" fitHeight="180.0" fitWidth="280.0" preserveRatio="false"/>
+                    <Label fx:id="thumbnailFallbackLabel" styleClass="front-course-thumb-fallback" text="No Thumbnail"/>
+                </StackPane>
+            </HBox>
+
+            <VBox spacing="18.0" styleClass="front-section-card">
+                <VBox spacing="4.0">
+                    <Label styleClass="section-title" text="Course Content"/>
+                    <Label styleClass="front-section-subtitle" text="Explore sections and open any lesson to start learning."/>
+                </VBox>
+                <Accordion fx:id="sectionsAccordion"/>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>

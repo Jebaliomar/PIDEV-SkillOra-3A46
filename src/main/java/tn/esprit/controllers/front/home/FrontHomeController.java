@@ -4,15 +4,19 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
 import tn.esprit.entities.Course;
 import tn.esprit.services.CourseService;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
@@ -65,6 +69,7 @@ public class FrontHomeController implements FrontShellAware {
     }
 
     private VBox buildCourseCard(Course course) {
+        StackPane thumbnailPane = buildThumbnailPane(course);
         Label categoryLabel = new Label(safeValue(course.getCategory(), "Uncategorized"));
         categoryLabel.getStyleClass().add("front-course-category");
 
@@ -79,12 +84,54 @@ public class FrontHomeController implements FrontShellAware {
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        VBox card = new VBox(14, categoryLabel, titleLabel, descriptionLabel, spacer);
+        VBox card = new VBox(14, thumbnailPane, categoryLabel, titleLabel, descriptionLabel, spacer);
         card.getStyleClass().add("front-course-card");
+        card.getStyleClass().add("front-course-card-clickable");
         card.setPrefWidth(300);
         card.setMinWidth(280);
-        card.setPrefHeight(210);
+        card.setPrefHeight(270);
+        card.setOnMouseClicked(event -> openCourse(course));
         return card;
+    }
+
+    private StackPane buildThumbnailPane(Course course) {
+        StackPane thumbnailPane = new StackPane();
+        thumbnailPane.getStyleClass().add("front-course-thumbnail");
+        thumbnailPane.setPrefHeight(120);
+        thumbnailPane.setMinHeight(120);
+        thumbnailPane.setMaxWidth(Double.MAX_VALUE);
+
+        Image image = loadThumbnail(course.getThumbnail());
+        if (image != null) {
+            ImageView imageView = new ImageView(image);
+            imageView.setFitHeight(120);
+            imageView.setFitWidth(264);
+            imageView.setPreserveRatio(false);
+            imageView.setSmooth(true);
+            imageView.setCache(true);
+            thumbnailPane.getChildren().add(imageView);
+        } else {
+            Label placeholderLabel = new Label("No Thumbnail");
+            placeholderLabel.getStyleClass().add("front-course-thumbnail-placeholder");
+            thumbnailPane.getChildren().add(placeholderLabel);
+        }
+        return thumbnailPane;
+    }
+
+    private Image loadThumbnail(String thumbnail) {
+        if (thumbnail == null || thumbnail.isBlank()) {
+            return null;
+        }
+        try {
+            if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
+                return new Image(thumbnail, true);
+            }
+            File file = new File(thumbnail);
+            String imageUrl = file.exists() ? file.toURI().toString() : new File(thumbnail.replace("/", File.separator)).toURI().toString();
+            return new Image(imageUrl, true);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private VBox buildEmptyState() {
@@ -117,6 +164,12 @@ public class FrontHomeController implements FrontShellAware {
 
     private String truncate(String value, int maxLength) {
         return value.length() <= maxLength ? value : value.substring(0, maxLength - 3) + "...";
+    }
+
+    private void openCourse(Course course) {
+        if (shellController != null && course != null) {
+            shellController.showCourseShow(course);
+        }
     }
 
     private CourseService getCourseService() {
