@@ -25,6 +25,11 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import tn.esprit.entities.AvailabilitySlot;
 import tn.esprit.entities.Notification;
 import tn.esprit.entities.RendezVous;
@@ -58,6 +63,7 @@ public class RendezVousController {
             .toFormatter();
     private static final String BTN_ACTIVE = "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: 700; -fx-background-radius: 12; -fx-padding: 12;";
     private static final String BTN_INACTIVE = "-fx-background-color: #0f1b38; -fx-text-fill: #cbd5e1; -fx-font-size: 16px; -fx-font-weight: 700; -fx-background-radius: 12; -fx-padding: 12;";
+    private static final double DETAILS_KEY_WIDTH = 170;
     private static final int CURRENT_USER_ID = parseCurrentUserId();
     private static final String CURRENT_USER_ROLE = normalizeRole(System.getProperty("skillora.role", "student"));
 
@@ -233,7 +239,7 @@ public class RendezVousController {
 
         HBox dateRow = new HBox(12);
         dateRow.setStyle("-fx-border-color: #dbeafe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10 12;");
-        Label dateLabel = new Label(formatCardDate(rdv.getCreatedAt()) + "  —  " + normalizeDefault(rdv.getMeetingType(), "-"));
+        Label dateLabel = new Label(formatCardDate(rdv.getCreatedAt()) + "  —  " + meetingTypeDisplay(rdv.getMeetingType()));
         dateLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14px; -fx-font-weight: 700;");
         Region dateSpacer = new Region();
         HBox.setHgrow(dateSpacer, javafx.scene.layout.Priority.ALWAYS);
@@ -250,49 +256,58 @@ public class RendezVousController {
 
         HBox linkRow = new HBox();
         linkRow.setStyle("-fx-border-color: #dbeafe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10 12;");
-        String linkText = normalizeDefault(rdv.getMeetingLink(), normalizeDefault(rdv.getLocation(), "-"));
-        Label linkLabel = new Label(linkText);
+        String linkText = normalizeDefault(rdv.getMeetingLink(), normalizeDefault(rdv.getLocationLabel(), normalizeDefault(rdv.getLocation(), "-")));
+        Label linkLabel = new Label("Lien / Lieu : " + linkText);
+        linkLabel.setWrapText(true);
         linkLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14px; -fx-font-weight: 700;");
         linkRow.getChildren().add(linkLabel);
 
         HBox actions = new HBox(10);
         Button detailsBtn = new Button("Voir détails");
         detailsBtn.setStyle("-fx-background-color: #0b1a3a; -fx-border-color: #dbeafe; -fx-border-radius: 18; -fx-background-radius: 18; -fx-text-fill: #e2e8f0; -fx-font-weight: 700;");
-        detailsBtn.setOnAction(event -> showInfo("Rendez-vous details", "Rendez-vous #" + safeNumber(rdv.getId()) + "\nStatus: " + statusDisplay(rdv.getStatut())));
+        detailsBtn.setOnAction(event -> showRendezVousDetailsDialog(rdv));
         Button editBtn = new Button("Modifier");
         editBtn.setStyle("-fx-background-color: #2563eb; -fx-background-radius: 18; -fx-text-fill: white; -fx-font-weight: 700;");
         editBtn.setOnAction(event -> {
             selectedRendezVous = rdv;
             editSelectedRendezVous();
         });
-        Button pdfBtn = new Button("Télécharger PDF");
+        Button pdfBtn = new Button("Exporter PDF");
         pdfBtn.setStyle("-fx-background-color: #1e293b; -fx-background-radius: 18; -fx-text-fill: #e2e8f0; -fx-font-weight: 700;");
-        pdfBtn.setOnAction(event -> {
-            String pdf = normalizeDefault(rdv.getCoursePdfName(), "");
-            if (pdf.isBlank()) {
-                showWarning("PDF", "No PDF attached to this rendez-vous.");
-            } else {
-                showInfo("PDF", "PDF file: " + pdf);
-            }
-        });
+        pdfBtn.setOnAction(event -> exportRendezVousDetailsPdf(rdv));
 
         if (isProfessorMode()) {
+            boolean pending = isPendingStatus(rdv.getStatut());
+            Label meetingLinkLabel = new Label("Lien de réunion");
+            meetingLinkLabel.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 13px; -fx-font-weight: 700;");
+            TextField meetingLinkField = new TextField(normalizeDefault(rdv.getMeetingLink(), ""));
+            meetingLinkField.setPromptText("https://...");
+            meetingLinkField.setDisable(!pending);
+            styleTextField(meetingLinkField);
+            HBox.setHgrow(meetingLinkField, javafx.scene.layout.Priority.ALWAYS);
+
             Button acceptBtn = new Button("Accepter");
             acceptBtn.setStyle("-fx-background-color: #16a34a; -fx-background-radius: 18; -fx-text-fill: white; -fx-font-weight: 700;");
-            acceptBtn.setDisable(!isPendingStatus(rdv.getStatut()));
-            acceptBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "confirme"));
+            acceptBtn.setDisable(!pending);
+            acceptBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "confirme", meetingLinkField.getText()));
 
             Button refuseBtn = new Button("Refuser");
             refuseBtn.setStyle("-fx-background-color: #dc2626; -fx-background-radius: 18; -fx-text-fill: white; -fx-font-weight: 700;");
-            refuseBtn.setDisable(!isPendingStatus(rdv.getStatut()));
+            refuseBtn.setDisable(!pending);
             refuseBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "refuse"));
 
-            actions.getChildren().addAll(detailsBtn, pdfBtn, acceptBtn, refuseBtn);
+            VBox professorActions = new VBox(8);
+            HBox firstRow = new HBox(10, detailsBtn, pdfBtn);
+            HBox secondRow = new HBox(10, meetingLinkField, acceptBtn, refuseBtn);
+            HBox.setHgrow(meetingLinkField, javafx.scene.layout.Priority.ALWAYS);
+            VBox linkInput = new VBox(4, meetingLinkLabel, secondRow);
+            professorActions.getChildren().addAll(firstRow, linkInput);
+            card.getChildren().addAll(header, dateRow, line1, line2, line3, linkRow, professorActions);
         } else {
             actions.getChildren().addAll(detailsBtn, editBtn, pdfBtn);
+            card.getChildren().addAll(header, dateRow, line1, line2, line3, linkRow, actions);
         }
 
-        card.getChildren().addAll(header, dateRow, line1, line2, line3, linkRow, actions);
         card.setOnMouseClicked(event -> {
             selectedRendezVous = rdv;
             applyFiltersAndRender();
@@ -444,6 +459,224 @@ public class RendezVousController {
         } catch (IOException exception) {
             showError("Unable to open page", exception);
         }
+    }
+
+    private void showRendezVousDetailsDialog(RendezVous rdv) {
+        if (rdv == null) {
+            showWarning("Selection required", "Select a rendez-vous first.");
+            return;
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Détails rendez-vous #" + safeNumber(rdv.getId()));
+        ButtonType closeType = new ButtonType("Fermer", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().add(closeType);
+
+        Label title = new Label("Rendez-vous #" + safeNumber(rdv.getId()));
+        title.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 24px; -fx-font-weight: 800;");
+        Label subtitle = new Label("Statut : " + statusDisplay(rdv.getStatut()));
+        subtitle.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 14px; -fx-font-weight: 700;");
+
+        Button exportBtn = new Button("Exporter ce détail en PDF");
+        exportBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 700; -fx-background-radius: 12;");
+        exportBtn.setOnAction(event -> exportRendezVousDetailsPdf(rdv));
+
+        Region headerSpacer = new Region();
+        HBox.setHgrow(headerSpacer, javafx.scene.layout.Priority.ALWAYS);
+        HBox header = new HBox(12, new VBox(4, title, subtitle), headerSpacer, exportBtn);
+        header.setStyle("-fx-alignment: center-left;");
+
+        VBox detailsBox = new VBox(8);
+        detailsBox.getChildren().addAll(
+                buildDetailsRow("ID", "#" + safeNumber(rdv.getId())),
+                buildDetailsRow("Statut", statusDisplay(rdv.getStatut())),
+                buildDetailsRow("Professeur", "#" + safeNumber(rdv.getProfessorId())),
+                buildDetailsRow("Etudiant", "#" + safeNumber(rdv.getStudentId())),
+                buildDetailsRow("Cours", rdv.getCourseId() == null ? "-" : "#" + rdv.getCourseId()),
+                buildDetailsRow("Créneau", resolveSlotSummary(rdv.getSlotId())),
+                buildDetailsRow("Type", meetingTypeDisplay(rdv.getMeetingType())),
+                buildDetailsRow("Lien de réunion", normalizeDefault(rdv.getMeetingLink(), "-")),
+                buildDetailsRow("Lieu", normalizeDefault(rdv.getLocationLabel(), normalizeDefault(rdv.getLocation(), "-"))),
+                buildDetailsRow("Coordonnées", formatCoordinates(rdv.getLocationLat(), rdv.getLocationLng())),
+                buildDetailsRow("Message", normalizeDefault(rdv.getMessage(), "-")),
+                buildDetailsRow("Raison de refus", normalizeDefault(rdv.getRefusalReason(), "-")),
+                buildDetailsRow("PDF cours", normalizeDefault(rdv.getCoursePdfName(), "-")),
+                buildDetailsRow("Créé le", formatDateTime(rdv.getCreatedAt()))
+        );
+
+        ScrollPane detailsScroll = new ScrollPane(detailsBox);
+        detailsScroll.setFitToWidth(true);
+        detailsScroll.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        detailsScroll.setPrefViewportHeight(560);
+
+        VBox content = new VBox(14, header, detailsScroll);
+        content.setStyle("-fx-background-color: #0b1736; -fx-padding: 18; -fx-border-color: #27406d; -fx-border-radius: 14; -fx-background-radius: 14;");
+        content.setPrefWidth(920);
+        content.setPrefHeight(650);
+
+        DialogPane pane = dialog.getDialogPane();
+        styleDialog(pane);
+        pane.setContent(content);
+
+        Button closeBtn = (Button) pane.lookupButton(closeType);
+        if (closeBtn != null) {
+            closeBtn.setStyle("-fx-background-color: #162546; -fx-text-fill: #e2e8f0; -fx-font-weight: 700; -fx-background-radius: 12; -fx-border-color: #2e4677; -fx-border-radius: 12;");
+        }
+
+        dialog.showAndWait();
+    }
+
+    private HBox buildDetailsRow(String labelText, String valueText) {
+        Label label = new Label(labelText + " :");
+        label.setMinWidth(DETAILS_KEY_WIDTH);
+        label.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 13px; -fx-font-weight: 700;");
+
+        Label value = new Label(normalizeDefault(valueText, "-"));
+        value.setWrapText(true);
+        value.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14px;");
+        HBox.setHgrow(value, javafx.scene.layout.Priority.ALWAYS);
+
+        HBox row = new HBox(12, label, value);
+        row.setStyle("-fx-background-color: #102146; -fx-padding: 10 12; -fx-background-radius: 10; -fx-border-color: #1f3b70; -fx-border-radius: 10;");
+        return row;
+    }
+
+    private String resolveSlotSummary(Integer slotId) {
+        if (slotId == null) {
+            return "-";
+        }
+        try {
+            AvailabilitySlot slot = availabilitySlotService.getById(slotId);
+            if (slot == null) {
+                return "#" + slotId;
+            }
+            String start = formatDateTime(slot.getStartAt());
+            String end = formatDateTime(slot.getEndAt());
+            return "#" + safeNumber(slot.getId()) + "  " + start + " -> " + end;
+        } catch (SQLException exception) {
+            return "#" + slotId;
+        }
+    }
+
+    private String formatCoordinates(Float latitude, Float longitude) {
+        if (latitude == null || longitude == null) {
+            return "-";
+        }
+        return latitude + ", " + longitude;
+    }
+
+    private void exportRendezVousDetailsPdf(RendezVous rdv) {
+        if (rdv == null) {
+            showWarning("Selection required", "Select a rendez-vous first.");
+            return;
+        }
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Exporter rendez-vous en PDF");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF files", "*.pdf"));
+        chooser.setInitialFileName("rendezvous-" + safeNumber(rdv.getId()) + ".pdf");
+        File target = chooser.showSaveDialog(statusLabel == null || statusLabel.getScene() == null ? null : statusLabel.getScene().getWindow());
+        if (target == null) {
+            return;
+        }
+
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
+
+            List<String> lines = new ArrayList<>();
+            lines.add("Details du rendez-vous #" + safeNumber(rdv.getId()));
+            lines.add("");
+            lines.addAll(buildRendezVousDetailLines(rdv));
+
+            try (PDPageContentStream stream = new PDPageContentStream(document, page)) {
+                float marginX = 48f;
+                float startY = page.getMediaBox().getHeight() - 56f;
+                float lineHeight = 16f;
+                float y = startY;
+
+                stream.beginText();
+                stream.setFont(PDType1Font.HELVETICA, 11);
+                stream.newLineAtOffset(marginX, y);
+
+                for (String line : lines) {
+                    List<String> wrapped = new ArrayList<>();
+                    appendWrappedPdfLines(wrapped, line, 98);
+                    for (String wrappedLine : wrapped) {
+                        if (y < 72f) {
+                            stream.showText("...");
+                            stream.endText();
+                            document.save(target);
+                            if (statusLabel != null) {
+                                statusLabel.setText("PDF exporté: " + target.getName());
+                            }
+                            showInfo("Export PDF", "Le détail a été exporté dans:\n" + target.getAbsolutePath());
+                            return;
+                        }
+                        stream.showText(sanitizePdfText(wrappedLine));
+                        stream.newLineAtOffset(0, -lineHeight);
+                        y -= lineHeight;
+                    }
+                }
+                stream.endText();
+            }
+
+            document.save(target);
+            if (statusLabel != null) {
+                statusLabel.setText("PDF exporté: " + target.getName());
+            }
+            showInfo("Export PDF", "Le détail a été exporté dans:\n" + target.getAbsolutePath());
+        } catch (IOException exception) {
+            showError("Unable to export rendez-vous PDF", exception);
+        }
+    }
+
+    private List<String> buildRendezVousDetailLines(RendezVous rdv) {
+        List<String> lines = new ArrayList<>();
+        lines.add("Statut: " + statusDisplay(rdv.getStatut()));
+        lines.add("Professeur: #" + safeNumber(rdv.getProfessorId()));
+        lines.add("Etudiant: #" + safeNumber(rdv.getStudentId()));
+        lines.add("Cours: " + (rdv.getCourseId() == null ? "-" : "#" + rdv.getCourseId()));
+        lines.add("Créneau: " + resolveSlotSummary(rdv.getSlotId()));
+        lines.add("Type: " + meetingTypeDisplay(rdv.getMeetingType()));
+        lines.add("Lien de réunion: " + normalizeDefault(rdv.getMeetingLink(), "-"));
+        lines.add("Lieu: " + normalizeDefault(rdv.getLocationLabel(), normalizeDefault(rdv.getLocation(), "-")));
+        lines.add("Coordonnées: " + formatCoordinates(rdv.getLocationLat(), rdv.getLocationLng()));
+        lines.add("Message: " + normalizeDefault(rdv.getMessage(), "-"));
+        lines.add("Raison de refus: " + normalizeDefault(rdv.getRefusalReason(), "-"));
+        lines.add("PDF cours: " + normalizeDefault(rdv.getCoursePdfName(), "-"));
+        lines.add("Créé le: " + formatDateTime(rdv.getCreatedAt()));
+        lines.add("Exporté le: " + formatDateTime(LocalDateTime.now()));
+        return lines;
+    }
+
+    private void appendWrappedPdfLines(List<String> target, String source, int maxChars) {
+        String text = normalizeDefault(source, "").replace('\n', ' ').replace('\r', ' ').trim();
+        if (text.isEmpty()) {
+            target.add("");
+            return;
+        }
+
+        String remaining = text;
+        while (remaining.length() > maxChars) {
+            int breakAt = remaining.lastIndexOf(' ', maxChars);
+            if (breakAt <= 0) {
+                breakAt = maxChars;
+            }
+            target.add(remaining.substring(0, breakAt).trim());
+            remaining = remaining.substring(breakAt).trim();
+        }
+        if (!remaining.isEmpty()) {
+            target.add(remaining);
+        }
+    }
+
+    private String sanitizePdfText(String text) {
+        String value = normalizeDefault(text, "-");
+        value = value.replace("’", "'")
+                .replace("–", "-")
+                .replace("—", "-");
+        return value.replaceAll("[^\\x20-\\x7EÀ-ÿ]", " ");
     }
 
     private Optional<RendezVous> showCreateRendezVousDialog() {
@@ -867,6 +1100,10 @@ public class RendezVousController {
         comboBox.setStyle("-fx-background-color: #101f40; -fx-border-color: #2754a3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-text-fill: #e2e8f0; -fx-font-size: 14px; -fx-font-weight: 700;");
     }
 
+    private void styleTextField(TextField field) {
+        field.setStyle("-fx-control-inner-background: #101f40; -fx-background-color: #101f40; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #94a3b8; -fx-border-color: #2b436f; -fx-border-radius: 12; -fx-background-radius: 12;");
+    }
+
     private void styleTextArea(TextArea area) {
         area.setStyle("-fx-control-inner-background: #101f40; -fx-background-color: #101f40; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #94a3b8; -fx-border-color: #2b436f; -fx-border-radius: 12; -fx-background-radius: 12;");
     }
@@ -965,6 +1202,10 @@ public class RendezVousController {
     }
 
     private void updateStatusAsProfessor(RendezVous source, String newStatus) {
+        updateStatusAsProfessor(source, newStatus, null);
+    }
+
+    private void updateStatusAsProfessor(RendezVous source, String newStatus, String meetingLinkInput) {
         if (source == null) {
             showWarning("Selection required", "Select a rendez-vous first.");
             return;
@@ -973,18 +1214,35 @@ public class RendezVousController {
             showWarning("Action not allowed", "Only professor can accept or refuse a rendez-vous.");
             return;
         }
-        if (!isAdminMode() && !sameInteger(source.getProfessorId(), CURRENT_USER_ID)) {
-            showWarning("Action not allowed", "You can only update rendez-vous assigned to you.");
-            return;
-        }
         if (!isPendingStatus(source.getStatut())) {
             showWarning("Action not allowed", "Only pending rendez-vous can be accepted or refused.");
             return;
         }
 
-        RendezVous updated = copyRendezVous(source);
-        updated.setStatut(newStatus);
         try {
+            if (!isAdminMode() && !isCurrentProfessorSlotOwner(source)) {
+                showWarning("Action not allowed", "You can only update rendez-vous assigned to your own slots.");
+                return;
+            }
+
+            RendezVous updated = copyRendezVous(source);
+            updated.setStatut(newStatus);
+
+            if (isConfirmedStatus(newStatus)) {
+                String meetingLink = toNull(meetingLinkInput);
+                if (meetingLink == null) {
+                    showWarning("Validation error", "Le lien de réunion est obligatoire lors de l'acceptation.");
+                    return;
+                }
+                updated.setMeetingLink(meetingLink);
+                updated.setRefusalReason(null);
+            }
+
+            AvailabilitySlot slot = source.getSlotId() == null ? null : availabilitySlotService.getById(source.getSlotId());
+            if (slot != null && slot.getProfessorId() != null) {
+                updated.setProfessorId(slot.getProfessorId());
+            }
+
             boolean ok = rendezVousService.update(updated);
             if (!ok) {
                 showWarning("Update failed", "The selected rendez-vous could not be updated.");
@@ -1001,6 +1259,17 @@ public class RendezVousController {
         } catch (SQLException exception) {
             showError("Unable to update rendez-vous status", exception);
         }
+    }
+
+    private boolean isCurrentProfessorSlotOwner(RendezVous source) throws SQLException {
+        if (source == null || source.getSlotId() == null) {
+            return false;
+        }
+        AvailabilitySlot slot = availabilitySlotService.getById(source.getSlotId());
+        if (slot == null || slot.getProfessorId() == null) {
+            return false;
+        }
+        return sameInteger(slot.getProfessorId(), CURRENT_USER_ID);
     }
 
     private String toNull(String raw) {
@@ -1045,6 +1314,17 @@ public class RendezVousController {
             return "Refusé";
         }
         return normalizeDefault(rawStatus, "unknown");
+    }
+
+    private String meetingTypeDisplay(String rawType) {
+        String type = normalizeDefault(rawType, "").toLowerCase();
+        if (type.contains("ligne")) {
+            return "En ligne";
+        }
+        if (type.contains("personne")) {
+            return "En personne";
+        }
+        return normalizeDefault(rawType, "-");
     }
 
     private String formatCardDate(LocalDateTime value) {
@@ -1106,10 +1386,14 @@ public class RendezVousController {
         if (rdv == null || rdv.getStudentId() == null) {
             return;
         }
+        String message = "Votre rendez-vous #" + rdv.getId() + " a été " + statusDisplay(rdv.getStatut()).toLowerCase() + ".";
+        if (isConfirmedStatus(rdv.getStatut()) && toNull(rdv.getMeetingLink()) != null) {
+            message += " Lien de réunion: " + rdv.getMeetingLink();
+        }
         Notification notification = new Notification();
         notification.setUserId(rdv.getStudentId());
         notification.setTitle("Mise à jour rendez-vous");
-        notification.setMessage("Votre rendez-vous #" + rdv.getId() + " a été " + statusDisplay(rdv.getStatut()).toLowerCase() + ".");
+        notification.setMessage(message);
         notification.setLink("/rendezvous/" + rdv.getId());
         notification.setIsRead(false);
         notification.setCreatedAt(LocalDateTime.now());
