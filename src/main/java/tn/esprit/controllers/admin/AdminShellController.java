@@ -10,7 +10,16 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import tn.esprit.controllers.admin.courses.CourseEditController;
 import tn.esprit.controllers.admin.courses.CourseShowController;
+import tn.esprit.controllers.admin.lessons.LessonEditController;
+import tn.esprit.controllers.admin.lessons.LessonNewController;
+import tn.esprit.controllers.admin.lessons.LessonShowController;
+import tn.esprit.controllers.admin.sections.SectionEditController;
+import tn.esprit.controllers.admin.sections.SectionIndexController;
+import tn.esprit.controllers.admin.sections.SectionNewController;
+import tn.esprit.controllers.admin.sections.SectionShowController;
 import tn.esprit.entities.Course;
+import tn.esprit.entities.CourseSection;
+import tn.esprit.entities.Lesson;
 
 import java.io.IOException;
 
@@ -105,6 +114,76 @@ public class AdminShellController {
         loadContent("/views/admin/courses/course_edit.fxml", controller -> {
             if (controller instanceof CourseEditController courseEditController) {
                 courseEditController.setCourse(course);
+            }
+        });
+    }
+
+    public void showSectionIndex(Course course) {
+        setActiveModule(coursesModuleButton);
+        loadContent("/views/admin/sections/section_index.fxml", controller -> {
+            if (controller instanceof SectionIndexController sectionIndexController) {
+                sectionIndexController.setCourse(course);
+            }
+        });
+    }
+
+    public void showSectionNew(Course course) {
+        setActiveModule(coursesModuleButton);
+        loadContent("/views/admin/sections/section_new.fxml", controller -> {
+            if (controller instanceof SectionNewController sectionNewController) {
+                sectionNewController.setCourse(course);
+            }
+        });
+    }
+
+    public void showSectionEdit(Course course, CourseSection section) {
+        setActiveModule(coursesModuleButton);
+        loadContent("/views/admin/sections/section_edit.fxml", controller -> {
+            if (controller instanceof SectionEditController sectionEditController) {
+                sectionEditController.setCourse(course);
+                sectionEditController.setSection(section);
+            }
+        });
+    }
+
+    public void showSectionShow(Course course, CourseSection section) {
+        setActiveModule(coursesModuleButton);
+        loadContent("/views/admin/sections/section_show.fxml", controller -> {
+            if (controller instanceof SectionShowController sectionShowController) {
+                sectionShowController.setCourse(course);
+                sectionShowController.setSection(section);
+            }
+        });
+    }
+
+    public void showLessonNew(Course course, CourseSection section) {
+        setActiveModule(coursesModuleButton);
+        loadContent("/views/admin/lessons/lesson_new.fxml", controller -> {
+            if (controller instanceof LessonNewController lessonNewController) {
+                lessonNewController.setCourse(course);
+                lessonNewController.setSection(section);
+            }
+        });
+    }
+
+    public void showLessonEdit(Course course, CourseSection section, Lesson lesson) {
+        setActiveModule(coursesModuleButton);
+        loadContent("/views/admin/lessons/lesson_edit.fxml", controller -> {
+            if (controller instanceof LessonEditController lessonEditController) {
+                lessonEditController.setCourse(course);
+                lessonEditController.setSection(section);
+                lessonEditController.setLesson(lesson);
+            }
+        });
+    }
+
+    public void showLessonShow(Course course, CourseSection section, Lesson lesson) {
+        setActiveModule(coursesModuleButton);
+        loadContent("/views/admin/lessons/lesson_show.fxml", controller -> {
+            if (controller instanceof LessonShowController lessonShowController) {
+                lessonShowController.setCourse(course);
+                lessonShowController.setSection(section);
+                lessonShowController.setLesson(lesson);
             }
         });
     }

@@ -11,11 +11,11 @@ public class CourseAdminLauncher extends Application {
     public void start(Stage stage) throws Exception {
         System.out.println("CourseAdminLauncher.start() called");
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/admin_shell.fxml"));
-        Scene scene = new Scene(loader.load(), 1440, 820);
+        Scene scene = new Scene(loader.load(), 1240, 760);
         scene.getStylesheets().add(getClass().getResource("/styles/macos-theme.css").toExternalForm());
         stage.setTitle("Skillora");
-        stage.setMinWidth(1280);
-        stage.setMinHeight(760);
+        stage.setMinWidth(1100);
+        stage.setMinHeight(680);
         stage.setScene(scene);
         stage.show();
     }

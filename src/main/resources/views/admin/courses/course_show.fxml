@@ -22,6 +22,7 @@
                 <Label styleClass="page-subtitle" text="Read-only detail view. Editing is only available in the dedicated edit screen."/>
             </VBox>
             <StackPane HBox.hgrow="ALWAYS"/>
+            <Button mnemonicParsing="false" onAction="#handleManageSections" styleClass="secondary-button" text="Manage Sections"/>
             <Button mnemonicParsing="false" onAction="#handleEdit" styleClass="secondary-button" text="Edit"/>
             <Button mnemonicParsing="false" onAction="#handleDelete" styleClass="danger-button" text="Delete"/>
         </HBox>

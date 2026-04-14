@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="780.0" prefWidth="1120.0" styleClass="module-page"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.admin.sections.SectionIndexController">
+    <top>
+        <VBox spacing="20.0">
+            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                <Button mnemonicParsing="false" onAction="#handleBack" styleClass="secondary-button" text="Back"/>
+                <VBox spacing="6.0">
+                    <Label fx:id="pageTitleLabel" styleClass="page-title" text="Sections"/>
+                    <Label styleClass="page-subtitle" text="Organize course structure and manage lessons inside each section."/>
+                </VBox>
+                <StackPane HBox.hgrow="ALWAYS"/>
+                <Button mnemonicParsing="false" onAction="#handleAddSection" styleClass="hero-button" text="+ Add Section"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="toolbar-card">
+                <TextField fx:id="searchField" promptText="Search sections by title" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="manageLessonsButton" mnemonicParsing="false" onAction="#handleManageLessons" styleClass="secondary-button" text="Manage Lessons"/>
+                <Button fx:id="editButton" mnemonicParsing="false" onAction="#handleEditSection" styleClass="secondary-button" text="Edit"/>
+                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDeleteSection" styleClass="danger-button" text="Delete"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="0.0" styleClass="courses-card">
+            <VBox spacing="6.0" styleClass="courses-card-header">
+                <padding>
+                    <Insets top="22.0" right="28.0" bottom="18.0" left="28.0"/>
+                </padding>
+                <Label styleClass="card-title" text="Course Sections"/>
+                <Label styleClass="card-subtitle" text="Select a section to edit it or manage its lessons."/>
+            </VBox>
+            <TableView fx:id="sectionTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="titleColumn" prefWidth="520.0" text="TITLE"/>
+                    <TableColumn fx:id="positionColumn" prefWidth="180.0" text="POSITION"/>
+                    <TableColumn fx:id="createdAtColumn" prefWidth="260.0" text="CREATED"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+</BorderPane>

@@ -130,6 +130,14 @@ public class CourseShowController implements AdminShellAware {
         }
     }
 
+    @FXML
+    private void handleManageSections() {
+        System.out.println("CourseShowController.handleManageSections() triggered");
+        if (shellController != null && course != null) {
+            shellController.showSectionIndex(course);
+        }
+    }
+
     private void populateCourseDetails() {
         if (course == null) {
             return;

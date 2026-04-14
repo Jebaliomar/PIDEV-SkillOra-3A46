@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -16,6 +17,10 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import tn.esprit.controllers.admin.AdminShellAware;
 import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.Course;
@@ -38,7 +43,7 @@ public class CourseIndexController implements AdminShellAware {
 
     @FXML
     private Button openButton;
-
+    
     @FXML
     private TableView<Course> courseTable;
 
@@ -53,6 +58,9 @@ public class CourseIndexController implements AdminShellAware {
 
     @FXML
     private TableColumn<Course, LocalDateTime> createdAtColumn;
+
+    @FXML
+    private TableColumn<Course, Void> actionsColumn;
 
     private AdminShellController shellController;
     private CourseService courseService;
@@ -77,11 +85,123 @@ public class CourseIndexController implements AdminShellAware {
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         createdAtColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+        titleColumn.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                    return;
+                }
+
+                Course course = getTableRow().getItem();
+                StackPane badge = new StackPane();
+                badge.getStyleClass().add("course-badge");
+                Label badgeLabel = new Label(firstLetter(course.getTitle()));
+                badgeLabel.getStyleClass().add("course-badge-label");
+                badge.getChildren().add(badgeLabel);
+
+                Label title = new Label(safe(course.getTitle()));
+                title.getStyleClass().add("course-title-cell");
+                title.setWrapText(true);
+
+                VBox textBox = new VBox(title);
+                textBox.setAlignment(Pos.CENTER_LEFT);
+
+                HBox rowBox = new HBox(16, badge, textBox);
+                rowBox.setAlignment(Pos.CENTER_LEFT);
+                rowBox.setPadding(new Insets(0, 0, 0, 6));
+                setGraphic(rowBox);
+            }
+        });
+        categoryColumn.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                    setText(null);
+                    return;
+                }
+                Label label = new Label(safe(item));
+                label.getStyleClass().add("category-cell-label");
+                label.setWrapText(true);
+                setGraphic(label);
+                setText(null);
+                setAlignment(Pos.CENTER_LEFT);
+            }
+        });
+        statusColumn.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                    setText(null);
+                    return;
+                }
+                Label label = new Label(normalizeStatus(item));
+                label.getStyleClass().add("table-status-pill");
+                setGraphic(label);
+                setText(null);
+                setAlignment(Pos.CENTER);
+            }
+        });
         createdAtColumn.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(LocalDateTime item, boolean empty) {
                 super.updateItem(item, empty);
+                setAlignment(Pos.CENTER_LEFT);
                 setText(empty ? null : formatDateTime(item));
+            }
+        });
+        actionsColumn.setCellFactory(column -> new TableCell<>() {
+            private final Button manageButton = createActionButton("Manage", "manage-action-button");
+            private final Button editButton = createActionButton("✎", "icon-action-button");
+            private final Button deleteButton = createActionButton("🗑", "icon-action-button");
+            private final HBox actionsBox = new HBox(12, manageButton, editButton, deleteButton);
+
+            {
+                actionsBox.setAlignment(Pos.CENTER_RIGHT);
+                manageButton.setOnAction(event -> openCourseFromRow());
+                editButton.setOnAction(event -> editCourseFromRow());
+                deleteButton.setOnAction(event -> deleteCourseFromRow());
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : actionsBox);
+            }
+
+            private void openCourseFromRow() {
+                Course course = getTableRow() == null ? null : (Course) getTableRow().getItem();
+                if (course != null && shellController != null) {
+                    shellController.showCourseShow(course);
+                }
+            }
+
+            private void editCourseFromRow() {
+                Course course = getTableRow() == null ? null : (Course) getTableRow().getItem();
+                if (course != null && shellController != null) {
+                    shellController.showCourseEdit(course);
+                }
+            }
+
+            private void deleteCourseFromRow() {
+                Course course = getTableRow() == null ? null : (Course) getTableRow().getItem();
+                if (course == null) {
+                    return;
+                }
+                try {
+                    if (getCourseService().delete(course.getId())) {
+                        courses.remove(course);
+                    }
+                } catch (IllegalStateException e) {
+                    showError("Database connection failed.", e);
+                } catch (SQLException e) {
+                    showError("Unable to delete courses.", e);
+                }
             }
         });
         courseTable.setRowFactory(table -> {
@@ -89,7 +209,6 @@ public class CourseIndexController implements AdminShellAware {
             row.setOnMouseClicked(event -> {
                 if (!row.isEmpty() && event.getClickCount() == 1) {
                     courseTable.getSelectionModel().select(row.getItem());
-                    handleOpenCourse();
                 }
             });
             return row;
@@ -119,7 +238,9 @@ public class CourseIndexController implements AdminShellAware {
     }
 
     private void configureActions() {
-        openButton.disableProperty().bind(Bindings.isNull(courseTable.getSelectionModel().selectedItemProperty()));
+        if (openButton != null) {
+            openButton.disableProperty().bind(Bindings.isNull(courseTable.getSelectionModel().selectedItemProperty()));
+        }
     }
 
     private void loadCourses() {
@@ -161,6 +282,20 @@ public class CourseIndexController implements AdminShellAware {
             courseService = new CourseService();
         }
         return courseService;
+    }
+
+    private Button createActionButton(String text, String styleClass) {
+        Button button = new Button(text);
+        button.getStyleClass().add(styleClass);
+        return button;
+    }
+
+    private String firstLetter(String value) {
+        return safe(value).isBlank() ? "C" : safe(value).substring(0, 1).toUpperCase();
+    }
+
+    private String normalizeStatus(String value) {
+        return safe(value).isBlank() ? "DRAFT" : safe(value).toUpperCase();
     }
 
     private String formatDateTime(LocalDateTime value) {
