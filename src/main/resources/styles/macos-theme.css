@@ -354,6 +354,116 @@
     -fx-background-color: linear-gradient(to bottom, #5a84f2, #3c69e8);
 }
 
+.front-sidebar {
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.94), rgba(247,250,255,0.96));
+    -fx-background-radius: 30;
+    -fx-border-color: rgba(255,255,255,0.42);
+    -fx-border-radius: 30;
+}
+
+.front-brand-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #102a43;
+}
+
+.front-brand-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #5d7a96;
+}
+
+.front-spotlight-card {
+    -fx-background-color: linear-gradient(to bottom right, rgba(224,236,255,0.95), rgba(246,250,255,0.92));
+    -fx-background-radius: 22;
+    -fx-border-color: rgba(191,219,254,0.9);
+    -fx-border-radius: 22;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 18, 0.12, 0, 8);
+}
+
+.front-spotlight-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f3d91;
+}
+
+.front-spotlight-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: #42607b;
+}
+
+.front-section-card,
+.front-filter-card,
+.front-toolbar-card {
+    -fx-background-color: rgba(255,255,255,0.94);
+    -fx-background-radius: 24;
+    -fx-border-color: rgba(255,255,255,0.42);
+    -fx-border-radius: 24;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.06), 22, 0.12, 0, 10);
+}
+
+.front-section-card {
+    -fx-padding: 22;
+}
+
+.front-filter-card {
+    -fx-padding: 22;
+}
+
+.front-toolbar-card {
+    -fx-padding: 18;
+}
+
+.front-section-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #60758d;
+}
+
+.front-course-card {
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.98), rgba(247,250,255,0.96));
+    -fx-background-radius: 24;
+    -fx-border-color: rgba(221,231,244,0.95);
+    -fx-border-radius: 24;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.07), 18, 0.12, 0, 8);
+}
+
+.front-course-category {
+    -fx-background-color: rgba(59,130,246,0.12);
+    -fx-background-radius: 999;
+    -fx-padding: 6 12 6 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0b5bd3;
+}
+
+.front-course-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #102a43;
+}
+
+.front-course-description {
+    -fx-font-size: 13px;
+    -fx-text-fill: #52667a;
+    -fx-line-spacing: 2px;
+}
+
+.front-filter-check {
+    -fx-font-size: 13px;
+    -fx-text-fill: #243b53;
+}
+
+.front-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.front-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
 .table-view {
     -fx-background-color: transparent;
     -fx-background-radius: 18;

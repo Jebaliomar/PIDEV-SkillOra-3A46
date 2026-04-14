@@ -37,6 +37,7 @@
                     <VBox spacing="8.0" VBox.vgrow="ALWAYS">
                         <Label styleClass="sidebar-section-label" text="Current Focus"/>
                         <Label styleClass="sidebar-helper" text="Courses are the first module fully adapted to the desktop workflow." wrapText="true"/>
+                        <Button fx:id="frontHomeButton" mnemonicParsing="false" onAction="#handleFrontHome" styleClass="secondary-button" text="Go to Home"/>
                     </VBox>
                 </VBox>
             </StackPane>

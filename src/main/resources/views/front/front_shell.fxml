@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="860.0" prefWidth="1440.0" styleClass="app-shell-root"
+           xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="tn.esprit.controllers.front.FrontShellController">
+    <BorderPane styleClass="app-shell">
+        <left>
+            <StackPane prefWidth="272.0" maxWidth="272.0" styleClass="sidebar-shell">
+                <BorderPane.margin>
+                    <Insets top="18.0" right="12.0" bottom="18.0" left="18.0"/>
+                </BorderPane.margin>
+                <VBox spacing="22.0" styleClass="front-sidebar">
+                    <padding>
+                        <Insets top="28.0" right="18.0" bottom="26.0" left="18.0"/>
+                    </padding>
+                    <VBox spacing="4.0">
+                        <Label styleClass="front-brand-title" text="SkillORA"/>
+                        <Label styleClass="front-brand-subtitle" text="Learning Desktop"/>
+                    </VBox>
+
+                    <VBox spacing="6.0" styleClass="sidebar-nav-group">
+                        <Button fx:id="homeNavButton" mnemonicParsing="false" onAction="#handleHome" styleClass="sidebar-item-selected" text="Home"/>
+                        <Button fx:id="browseCoursesNavButton" mnemonicParsing="false" onAction="#handleBrowseCourses" styleClass="sidebar-item" text="Browse Courses"/>
+                        <Button fx:id="myLearningNavButton" mnemonicParsing="false" onAction="#handleMyLearning" styleClass="sidebar-item" text="My Learning"/>
+                        <Button fx:id="communityNavButton" mnemonicParsing="false" onAction="#handleCommunity" styleClass="sidebar-item" text="Community"/>
+                        <Button fx:id="eventsNavButton" mnemonicParsing="false" onAction="#handleEvents" styleClass="sidebar-item" text="Events"/>
+                        <Button fx:id="rendezVousNavButton" mnemonicParsing="false" onAction="#handleRendezVous" styleClass="sidebar-item" text="Rendez-vous"/>
+                    </VBox>
+
+                    <VBox spacing="10.0" styleClass="front-spotlight-card">
+                        <Label styleClass="front-spotlight-title" text="Ready to manage?" />
+                        <Label styleClass="front-spotlight-body" text="Jump back to the admin dashboard any time from here." wrapText="true"/>
+                        <Button fx:id="dashboardButton" mnemonicParsing="false" onAction="#handleDashboard" styleClass="secondary-button" text="Dashboard"/>
+                    </VBox>
+                </VBox>
+            </StackPane>
+        </left>
+        <center>
+            <StackPane fx:id="contentContainer" styleClass="content-host">
+                <BorderPane.margin>
+                    <Insets top="18.0" right="18.0" bottom="18.0" left="12.0"/>
+                </BorderPane.margin>
+                <padding>
+                    <Insets top="24.0" right="24.0" bottom="24.0" left="24.0"/>
+                </padding>
+            </StackPane>
+        </center>
+    </BorderPane>
+</StackPane>

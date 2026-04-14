@@ -20,6 +20,7 @@ import tn.esprit.controllers.admin.sections.SectionShowController;
 import tn.esprit.entities.Course;
 import tn.esprit.entities.CourseSection;
 import tn.esprit.entities.Lesson;
+import tn.esprit.tools.AppNavigator;
 
 import java.io.IOException;
 
@@ -45,6 +46,9 @@ public class AdminShellController {
 
     @FXML
     private StackPane contentContainer;
+
+    @FXML
+    private Button frontHomeButton;
 
     @FXML
     public void initialize() {
@@ -86,6 +90,11 @@ public class AdminShellController {
     private void handleRendezVousModule() {
         setActiveModule(rendezVousModuleButton);
         showPlaceholder("Rendez-vous", "This module is not implemented yet in the desktop shell.");
+    }
+
+    @FXML
+    private void handleFrontHome() {
+        AppNavigator.showFrontHome(frontHomeButton);
     }
 
     public void showCoursesIndex() {

@@ -13,7 +13,7 @@ public class CourseAdminLauncher extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/admin_shell.fxml"));
         Scene scene = new Scene(loader.load(), 1240, 760);
         scene.getStylesheets().add(getClass().getResource("/styles/macos-theme.css").toExternalForm());
-        stage.setTitle("Skillora");
+        stage.setTitle("SkillORA");
         stage.setMinWidth(1100);
         stage.setMinHeight(680);
         stage.setScene(scene);
