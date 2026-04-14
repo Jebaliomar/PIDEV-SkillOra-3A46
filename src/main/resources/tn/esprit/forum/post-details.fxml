@@ -184,6 +184,9 @@
                                              -fx-prompt-text-fill: #94a3b8;"/>
                         </VBox>
 
+                        <Label fx:id="replyErrorLabel" managed="false" visible="false" wrapText="true"
+                               style="-fx-text-fill: #dc2626; -fx-font-size: 13px; -fx-font-weight: 600;"/>
+
                         <HBox alignment="CENTER_RIGHT">
                             <Button text="Post Reply" onAction="#handleAddReply"
                                     style="-fx-background-color: #3b82f6;

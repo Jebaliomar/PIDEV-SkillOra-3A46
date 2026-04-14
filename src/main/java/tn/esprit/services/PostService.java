@@ -22,6 +22,11 @@ public class PostService {
     }
 
     public void add(Post post) throws SQLException {
+        validateForCreate(post);
+        if (existsDuplicate(post)) {
+            throw new IllegalStateException("A post with the same type, title, topic, and content already exists for this user.");
+        }
+
         String sql = "INSERT INTO post (type, title, topic, content, created_at, updated_at, user_id) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
@@ -56,6 +61,54 @@ public class PostService {
         }
 
         return posts;
+    }
+
+    public void validateForCreate(Post post) {
+        if (post == null) {
+            throw new IllegalArgumentException("Post data is missing.");
+        }
+        if (isBlank(post.getType())) {
+            throw new IllegalArgumentException("Post type is required.");
+        }
+        if (isBlank(post.getTitle())) {
+            throw new IllegalArgumentException("Post title is required.");
+        }
+        if (isBlank(post.getTopic())) {
+            throw new IllegalArgumentException("Post topic is required.");
+        }
+        if (isBlank(post.getContent())) {
+            throw new IllegalArgumentException("Post content is required.");
+        }
+        if (post.getUserId() == null || post.getUserId() <= 0) {
+            throw new IllegalArgumentException("A valid user ID is required.");
+        }
+        if (post.getCreatedAt() == null || post.getUpdatedAt() == null) {
+            throw new IllegalArgumentException("Post dates are invalid.");
+        }
+    }
+
+    public boolean existsDuplicate(Post post) throws SQLException {
+        String sql = """
+                SELECT COUNT(*)
+                FROM post
+                WHERE LOWER(TRIM(COALESCE(type, ''))) = ?
+                  AND LOWER(TRIM(COALESCE(title, ''))) = ?
+                  AND LOWER(TRIM(COALESCE(topic, ''))) = ?
+                  AND LOWER(TRIM(COALESCE(content, ''))) = ?
+                  AND COALESCE(user_id, -1) = ?
+                """;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, normalizeComparableValue(post.getType()));
+            preparedStatement.setString(2, normalizeComparableValue(post.getTitle()));
+            preparedStatement.setString(3, normalizeComparableValue(post.getTopic()));
+            preparedStatement.setString(4, normalizeComparableValue(post.getContent()));
+            preparedStatement.setInt(5, post.getUserId() == null ? -1 : post.getUserId());
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt(1) > 0;
+            }
+        }
     }
 
     public Post getById(int id) throws SQLException {
@@ -231,6 +284,14 @@ public class PostService {
 
         String trimmedValue = value.trim();
         return trimmedValue.isEmpty() ? null : trimmedValue;
+    }
+
+    private String normalizeComparableValue(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private void setTimestamp(PreparedStatement preparedStatement, int index, java.time.LocalDateTime value) throws SQLException {

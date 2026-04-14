@@ -21,6 +21,11 @@ public class ReplyService {
     }
 
     public void add(Reply reply) throws SQLException {
+        validateForCreate(reply);
+        if (existsDuplicate(reply)) {
+            throw new IllegalStateException("You already posted the same reply on this post.");
+        }
+
         String sql = "INSERT INTO reply (post_id, parent_id, content, author_name, upvotes, created_at, updated_at, user_id) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -56,6 +61,52 @@ public class ReplyService {
         }
 
         return replies;
+    }
+
+    public void validateForCreate(Reply reply) {
+        if (reply == null) {
+            throw new IllegalArgumentException("Reply data is missing.");
+        }
+        if (reply.getPostId() == null || reply.getPostId() <= 0) {
+            throw new IllegalArgumentException("A valid post ID is required.");
+        }
+        if (isBlank(reply.getAuthorName())) {
+            throw new IllegalArgumentException("Reply author is required.");
+        }
+        if (isBlank(reply.getContent())) {
+            throw new IllegalArgumentException("Reply content is required.");
+        }
+        if (reply.getUserId() == null || reply.getUserId() <= 0) {
+            throw new IllegalArgumentException("A valid user ID is required.");
+        }
+        if (reply.getUpvotes() != null && reply.getUpvotes() < 0) {
+            throw new IllegalArgumentException("Reply upvotes must be a valid number.");
+        }
+        if (reply.getCreatedAt() == null || reply.getUpdatedAt() == null) {
+            throw new IllegalArgumentException("Reply dates are invalid.");
+        }
+    }
+
+    public boolean existsDuplicate(Reply reply) throws SQLException {
+        String sql = """
+                SELECT COUNT(*)
+                FROM reply
+                WHERE post_id = ?
+                  AND LOWER(TRIM(COALESCE(author_name, ''))) = ?
+                  AND LOWER(TRIM(COALESCE(content, ''))) = ?
+                  AND COALESCE(user_id, -1) = ?
+                """;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, reply.getPostId());
+            preparedStatement.setString(2, normalizeComparableValue(reply.getAuthorName()));
+            preparedStatement.setString(3, normalizeComparableValue(reply.getContent()));
+            preparedStatement.setInt(4, reply.getUserId() == null ? -1 : reply.getUserId());
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt(1) > 0;
+            }
+        }
     }
 
     public Reply getById(int id) throws SQLException {
@@ -172,5 +223,13 @@ public class ReplyService {
 
     private java.time.LocalDateTime toLocalDateTime(Timestamp timestamp) {
         return timestamp == null ? null : timestamp.toLocalDateTime();
+    }
+
+    private String normalizeComparableValue(String value) {
+        return value == null ? "" : value.trim().toLowerCase();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

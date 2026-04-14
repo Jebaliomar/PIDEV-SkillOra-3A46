@@ -33,6 +33,7 @@ public class PostDetailsController {
     @FXML private VBox repliesContainer;
     @FXML private Label currentReplyUserLabel;
     @FXML private TextArea replyContentArea;
+    @FXML private Label replyErrorLabel;
 
     private ForumCrudLauncher application;
     private Post post;
@@ -40,6 +41,7 @@ public class PostDetailsController {
     public void setApplication(ForumCrudLauncher application) {
         this.application = application;
         currentReplyUserLabel.setText(application.getCurrentUserDisplay());
+        clearReplyError();
     }
 
     public void loadPost(int postId) {
@@ -66,12 +68,7 @@ public class PostDetailsController {
     @FXML
     private void handleAddReply() {
         if (post == null) return;
-
-        String replyContent = replyContentArea.getText().trim();
-        if (replyContent.isEmpty()) {
-            application.showError("Invalid reply", "Reply content is required.");
-            return;
-        }
+        clearReplyError();
 
         try {
             Reply reply = new Reply();
@@ -80,7 +77,7 @@ public class PostDetailsController {
             reply.setPostId(post.getId());
             reply.setParentId(null);
             reply.setAuthorName(application.getCurrentUser().getUsername());
-            reply.setContent(replyContent);
+            reply.setContent(replyContentArea.getText().trim());
             reply.setUpvotes(0);
             reply.setCreatedAt(now);
             reply.setUpdatedAt(now);
@@ -91,6 +88,8 @@ public class PostDetailsController {
             replyContentArea.clear();
             loadReplies();
             application.showInfo("Reply added", "Your reply was added successfully.");
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            showReplyError(exception.getMessage());
         } catch (SQLException exception) {
             application.showError("Saving reply failed", exception.getMessage());
         }
@@ -210,5 +209,17 @@ public class PostDetailsController {
 
     private String valueOrFallback(String value, String fallback) {
         return (value == null || value.isBlank()) ? fallback : value.trim();
+    }
+
+    private void showReplyError(String message) {
+        replyErrorLabel.setText(message);
+        replyErrorLabel.setManaged(true);
+        replyErrorLabel.setVisible(true);
+    }
+
+    private void clearReplyError() {
+        replyErrorLabel.setText("");
+        replyErrorLabel.setManaged(false);
+        replyErrorLabel.setVisible(false);
     }
 }

@@ -135,6 +135,9 @@
                                              -fx-prompt-text-fill: #94a3b8;"/>
                         </VBox>
 
+                        <Label fx:id="postErrorLabel" managed="false" visible="false" wrapText="true"
+                               style="-fx-text-fill: #dc2626; -fx-font-size: 13px; -fx-font-weight: 600;"/>
+
                         <!-- Divider -->
                         <Region style="-fx-background-color: #f1f5f9; -fx-pref-height: 1; -fx-max-height: 1;"/>
 

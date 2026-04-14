@@ -27,11 +27,15 @@ public class CreatePostController {
     @FXML
     private Label currentUserLabel;
 
+    @FXML
+    private Label postErrorLabel;
+
     private ForumCrudLauncher application;
 
     public void setApplication(ForumCrudLauncher application) {
         this.application = application;
         currentUserLabel.setText("Posting as: " + application.getCurrentUserDisplay());
+        clearValidationError();
     }
 
     @FXML
@@ -41,27 +45,16 @@ public class CreatePostController {
 
     @FXML
     private void handleSavePost() {
-        String title = titleField.getText().trim();
-        String content = contentArea.getText().trim();
-
-        if (title.isEmpty()) {
-            application.showError("Invalid post", "Title is required.");
-            return;
-        }
-
-        if (content.isEmpty()) {
-            application.showError("Invalid post", "Content is required.");
-            return;
-        }
+        clearValidationError();
 
         try {
             Post post = new Post();
             LocalDateTime now = LocalDateTime.now();
 
             post.setType(typeField.getText().trim());
-            post.setTitle(title);
+            post.setTitle(titleField.getText().trim());
             post.setTopic(topicField.getText().trim());
-            post.setContent(content);
+            post.setContent(contentArea.getText().trim());
             post.setCreatedAt(now);
             post.setUpdatedAt(now);
             post.setUserId(application.getCurrentUser().getId());
@@ -69,8 +62,22 @@ public class CreatePostController {
             application.getPostService().add(post);
             application.showInfo("Post created", "Post #" + post.getId() + " was created successfully.");
             application.showOverviewScene();
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            showValidationError(exception.getMessage());
         } catch (SQLException exception) {
             application.showError("Saving post failed", exception.getMessage());
         }
+    }
+
+    private void showValidationError(String message) {
+        postErrorLabel.setText(message);
+        postErrorLabel.setManaged(true);
+        postErrorLabel.setVisible(true);
+    }
+
+    private void clearValidationError() {
+        postErrorLabel.setText("");
+        postErrorLabel.setManaged(false);
+        postErrorLabel.setVisible(false);
     }
 }
