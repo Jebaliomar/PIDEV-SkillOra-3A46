@@ -23,20 +23,11 @@ public class PostOverviewController {
 
     private static final int PREVIEW_LIMIT = 180;
 
-    @FXML
-    private VBox postsContainer;
-
-    @FXML
-    private Label currentUserLabel;
-
-    @FXML
-    private TextField searchField;
-
-    @FXML
-    private ComboBox<String> typeFilterComboBox;
-
-    @FXML
-    private ComboBox<String> topicFilterComboBox;
+    @FXML private VBox postsContainer;
+    @FXML private Label currentUserLabel;
+    @FXML private TextField searchField;
+    @FXML private ComboBox<String> typeFilterComboBox;
+    @FXML private ComboBox<String> topicFilterComboBox;
 
     private ForumCrudLauncher application;
 
@@ -70,15 +61,8 @@ public class PostOverviewController {
         }
     }
 
-    @FXML
-    private void handleCreatePost() {
-        application.showCreatePostScene();
-    }
-
-    @FXML
-    private void handleSearch() {
-        loadPosts();
-    }
+    @FXML private void handleCreatePost() { application.showCreatePostScene(); }
+    @FXML private void handleSearch()     { loadPosts(); }
 
     @FXML
     private void handleResetFilters() {
@@ -105,8 +89,11 @@ public class PostOverviewController {
         topicFilterComboBox.setValue("All topics");
     }
 
+    // ── Card builder ─────────────────────────────────────────────────────────
+
     private VBox createPostCard(Post post) {
         VBox card = new VBox(0);
+        card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle(
                 "-fx-background-color: white;" +
                         "-fx-background-radius: 14;" +
@@ -116,71 +103,87 @@ public class PostOverviewController {
                         "-fx-cursor: hand;"
         );
 
-        VBox body = new VBox(10);
-        body.setPadding(new Insets(20, 22, 14, 22));
+        // ── Thin top colour strip ─────────────────────────────
+        Region topStrip = new Region();
+        topStrip.setPrefHeight(4);
+        topStrip.setMinHeight(4);
+        topStrip.setMaxHeight(4);
+        topStrip.setStyle("-fx-background-color: linear-gradient(to right, #6366f1, #3b82f6);");
+        // make strip corners match card
+        topStrip.setStyle(
+                "-fx-background-color: linear-gradient(to right, #6366f1, #3b82f6);" +
+                        "-fx-background-radius: 14 14 0 0;"
+        );
 
+        // ── Body ─────────────────────────────────────────────
+        VBox body = new VBox(10);
+        body.setPadding(new Insets(18, 22, 14, 22));
+
+        // Badge row
         HBox badges = new HBox(8);
         badges.setAlignment(Pos.CENTER_LEFT);
 
-        String typeText = valueOrFallback(post.getType(), null);
+        String typeText  = valueOrFallback(post.getType(),  null);
         String topicText = valueOrFallback(post.getTopic(), null);
 
         if (typeText != null) {
-            Label typeBadge = new Label(typeText);
-            typeBadge.setStyle(
-                    "-fx-background-color: #eff6ff;" +
-                            "-fx-text-fill: #1d4ed8;" +
-                            "-fx-font-size: 11px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-background-radius: 20;" +
-                            "-fx-padding: 3 10 3 10;"
-            );
-            badges.getChildren().add(typeBadge);
+            badges.getChildren().add(makeBadge(typeText,
+                    "#eff6ff", "#1d4ed8"));
         }
-
         if (topicText != null) {
-            Label topicBadge = new Label(topicText);
-            topicBadge.setStyle(
-                    "-fx-background-color: #f0fdf4;" +
-                            "-fx-text-fill: #15803d;" +
-                            "-fx-font-size: 11px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-background-radius: 20;" +
-                            "-fx-padding: 3 10 3 10;"
-            );
-            badges.getChildren().add(topicBadge);
+            badges.getChildren().add(makeBadge(topicText,
+                    "#f0fdf4", "#15803d"));
         }
 
+        // Title
         Label titleLabel = new Label(valueOrFallback(post.getTitle(), "Untitled post"));
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
         titleLabel.setStyle("-fx-text-fill: #0f172a;");
         titleLabel.setWrapText(true);
 
+        // Content preview
         Label previewLabel = new Label(truncate(post.getContent(), PREVIEW_LIMIT));
         previewLabel.setWrapText(true);
         previewLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13px;");
 
-        if (!badges.getChildren().isEmpty()) {
-            body.getChildren().add(badges);
-        }
+        if (!badges.getChildren().isEmpty()) body.getChildren().add(badges);
         body.getChildren().addAll(titleLabel, previewLabel);
 
+        // ── Divider ───────────────────────────────────────────
         Region divider = new Region();
         divider.setPrefHeight(1);
         divider.setMaxHeight(1);
         divider.setStyle("-fx-background-color: #f1f5f9;");
 
+        // ── Footer ────────────────────────────────────────────
         HBox footer = new HBox(12);
         footer.setAlignment(Pos.CENTER_LEFT);
-        footer.setPadding(new Insets(12, 20, 14, 22));
+        footer.setPadding(new Insets(11, 20, 14, 22));
 
-        Label userLabel = new Label("by " + application.resolveUsername(post.getUserId()));
-        userLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px;");
+        // Avatar + author
+        String author = application.resolveUsername(post.getUserId());
+        String initial = (author != null && !author.isEmpty())
+                ? author.substring(0, 1).toUpperCase() : "?";
+
+        Label avatar = new Label(initial);
+        avatar.setStyle(
+                "-fx-background-color: #ede9fe;" +
+                        "-fx-text-fill: #6366f1;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 11px;" +
+                        "-fx-background-radius: 50;" +
+                        "-fx-min-width: 26; -fx-max-width: 26;" +
+                        "-fx-min-height: 26; -fx-max-height: 26;" +
+                        "-fx-alignment: center;"
+        );
+
+        Label userLabel = new Label(author);
+        userLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12px;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button openButton = new Button("Open Post");
+        Button openButton = new Button("Open Post  →");
         openButton.setStyle(
                 "-fx-background-color: #6366f1;" +
                         "-fx-text-fill: white;" +
@@ -191,14 +194,29 @@ public class PostOverviewController {
                         "-fx-cursor: hand;" +
                         "-fx-padding: 8 18 8 18;"
         );
-        openButton.setOnAction(event -> application.showPostDetailsScene(post.getId()));
+        openButton.setOnAction(e -> application.showPostDetailsScene(post.getId()));
 
-        footer.getChildren().addAll(userLabel, spacer, openButton);
+        footer.getChildren().addAll(avatar, userLabel, spacer, openButton);
 
-        card.getChildren().addAll(body, divider, footer);
-        card.setOnMouseClicked(event -> application.showPostDetailsScene(post.getId()));
+        card.getChildren().addAll(topStrip, body, divider, footer);
+        card.setOnMouseClicked(e -> application.showPostDetailsScene(post.getId()));
 
         return card;
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private Label makeBadge(String text, String bgColor, String textColor) {
+        Label badge = new Label(text);
+        badge.setStyle(
+                "-fx-background-color: " + bgColor + ";" +
+                        "-fx-text-fill: " + textColor + ";" +
+                        "-fx-font-size: 11px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-padding: 3 10 3 10;"
+        );
+        return badge;
     }
 
     private Label createEmptyState(String message) {
@@ -213,22 +231,16 @@ public class PostOverviewController {
     }
 
     private String truncate(String value, int maxLength) {
-        String safeValue = valueOrFallback(value, "");
-        if (safeValue.length() <= maxLength) {
-            return safeValue;
-        }
-        return safeValue.substring(0, maxLength).trim() + "...";
+        String s = valueOrFallback(value, "");
+        return s.length() <= maxLength ? s : s.substring(0, maxLength).trim() + "…";
     }
 
     private String valueOrFallback(String value, String fallback) {
         return (value == null || value.isBlank()) ? fallback : value.trim();
     }
 
-    private String selectedFilterValue(ComboBox<String> comboBox) {
-        String value = comboBox.getValue();
-        if (value == null || value.startsWith("All ")) {
-            return null;
-        }
-        return value;
+    private String selectedFilterValue(ComboBox<String> cb) {
+        String v = cb.getValue();
+        return (v == null || v.startsWith("All ")) ? null : v;
     }
 }
