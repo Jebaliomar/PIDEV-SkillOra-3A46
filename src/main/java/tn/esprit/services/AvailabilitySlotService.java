@@ -102,6 +102,16 @@ public class AvailabilitySlotService {
         }
     }
 
+    public boolean updateBookedStatus(int id, boolean isBooked) throws SQLException {
+        String sql = "UPDATE availability_slots SET is_booked = ? WHERE id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setBoolean(1, isBooked);
+            preparedStatement.setInt(2, id);
+            return preparedStatement.executeUpdate() > 0;
+        }
+    }
+
     private AvailabilitySlot mapResultSetToSlot(ResultSet resultSet) throws SQLException {
         AvailabilitySlot slot = new AvailabilitySlot();
         slot.setId(resultSet.getInt("id"));

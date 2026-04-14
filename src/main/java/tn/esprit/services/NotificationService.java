@@ -59,6 +59,22 @@ public class NotificationService {
         return notifications;
     }
 
+    public List<Notification> findByUser(int userId, int limit) throws SQLException {
+        String sql = "SELECT * FROM notification WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT ?";
+        List<Notification> notifications = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, limit);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    notifications.add(mapResultSetToNotification(resultSet));
+                }
+            }
+        }
+        return notifications;
+    }
+
     public int countUnreadByUser(int userId) throws SQLException {
         String sql = "SELECT COUNT(id) FROM notification WHERE user_id = ? AND is_read = 0";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -76,6 +92,14 @@ public class NotificationService {
         String sql = "UPDATE notification SET is_read = 1 WHERE user_id = ? AND is_read = 0";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, userId);
+            return preparedStatement.executeUpdate();
+        }
+    }
+
+    public int markAsRead(int notificationId) throws SQLException {
+        String sql = "UPDATE notification SET is_read = 1 WHERE id = ? AND is_read = 0";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, notificationId);
             return preparedStatement.executeUpdate();
         }
     }

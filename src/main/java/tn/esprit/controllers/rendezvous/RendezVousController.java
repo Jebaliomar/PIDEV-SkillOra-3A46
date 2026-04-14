@@ -15,6 +15,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
@@ -30,27 +31,35 @@ import tn.esprit.entities.RendezVous;
 import tn.esprit.services.AvailabilitySlotService;
 import tn.esprit.services.NotificationService;
 import tn.esprit.services.RendezVousService;
+import tn.esprit.tools.MyConnection;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class RendezVousController {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter NOTIFICATION_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter CARD_DATE_FORMATTER = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .appendPattern("dd MMM yyyy")
             .toFormatter();
     private static final String BTN_ACTIVE = "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: 700; -fx-background-radius: 12; -fx-padding: 12;";
     private static final String BTN_INACTIVE = "-fx-background-color: #0f1b38; -fx-text-fill: #cbd5e1; -fx-font-size: 16px; -fx-font-weight: 700; -fx-background-radius: 12; -fx-padding: 12;";
-    private static final int CURRENT_STUDENT_ID = 20;
+    private static final int CURRENT_USER_ID = parseCurrentUserId();
+    private static final String CURRENT_USER_ROLE = normalizeRole(System.getProperty("skillora.role", "student"));
 
     @FXML
     private Label statusLabel;
@@ -101,7 +110,9 @@ public class RendezVousController {
     @FXML
     private void refreshRendezVous() {
         try {
-            allRendezVous = rendezVousService.getAll();
+            allRendezVous = rendezVousService.getAll().stream()
+                    .filter(this::isVisibleForCurrentUser)
+                    .collect(Collectors.toList());
             selectedRendezVous = null;
             applyFiltersAndRender();
             updateNotificationBadge();
@@ -264,7 +275,22 @@ public class RendezVousController {
                 showInfo("PDF", "PDF file: " + pdf);
             }
         });
-        actions.getChildren().addAll(detailsBtn, editBtn, pdfBtn);
+
+        if (isProfessorMode()) {
+            Button acceptBtn = new Button("Accepter");
+            acceptBtn.setStyle("-fx-background-color: #16a34a; -fx-background-radius: 18; -fx-text-fill: white; -fx-font-weight: 700;");
+            acceptBtn.setDisable(!isPendingStatus(rdv.getStatut()));
+            acceptBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "confirme"));
+
+            Button refuseBtn = new Button("Refuser");
+            refuseBtn.setStyle("-fx-background-color: #dc2626; -fx-background-radius: 18; -fx-text-fill: white; -fx-font-weight: 700;");
+            refuseBtn.setDisable(!isPendingStatus(rdv.getStatut()));
+            refuseBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "refuse"));
+
+            actions.getChildren().addAll(detailsBtn, pdfBtn, acceptBtn, refuseBtn);
+        } else {
+            actions.getChildren().addAll(detailsBtn, editBtn, pdfBtn);
+        }
 
         card.getChildren().addAll(header, dateRow, line1, line2, line3, linkRow, actions);
         card.setOnMouseClicked(event -> {
@@ -290,14 +316,21 @@ public class RendezVousController {
 
     @FXML
     private void handleCreate() {
+        if (!isStudentMode()) {
+            showWarning("Action not allowed", "Only students can create rendez-vous.");
+            return;
+        }
+
         Optional<RendezVous> input = showCreateRendezVousDialog();
         if (input.isEmpty()) {
             return;
         }
 
+        RendezVous created = input.get();
         try {
-            rendezVousService.add(input.get());
-            createProfessorNotification(input.get());
+            rendezVousService.add(created);
+            markSlotBookedState(created.getSlotId(), true);
+            createProfessorNotification(created);
             refreshRendezVous();
             statusLabel.setText("Rendez-vous added successfully");
         } catch (SQLException exception) {
@@ -315,6 +348,10 @@ public class RendezVousController {
             showWarning("Selection required", "Select a rendez-vous card before trying to edit.");
             return;
         }
+        if (!canStudentManage(selectedRendezVous)) {
+            showWarning("Action not allowed", "You can edit only your own rendez-vous as a student.");
+            return;
+        }
 
         Optional<RendezVous> input = showEditRendezVousDialog(selectedRendezVous);
         if (input.isEmpty()) {
@@ -323,9 +360,14 @@ public class RendezVousController {
 
         RendezVous updated = input.get();
         updated.setId(selectedRendezVous.getId());
+        Integer previousSlotId = selectedRendezVous.getSlotId();
         try {
             boolean ok = rendezVousService.update(updated);
             if (ok) {
+                if (!sameInteger(previousSlotId, updated.getSlotId())) {
+                    markSlotBookedState(previousSlotId, false);
+                    markSlotBookedState(updated.getSlotId(), true);
+                }
                 refreshRendezVous();
                 statusLabel.setText("Rendez-vous #" + selectedRendezVous.getId() + " updated");
             } else {
@@ -340,6 +382,10 @@ public class RendezVousController {
     private void handleDelete() {
         if (selectedRendezVous == null) {
             showWarning("Selection required", "Select a rendez-vous card before trying to delete.");
+            return;
+        }
+        if (!canStudentManage(selectedRendezVous)) {
+            showWarning("Action not allowed", "You can delete only your own rendez-vous as a student.");
             return;
         }
 
@@ -357,9 +403,11 @@ public class RendezVousController {
         }
 
         try {
+            Integer deletedSlotId = selectedRendezVous.getSlotId();
             boolean deleted = rendezVousService.delete(selectedRendezVous.getId());
             if (deleted) {
                 Integer deletedId = selectedRendezVous.getId();
+                markSlotBookedState(deletedSlotId, false);
                 selectedRendezVous = null;
                 refreshRendezVous();
                 statusLabel.setText("Rendez-vous #" + deletedId + " deleted");
@@ -423,7 +471,11 @@ public class RendezVousController {
         slotCombo.setValue(slotOptions.get(0));
         styleCombo(slotCombo);
 
-        TextField courseIdField = buildInputField("Aucun cours spécifique");
+        ComboBox<CourseOption> courseCombo = new ComboBox<>();
+        styleCombo(courseCombo);
+        refreshCourseOptionsForSlot(slotCombo.getValue(), courseCombo, null);
+        slotCombo.valueProperty().addListener((obs, oldValue, newValue) ->
+                refreshCourseOptionsForSlot(newValue, courseCombo, null));
 
         ToggleGroup typeGroup = new ToggleGroup();
         RadioButton onlineRadio = new RadioButton("En ligne");
@@ -459,7 +511,7 @@ public class RendezVousController {
         content.setStyle("-fx-background-color: #101b36; -fx-padding: 18; -fx-border-color: #2b3f67; -fx-border-radius: 14; -fx-background-radius: 14;");
 
         Label slotLabel = sectionLabel("Créneau");
-        Label courseLabel = sectionLabel("Cours (optionnel)");
+        Label courseLabel = sectionLabel("Cours existant");
         Label typeLabel = sectionLabel("Type de rendez-vous");
         Label infoTitle = sectionLabel("Information");
         Label infoText = new Label("Le professeur ajoutera le lien après confirmation.");
@@ -472,7 +524,7 @@ public class RendezVousController {
 
         content.getChildren().addAll(
                 slotLabel, slotCombo,
-                courseLabel, courseIdField,
+                courseLabel, courseCombo,
                 typeLabel, typeBox,
                 infoTitle, infoText,
                 messageLabel, messageArea,
@@ -490,18 +542,22 @@ public class RendezVousController {
 
         try {
             SlotOption selectedSlot = slotCombo.getValue();
+            CourseOption selectedCourse = courseCombo.getValue();
             if (selectedSlot == null) {
                 throw new IllegalArgumentException("Please choose a slot.");
             }
             if (selectedSlot.professorId() == null) {
                 throw new IllegalArgumentException("Selected slot has no professor.");
             }
+            if (selectedCourse == null || selectedCourse.id() == null) {
+                throw new IllegalArgumentException("Please choose an existing course.");
+            }
 
             RendezVous rdv = new RendezVous();
             rdv.setSlotId(selectedSlot.id());
             rdv.setProfessorId(selectedSlot.professorId());
-            rdv.setStudentId(CURRENT_STUDENT_ID);
-            rdv.setCourseId(parseIntOptional(courseIdField.getText()));
+            rdv.setStudentId(CURRENT_USER_ID);
+            rdv.setCourseId(selectedCourse.id());
             rdv.setMeetingType(onlineRadio.isSelected() ? "en_ligne" : "en_personne");
             rdv.setStatut("en_attente");
             rdv.setMeetingLink(null);
@@ -539,12 +595,20 @@ public class RendezVousController {
         slotCombo.setValue(findSlotOptionById(slotOptions, source.getSlotId()));
         styleCombo(slotCombo);
 
+        ComboBox<CourseOption> courseCombo = new ComboBox<>();
+        styleCombo(courseCombo);
+        refreshCourseOptionsForSlot(slotCombo.getValue(), courseCombo, source.getCourseId());
+        slotCombo.valueProperty().addListener((obs, oldValue, newValue) ->
+                refreshCourseOptionsForSlot(newValue, courseCombo, null));
+
         VBox content = new VBox(10);
         content.setStyle("-fx-background-color: #101b36; -fx-padding: 18; -fx-border-color: #2b3f67; -fx-border-radius: 14; -fx-background-radius: 14;");
         content.getChildren().addAll(
                 currentSlotLabel,
                 sectionLabel("Nouveau créneau"),
-                slotCombo
+                slotCombo,
+                sectionLabel("Cours"),
+                courseCombo
         );
 
         styleDialog(dialog.getDialogPane());
@@ -557,8 +621,13 @@ public class RendezVousController {
         }
 
         SlotOption chosen = slotCombo.getValue();
+        CourseOption chosenCourse = courseCombo.getValue();
         if (chosen == null) {
             showWarning("Validation error", "Please choose a slot.");
+            return Optional.empty();
+        }
+        if (chosenCourse == null || chosenCourse.id() == null) {
+            showWarning("Validation error", "Please choose an existing course.");
             return Optional.empty();
         }
 
@@ -567,26 +636,188 @@ public class RendezVousController {
         if (chosen.professorId() != null) {
             updated.setProfessorId(chosen.professorId());
         }
+        updated.setCourseId(chosenCourse.id());
         return Optional.of(updated);
     }
 
     private List<SlotOption> loadSlotOptions(Integer includeSlotId) throws SQLException {
         return availabilitySlotService.getAll().stream()
-                .filter(slot -> !Boolean.TRUE.equals(slot.getIsBooked()) || (includeSlotId != null && includeSlotId.equals(slot.getId())))
-                .map(slot -> new SlotOption(
-                        slot.getId(),
-                        slot.getProfessorId(),
-                        formatSlotRange(slot)
-                ))
+                .filter(slot -> isSlotAvailable(slot, includeSlotId))
+                .map(slot -> {
+                    String professorName = resolveProfessorName(slot.getProfessorId());
+                    return new SlotOption(
+                            slot.getId(),
+                            slot.getProfessorId(),
+                            professorName,
+                            formatSlotRange(slot, professorName)
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
-    private String formatSlotRange(AvailabilitySlot slot) {
+    private boolean isSlotAvailable(AvailabilitySlot slot, Integer includeSlotId) {
+        if (includeSlotId != null && includeSlotId.equals(slot.getId())) {
+            return true;
+        }
+        return !Boolean.TRUE.equals(slot.getIsBooked());
+    }
+
+    private String formatSlotRange(AvailabilitySlot slot, String professorName) {
         String start = slot.getStartAt() == null ? "-" : slot.getStartAt().format(DATE_TIME_FORMATTER);
         String end = slot.getEndAt() == null ? "-" : slot.getEndAt().format(DATE_TIME_FORMATTER);
         String currentFlag = selectedRendezVous != null && selectedRendezVous.getSlotId() != null
                 && selectedRendezVous.getSlotId().equals(slot.getId()) ? " (actuel)" : "";
-        return "#" + safeNumber(slot.getId()) + "  " + start + " -> " + end + currentFlag;
+        String professor = normalizeDefault(professorName, "Prof #" + safeNumber(slot.getProfessorId()));
+        return "#" + safeNumber(slot.getId()) + "  " + start + " -> " + end + "  |  " + professor + currentFlag;
+    }
+
+    private String resolveProfessorName(Integer professorId) {
+        if (professorId == null) {
+            return "Professeur inconnu";
+        }
+
+        try {
+            String userTable = findExistingTable("user", "users");
+            if (userTable == null) {
+                return "Prof #" + professorId;
+            }
+
+            Connection connection = MyConnection.getInstance().getConnection();
+            String sql = "SELECT first_name, last_name, username FROM `" + userTable + "` WHERE id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, professorId);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        String fullName = (normalizeDefault(resultSet.getString("first_name"), "") + " "
+                                + normalizeDefault(resultSet.getString("last_name"), "")).trim();
+                        if (!fullName.isBlank()) {
+                            return fullName;
+                        }
+                        String username = normalizeDefault(resultSet.getString("username"), "");
+                        if (!username.isBlank()) {
+                            return username;
+                        }
+                    }
+                }
+            }
+        } catch (SQLException ignored) {
+            // Fallback to ID-based label when user lookup is unavailable.
+        }
+
+        return "Prof #" + professorId;
+    }
+
+    private void refreshCourseOptionsForSlot(SlotOption selectedSlot, ComboBox<CourseOption> courseCombo, Integer preferredCourseId) {
+        courseCombo.getItems().clear();
+        courseCombo.setDisable(true);
+        if (selectedSlot == null || selectedSlot.professorId() == null) {
+            courseCombo.setPromptText("Choisir un créneau");
+            return;
+        }
+
+        try {
+            List<CourseOption> options = loadCourseOptionsForProfessor(selectedSlot.professorId());
+            if (options.isEmpty()) {
+                courseCombo.setPromptText("Aucun cours disponible");
+                return;
+            }
+            courseCombo.getItems().setAll(options);
+            courseCombo.setDisable(false);
+            courseCombo.setValue(findCourseOptionById(options, preferredCourseId));
+        } catch (SQLException exception) {
+            showError("Unable to load courses", exception);
+        }
+    }
+
+    private List<CourseOption> loadCourseOptionsForProfessor(Integer professorId) throws SQLException {
+        String courseTable = findExistingTable("course", "courses");
+        if (courseTable == null) {
+            return List.of();
+        }
+
+        String titleColumn = findExistingColumn(courseTable, "title", "name", "label");
+        String professorColumn = findExistingColumn(courseTable, "professor_id", "teacher_id", "instructor_id", "author_id", "user_id", "created_by");
+
+        List<CourseOption> options = queryCourseOptions(courseTable, titleColumn, professorColumn, professorId);
+        if (options.isEmpty() && professorColumn != null && professorId != null) {
+            options = queryCourseOptions(courseTable, titleColumn, null, null);
+        }
+        return options;
+    }
+
+    private List<CourseOption> queryCourseOptions(String courseTable, String titleColumn, String professorColumn, Integer professorId) throws SQLException {
+        Connection connection = MyConnection.getInstance().getConnection();
+        List<CourseOption> options = new ArrayList<>();
+
+        String titleSelect = titleColumn == null ? "NULL AS course_title" : "`" + titleColumn + "` AS course_title";
+        StringBuilder sql = new StringBuilder("SELECT `id`, ").append(titleSelect).append(" FROM `").append(courseTable).append("`");
+        if (professorColumn != null && professorId != null) {
+            sql.append(" WHERE `").append(professorColumn).append("` = ?");
+        }
+        if (titleColumn != null) {
+            sql.append(" ORDER BY `").append(titleColumn).append("` ASC");
+        } else {
+            sql.append(" ORDER BY `id` ASC");
+        }
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
+            if (professorColumn != null && professorId != null) {
+                preparedStatement.setInt(1, professorId);
+            }
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int courseId = resultSet.getInt("id");
+                    String title = normalizeDefault(resultSet.getString("course_title"), "Course #" + courseId);
+                    options.add(new CourseOption(courseId, title));
+                }
+            }
+        }
+
+        return options;
+    }
+
+    private String findExistingTable(String... candidates) throws SQLException {
+        Connection connection = MyConnection.getInstance().getConnection();
+        String catalog = connection.getCatalog();
+        for (String candidate : candidates) {
+            if (tableExists(connection, catalog, candidate)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private boolean tableExists(Connection connection, String catalog, String tableName) throws SQLException {
+        try (ResultSet resultSet = connection.getMetaData().getTables(catalog, null, tableName, new String[]{"TABLE"})) {
+            if (resultSet.next()) {
+                return true;
+            }
+        }
+        try (ResultSet resultSet = connection.getMetaData().getTables(catalog, null, tableName.toUpperCase(), new String[]{"TABLE"})) {
+            return resultSet.next();
+        }
+    }
+
+    private String findExistingColumn(String tableName, String... candidates) throws SQLException {
+        Connection connection = MyConnection.getInstance().getConnection();
+        String catalog = connection.getCatalog();
+        for (String candidate : candidates) {
+            if (columnExists(connection, catalog, tableName, candidate)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private boolean columnExists(Connection connection, String catalog, String tableName, String columnName) throws SQLException {
+        try (ResultSet resultSet = connection.getMetaData().getColumns(catalog, null, tableName, columnName)) {
+            if (resultSet.next()) {
+                return true;
+            }
+        }
+        try (ResultSet resultSet = connection.getMetaData().getColumns(catalog, null, tableName.toUpperCase(), columnName.toUpperCase())) {
+            return resultSet.next();
+        }
     }
 
     private SlotOption findSlotOptionById(List<SlotOption> options, Integer slotId) {
@@ -597,6 +828,19 @@ public class RendezVousController {
                 .filter(option -> slotId.equals(option.id()))
                 .findFirst()
                 .orElse(options.isEmpty() ? null : options.get(0));
+    }
+
+    private CourseOption findCourseOptionById(List<CourseOption> options, Integer courseId) {
+        if (options.isEmpty()) {
+            return null;
+        }
+        if (courseId == null) {
+            return options.get(0);
+        }
+        return options.stream()
+                .filter(option -> courseId.equals(option.id()))
+                .findFirst()
+                .orElse(options.get(0));
     }
 
     private String resolveSlotLabel(Integer slotId, List<SlotOption> options) {
@@ -617,13 +861,6 @@ public class RendezVousController {
         if (secondaryBtn != null) {
             secondaryBtn.setStyle("-fx-background-color: #162546; -fx-text-fill: #e2e8f0; -fx-font-weight: 700; -fx-background-radius: 12; -fx-border-color: #2e4677; -fx-border-radius: 12;");
         }
-    }
-
-    private TextField buildInputField(String prompt) {
-        TextField field = new TextField();
-        field.setPromptText(prompt);
-        field.setStyle("-fx-background-color: #101f40; -fx-border-color: #2754a3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #94a3b8;");
-        return field;
     }
 
     private void styleCombo(ComboBox<?> comboBox) {
@@ -661,22 +898,108 @@ public class RendezVousController {
         return copy;
     }
 
-    private record SlotOption(Integer id, Integer professorId, String label) {
+    private record SlotOption(Integer id, Integer professorId, String professorName, String label) {
         @Override
         public String toString() {
             return label;
         }
     }
 
-    private Integer parseIntOptional(String raw) {
-        String value = raw == null ? "" : raw.trim();
-        if (value.isEmpty()) {
-            return null;
+    private record CourseOption(Integer id, String title) {
+        @Override
+        public String toString() {
+            String idText = id == null ? "-" : id.toString();
+            String titleText = title == null ? "" : title.trim();
+            return "#" + idText + "  " + (titleText.isEmpty() ? "-" : titleText);
+        }
+    }
+
+    private void markSlotBookedState(Integer slotId, boolean booked) {
+        if (slotId == null) {
+            return;
         }
         try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("Course ID must be a valid integer.");
+            availabilitySlotService.updateBookedStatus(slotId, booked);
+        } catch (SQLException exception) {
+            showWarning("Slot update", "Rendez-vous saved, but slot #" + slotId + " booking state could not be updated.");
+        }
+    }
+
+    private boolean sameInteger(Integer left, Integer right) {
+        if (left == null && right == null) {
+            return true;
+        }
+        if (left == null || right == null) {
+            return false;
+        }
+        return left.equals(right);
+    }
+
+    private boolean isVisibleForCurrentUser(RendezVous rdv) {
+        if (rdv == null) {
+            return false;
+        }
+        if (isAdminMode()) {
+            return true;
+        }
+        if (isProfessorMode()) {
+            return sameInteger(rdv.getProfessorId(), CURRENT_USER_ID);
+        }
+        return sameInteger(rdv.getStudentId(), CURRENT_USER_ID);
+    }
+
+    private boolean canStudentManage(RendezVous rdv) {
+        return isStudentMode() && rdv != null && sameInteger(rdv.getStudentId(), CURRENT_USER_ID);
+    }
+
+    private boolean isAdminMode() {
+        return CURRENT_USER_ROLE.contains("admin");
+    }
+
+    private boolean isProfessorMode() {
+        return !isAdminMode() && (CURRENT_USER_ROLE.contains("prof") || CURRENT_USER_ROLE.contains("teacher"));
+    }
+
+    private boolean isStudentMode() {
+        return !isAdminMode() && !isProfessorMode();
+    }
+
+    private void updateStatusAsProfessor(RendezVous source, String newStatus) {
+        if (source == null) {
+            showWarning("Selection required", "Select a rendez-vous first.");
+            return;
+        }
+        if (!isProfessorMode() && !isAdminMode()) {
+            showWarning("Action not allowed", "Only professor can accept or refuse a rendez-vous.");
+            return;
+        }
+        if (!isAdminMode() && !sameInteger(source.getProfessorId(), CURRENT_USER_ID)) {
+            showWarning("Action not allowed", "You can only update rendez-vous assigned to you.");
+            return;
+        }
+        if (!isPendingStatus(source.getStatut())) {
+            showWarning("Action not allowed", "Only pending rendez-vous can be accepted or refused.");
+            return;
+        }
+
+        RendezVous updated = copyRendezVous(source);
+        updated.setStatut(newStatus);
+        try {
+            boolean ok = rendezVousService.update(updated);
+            if (!ok) {
+                showWarning("Update failed", "The selected rendez-vous could not be updated.");
+                return;
+            }
+            if (isRefusedStatus(newStatus)) {
+                markSlotBookedState(updated.getSlotId(), false);
+            } else if (isConfirmedStatus(newStatus)) {
+                markSlotBookedState(updated.getSlotId(), true);
+            }
+            createStudentStatusNotification(updated);
+            refreshRendezVous();
+            statusLabel.setText("Rendez-vous #" + safeNumber(updated.getId()) + " is now " + statusDisplay(newStatus));
+        } catch (SQLException exception) {
+            showError("Unable to update rendez-vous status", exception);
         }
     }
 
@@ -738,19 +1061,11 @@ public class RendezVousController {
     @FXML
     private void showUnreadNotifications() {
         try {
-            List<Notification> unread = notificationService.findUnreadByUser(CURRENT_STUDENT_ID, 20);
-            if (unread.isEmpty()) {
-                showInfo("Notifications", "No unread notifications.");
-                return;
+            List<Notification> unread = notificationService.findUnreadByUser(CURRENT_USER_ID, 20);
+            boolean openAll = showNotificationsDialog(unread);
+            if (openAll) {
+                showAllNotificationsDialog();
             }
-            StringBuilder builder = new StringBuilder();
-            for (Notification notification : unread) {
-                builder.append("- ").append(normalizeDefault(notification.getTitle(), "Notification"))
-                        .append(": ").append(normalizeDefault(notification.getMessage(), ""))
-                        .append("\n");
-            }
-            showInfo("Unread notifications", builder.toString().trim());
-            notificationService.markAllAsReadForUser(CURRENT_STUDENT_ID);
             updateNotificationBadge();
         } catch (SQLException exception) {
             showError("Unable to load notifications", exception);
@@ -762,7 +1077,7 @@ public class RendezVousController {
             return;
         }
         try {
-            int unread = notificationService.countUnreadByUser(CURRENT_STUDENT_ID);
+            int unread = notificationService.countUnreadByUser(CURRENT_USER_ID);
             notificationButton.setText("🔔 " + unread);
         } catch (SQLException exception) {
             notificationButton.setText("🔔 !");
@@ -785,6 +1100,260 @@ public class RendezVousController {
         } catch (SQLException exception) {
             showWarning("Notification", "Rendez-vous created, but notification was not saved: " + exception.getMessage());
         }
+    }
+
+    private void createStudentStatusNotification(RendezVous rdv) {
+        if (rdv == null || rdv.getStudentId() == null) {
+            return;
+        }
+        Notification notification = new Notification();
+        notification.setUserId(rdv.getStudentId());
+        notification.setTitle("Mise à jour rendez-vous");
+        notification.setMessage("Votre rendez-vous #" + rdv.getId() + " a été " + statusDisplay(rdv.getStatut()).toLowerCase() + ".");
+        notification.setLink("/rendezvous/" + rdv.getId());
+        notification.setIsRead(false);
+        notification.setCreatedAt(LocalDateTime.now());
+        try {
+            notificationService.add(notification);
+        } catch (SQLException exception) {
+            showWarning("Notification", "Rendez-vous updated, but notification was not saved: " + exception.getMessage());
+        }
+    }
+
+    private boolean showNotificationsDialog(List<Notification> unread) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Notifications");
+        ButtonType closeType = new ButtonType("Fermer", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().add(closeType);
+        AtomicBoolean openAll = new AtomicBoolean(false);
+
+        Button closeButton = (Button) dialog.getDialogPane().lookupButton(closeType);
+        if (closeButton != null) {
+            closeButton.setVisible(false);
+            closeButton.setManaged(false);
+        }
+
+        VBox root = new VBox();
+        root.setStyle("-fx-background-color: #08142d; -fx-border-color: #1f325f; -fx-border-width: 1; -fx-border-radius: 18; -fx-background-radius: 18;");
+        root.setPrefWidth(360);
+        root.setMaxWidth(360);
+
+        Label title = new Label("Notifications");
+        title.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 16px; -fx-font-weight: 700;");
+        VBox titleWrap = new VBox(title);
+        titleWrap.setStyle("-fx-padding: 20 24 16 24;");
+
+        Region topDivider = new Region();
+        topDivider.setStyle("-fx-border-color: #162a4f; -fx-border-width: 1 0 0 0; -fx-min-height: 1;");
+
+        VBox center = new VBox(10);
+        center.setStyle("-fx-padding: 22 24 22 24; -fx-alignment: center;");
+        if (unread == null || unread.isEmpty()) {
+            Label empty = new Label("Aucune notification non lue.");
+            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 15px; -fx-font-weight: 500;");
+            center.getChildren().add(empty);
+        } else {
+            int limit = Math.min(unread.size(), 5);
+            for (int i = 0; i < limit; i++) {
+                Notification notification = unread.get(i);
+                Label line = new Label("• " + normalizeDefault(notification.getTitle(), "Notification")
+                        + " : " + normalizeDefault(notification.getMessage(), ""));
+                line.setWrapText(true);
+                line.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 14px;");
+                center.getChildren().add(line);
+            }
+        }
+
+        Region bottomDivider = new Region();
+        bottomDivider.setStyle("-fx-border-color: #162a4f; -fx-border-width: 1 0 0 0; -fx-min-height: 1;");
+
+        Button footerAction = new Button("Voir toutes les notifications");
+        footerAction.setStyle("-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-font-size: 16px; -fx-font-weight: 700;");
+        footerAction.setOnAction(event -> {
+            openAll.set(true);
+            dialog.setResult(closeType);
+        });
+        VBox footerWrap = new VBox(footerAction);
+        footerWrap.setStyle("-fx-padding: 14 24 16 24; -fx-alignment: center;");
+
+        root.getChildren().addAll(titleWrap, topDivider, center, bottomDivider, footerWrap);
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.setStyle("-fx-background-color: transparent;");
+        pane.setContent(root);
+
+        Node buttonBar = pane.lookup(".button-bar");
+        if (buttonBar != null) {
+            buttonBar.setVisible(false);
+            buttonBar.setManaged(false);
+        }
+
+        dialog.showAndWait();
+        return openAll.get();
+    }
+
+    private void showAllNotificationsDialog() {
+        List<Notification> notifications;
+        try {
+            notifications = notificationService.findByUser(CURRENT_USER_ID, 200);
+        } catch (SQLException exception) {
+            showError("Unable to load notifications", exception);
+            return;
+        }
+
+        long unreadCount = notifications.stream()
+                .filter(notification -> !Boolean.TRUE.equals(notification.getIsRead()))
+                .count();
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Notifications");
+        ButtonType closeType = new ButtonType("Fermer", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().add(closeType);
+
+        Button closeButton = (Button) dialog.getDialogPane().lookupButton(closeType);
+        if (closeButton != null) {
+            closeButton.setVisible(false);
+            closeButton.setManaged(false);
+        }
+
+        AtomicBoolean shouldReload = new AtomicBoolean(false);
+        VBox root = new VBox(14);
+        root.setStyle("-fx-background-color: #020f2d; -fx-border-color: #10295b; -fx-border-width: 1; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 18;");
+        root.setPrefWidth(980);
+        root.setMaxWidth(980);
+        root.setPrefHeight(640);
+
+        HBox header = new HBox(12);
+        Label title = new Label("Notifications");
+        title.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 42px; -fx-font-weight: 800;");
+        Button markAllBtn = new Button("Tout marquer comme lu");
+        markAllBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: 700; -fx-background-radius: 12; -fx-padding: 8 16;");
+        markAllBtn.setDisable(unreadCount == 0);
+        markAllBtn.setOnAction(event -> {
+            try {
+                notificationService.markAllAsReadForUser(CURRENT_USER_ID);
+                shouldReload.set(true);
+                dialog.setResult(closeType);
+            } catch (SQLException exception) {
+                showError("Unable to mark notifications as read", exception);
+            }
+        });
+        header.getChildren().addAll(title, markAllBtn);
+
+        Label unreadLabel = new Label(unreadCount + " non lu(s)");
+        unreadLabel.setStyle("-fx-text-fill: #60a5fa; -fx-font-size: 14px; -fx-font-weight: 600;");
+
+        VBox rows = new VBox(0);
+        rows.setStyle("-fx-background-color: #081b45; -fx-border-color: #173467; -fx-border-width: 1; -fx-border-radius: 14; -fx-background-radius: 14;");
+
+        if (notifications.isEmpty()) {
+            Label empty = new Label("Aucune notification.");
+            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 16px; -fx-padding: 20;");
+            rows.getChildren().add(empty);
+        } else {
+            for (int i = 0; i < notifications.size(); i++) {
+                Notification notification = notifications.get(i);
+                rows.getChildren().add(buildNotificationRow(notification, i == notifications.size() - 1, dialog, shouldReload, closeType));
+            }
+        }
+
+        ScrollPane listScroll = new ScrollPane(rows);
+        listScroll.setFitToWidth(true);
+        listScroll.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+
+        root.getChildren().addAll(header, unreadLabel, listScroll);
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.setStyle("-fx-background-color: transparent;");
+        pane.setContent(root);
+
+        Node buttonBar = pane.lookup(".button-bar");
+        if (buttonBar != null) {
+            buttonBar.setVisible(false);
+            buttonBar.setManaged(false);
+        }
+
+        dialog.showAndWait();
+        updateNotificationBadge();
+        if (shouldReload.get()) {
+            showAllNotificationsDialog();
+        }
+    }
+
+    private HBox buildNotificationRow(Notification notification, boolean lastRow, Dialog<ButtonType> dialog, AtomicBoolean shouldReload, ButtonType closeType) {
+        HBox row = new HBox(14);
+        String border = lastRow ? "0 0 0 0" : "0 0 1 0";
+        String background = Boolean.TRUE.equals(notification.getIsRead()) ? "#061635" : "#0a1f4f";
+        row.setStyle("-fx-alignment: center-left; -fx-padding: 14 16; -fx-border-color: #12305f; -fx-border-width: " + border + "; -fx-background-color: " + background + ";");
+
+        Label icon = new Label("🔔");
+        icon.setStyle("-fx-background-color: #10336e; -fx-text-fill: #60a5fa; -fx-font-size: 14px; -fx-padding: 8; -fx-background-radius: 18;");
+
+        VBox textBox = new VBox(4);
+        textBox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(textBox, javafx.scene.layout.Priority.ALWAYS);
+
+        Label title = new Label(normalizeDefault(notification.getTitle(), "Notification"));
+        title.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 20px; -fx-font-weight: 800;");
+        Label message = new Label(normalizeDefault(notification.getMessage(), "-"));
+        message.setWrapText(true);
+        message.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 14px;");
+        Label time = new Label(formatNotificationDate(notification.getCreatedAt()));
+        time.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 12px;");
+        textBox.getChildren().addAll(title, message, time);
+
+        HBox actions = new HBox(8);
+        Button openBtn = new Button("Ouvrir");
+        openBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-font-size: 13px; -fx-font-weight: 700;");
+        openBtn.setOnAction(event -> showInfo(
+                normalizeDefault(notification.getTitle(), "Notification"),
+                normalizeDefault(notification.getMessage(), "") + "\n" + normalizeDefault(notification.getLink(), "")
+        ));
+        actions.getChildren().add(openBtn);
+
+        if (!Boolean.TRUE.equals(notification.getIsRead())) {
+            Button markReadBtn = new Button("Marquer lu");
+            markReadBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #4ade80; -fx-font-size: 13px; -fx-font-weight: 700;");
+            markReadBtn.setOnAction(event -> markNotificationAsRead(notification, dialog, shouldReload, closeType));
+            actions.getChildren().add(markReadBtn);
+        }
+
+        row.getChildren().addAll(icon, textBox, actions);
+        return row;
+    }
+
+    private void markNotificationAsRead(Notification notification, Dialog<ButtonType> dialog, AtomicBoolean shouldReload, ButtonType closeType) {
+        if (notification == null || notification.getId() == null) {
+            return;
+        }
+        try {
+            notificationService.markAsRead(notification.getId());
+            shouldReload.set(true);
+            dialog.setResult(closeType);
+        } catch (SQLException exception) {
+            showError("Unable to update notification", exception);
+        }
+    }
+
+    private String formatNotificationDate(LocalDateTime value) {
+        return value == null ? "-" : value.format(NOTIFICATION_DATE_FORMATTER);
+    }
+
+    private static int parseCurrentUserId() {
+        String raw = System.getProperty("skillora.userId", "20");
+        try {
+            return Integer.parseInt(raw.trim());
+        } catch (NumberFormatException ignored) {
+            return 20;
+        }
+    }
+
+    private static String normalizeRole(String raw) {
+        if (raw == null) {
+            return "student";
+        }
+        String normalized = raw.trim().toLowerCase();
+        return normalized.isEmpty() ? "student" : normalized;
     }
 
     private void showInfo(String title, String message) {
