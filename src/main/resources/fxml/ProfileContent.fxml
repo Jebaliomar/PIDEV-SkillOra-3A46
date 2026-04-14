@@ -4,117 +4,197 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.shape.Circle?>
 
-<ScrollPane fitToWidth="true" styleClass="scroll-pane"
+<ScrollPane fitToWidth="true" styleClass="scroll-pane pf-scroll"
             xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.controllers.ProfileController">
-    <VBox spacing="0">
+    <VBox styleClass="pf-root" spacing="0">
+        <padding><Insets top="56" right="96" bottom="88" left="96"/></padding>
 
-        <!-- Cover photo -->
-        <StackPane styleClass="cover-photo" prefHeight="220"/>
+        <!-- Eyebrow -->
+        <HBox alignment="CENTER_LEFT" spacing="18">
+            <Label text="PROFILE" styleClass="pf-eyebrow"/>
+            <Region styleClass="pf-eyebrow-rule" prefHeight="1" maxHeight="1" HBox.hgrow="ALWAYS"/>
+            <Label text="N° 001" styleClass="pf-eyebrow"/>
+            <Region styleClass="pf-eyebrow-rule" prefHeight="1" maxHeight="1" prefWidth="80" maxWidth="80"/>
+            <Label text="SKILLORA — STUDENT RECORD" styleClass="pf-eyebrow"/>
+        </HBox>
 
-        <HBox spacing="28">
-            <padding><Insets top="0" right="60" bottom="60" left="60"/></padding>
+        <Region prefHeight="56"/>
 
-            <!-- Left: main profile card -->
-            <VBox spacing="24" HBox.hgrow="ALWAYS">
-
-                <!-- Profile header card overlapping cover -->
-                <VBox styleClass="profile-header-card" spacing="16">
-                    <padding><Insets top="32" right="32" bottom="32" left="32"/></padding>
-                    <HBox spacing="24" alignment="CENTER_LEFT">
-                        <StackPane fx:id="avatarHolder" prefWidth="200" prefHeight="240" minWidth="200" minHeight="240" styleClass="avatar-3d-holder">
-                            <Circle fx:id="avatarRing" radius="78" styleClass="avatar-large"/>
-                            <Label fx:id="avatarInitials" styleClass="avatar-initials-large"/>
-                        </StackPane>
-                        <VBox spacing="6" HBox.hgrow="ALWAYS">
-                            <Label fx:id="fullNameLabel" text="Full Name" styleClass="profile-name"/>
-                            <Label fx:id="fieldLabel" text="Field of study" styleClass="profile-field"/>
-                            <HBox spacing="10">
-                                <Label fx:id="roleBadge" text="Student" styleClass="badge-student"/>
-                                <Label fx:id="universityLabel" text="University" styleClass="profile-meta"/>
-                                <Label fx:id="countryLabel" text="Country" styleClass="profile-meta"/>
-                            </HBox>
-                        </VBox>
-                        <Button text="Edit Profile" onAction="#goToSettings" styleClass="btn-primary"/>
-                    </HBox>
-
-                    <!-- Stats row -->
-                    <HBox spacing="16">
-                        <VBox styleClass="profile-stat-box" HBox.hgrow="ALWAYS">
-                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-                            <Label text="Courses" styleClass="metric-label"/>
-                            <Label text="12" styleClass="metric-value"/>
-                        </VBox>
-                        <VBox styleClass="profile-stat-box" HBox.hgrow="ALWAYS">
-                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-                            <Label text="Hours" styleClass="metric-label"/>
-                            <Label text="84" styleClass="metric-value"/>
-                        </VBox>
-                        <VBox styleClass="profile-stat-box" HBox.hgrow="ALWAYS">
-                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-                            <Label text="Certificates" styleClass="metric-label"/>
-                            <Label text="5" styleClass="metric-value"/>
-                        </VBox>
-                        <VBox styleClass="profile-stat-box" HBox.hgrow="ALWAYS">
-                            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-                            <Label text="Badges" styleClass="metric-label"/>
-                            <Label text="8" styleClass="metric-value"/>
-                        </VBox>
-                    </HBox>
-                </VBox>
-
-                <!-- About section -->
-                <VBox styleClass="chart-card" spacing="14">
-                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                    <Label text="About" styleClass="chart-title"/>
-                    <Label fx:id="bioLabel" text="No bio yet." styleClass="profile-meta" wrapText="true"/>
-                    <Separator/>
-                    <GridPane hgap="32" vgap="10">
-                        <Label text="Email:" styleClass="metric-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                        <Label fx:id="emailLabel" styleClass="metric-value" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                        <Label text="Phone:" styleClass="metric-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                        <Label fx:id="phoneLabel" styleClass="metric-value" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                        <Label text="Date of Birth:" styleClass="metric-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                        <Label fx:id="dobLabel" styleClass="metric-value" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                        <Label text="Member Since:" styleClass="metric-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                        <Label fx:id="memberSinceLabel" styleClass="metric-value" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-                        <Label text="Gender:" styleClass="metric-label" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                        <Label fx:id="genderLabel" styleClass="metric-value" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-                    </GridPane>
-                </VBox>
+        <!-- Hero: asymmetric — avatar left, massive serif name right -->
+        <HBox spacing="64" alignment="TOP_LEFT">
+            <VBox spacing="18" alignment="TOP_LEFT">
+                <StackPane fx:id="avatarHolder" prefWidth="200" prefHeight="240"
+                           minWidth="200" minHeight="240" styleClass="pf-avatar-frame">
+                    <Circle fx:id="avatarRing" radius="78" styleClass="pf-avatar-ring"/>
+                    <Label fx:id="avatarInitials" styleClass="pf-avatar-initials"/>
+                </StackPane>
+                <HBox alignment="CENTER_LEFT">
+                    <Label fx:id="roleBadge" text="Student" styleClass="pf-role"/>
+                </HBox>
             </VBox>
 
-            <!-- Right sidebar -->
-            <VBox spacing="20" prefWidth="320">
-                <VBox styleClass="chart-card" spacing="10">
-                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-                    <Label text="Learning Streak" styleClass="chart-title"/>
-                    <Label text="7 days" styleClass="metric-value"/>
-                    <Label text="Keep it going!" styleClass="chart-subtitle"/>
-                </VBox>
-                <VBox styleClass="chart-card" spacing="10">
-                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-                    <Label text="Achievements" styleClass="chart-title"/>
-                    <FlowPane hgap="10" vgap="10">
-                        <Label text="First Course" styleClass="badge-active"/>
-                        <Label text="Fast Learner" styleClass="badge-professor"/>
-                        <Label text="On Fire" styleClass="badge-admin"/>
-                        <Label text="Top 10%" styleClass="badge-student"/>
-                    </FlowPane>
-                </VBox>
-                <VBox styleClass="chart-card" spacing="10">
-                    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-                    <Label text="Top Skills" styleClass="chart-title"/>
+            <VBox HBox.hgrow="ALWAYS" spacing="18">
+                <padding><Insets top="6"/></padding>
+                <Label fx:id="fullNameLabel" text="Full Name" styleClass="pf-name" wrapText="true"/>
+                <HBox spacing="16" alignment="CENTER_LEFT">
+                    <Region styleClass="pf-accent-mark" prefWidth="32" prefHeight="2"
+                            maxWidth="32" maxHeight="2" minHeight="2"/>
+                    <Label fx:id="fieldLabel" text="Field of study" styleClass="pf-field"/>
+                </HBox>
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <Label fx:id="universityLabel" text="University" styleClass="pf-origin"/>
+                    <Label text="·" styleClass="pf-origin"/>
+                    <Label fx:id="countryLabel" text="Country" styleClass="pf-origin"/>
+                </HBox>
+                <Region prefHeight="14"/>
+                <HBox alignment="CENTER_LEFT">
+                    <Button text="EDIT PROFILE" onAction="#goToSettings" styleClass="pf-btn"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="80"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- Index ledger + pull quote about -->
+        <HBox spacing="96" alignment="TOP_LEFT">
+            <VBox spacing="0" prefWidth="360" minWidth="360">
+                <Label text="I. INDEX" styleClass="pf-section-label"/>
+                <Region prefHeight="24"/>
+
+                <HBox styleClass="pf-ledger-row" alignment="CENTER_LEFT" spacing="24">
+                    <Label text="01" styleClass="pf-ledger-num"/>
+                    <Label text="Courses" styleClass="pf-ledger-key"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="12" styleClass="pf-ledger-val"/>
+                </HBox>
+                <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+
+                <HBox styleClass="pf-ledger-row" alignment="CENTER_LEFT" spacing="24">
+                    <Label text="02" styleClass="pf-ledger-num"/>
+                    <Label text="Hours studied" styleClass="pf-ledger-key"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="84" styleClass="pf-ledger-val"/>
+                </HBox>
+                <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+
+                <HBox styleClass="pf-ledger-row" alignment="CENTER_LEFT" spacing="24">
+                    <Label text="03" styleClass="pf-ledger-num"/>
+                    <Label text="Certificates" styleClass="pf-ledger-key"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="5" styleClass="pf-ledger-val"/>
+                </HBox>
+                <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+
+                <HBox styleClass="pf-ledger-row" alignment="CENTER_LEFT" spacing="24">
+                    <Label text="04" styleClass="pf-ledger-num"/>
+                    <Label text="Badges" styleClass="pf-ledger-key"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="8" styleClass="pf-ledger-val"/>
+                </HBox>
+                <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+
+                <Region prefHeight="48"/>
+
+                <Label text="II. STREAK" styleClass="pf-section-label"/>
+                <Region prefHeight="10"/>
+                <HBox spacing="14" alignment="BASELINE_LEFT">
+                    <Label text="7" styleClass="pf-big-num"/>
+                    <VBox spacing="2">
+                        <padding><Insets bottom="18"/></padding>
+                        <Label text="consecutive" styleClass="pf-muted-small"/>
+                        <Label text="days of learning" styleClass="pf-muted-small"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox HBox.hgrow="ALWAYS" spacing="0">
+                <Label text="III. ABOUT" styleClass="pf-section-label"/>
+                <Region prefHeight="18"/>
+                <HBox spacing="20" alignment="TOP_LEFT">
+                    <Label text="“" styleClass="pf-quote-mark" translateY="-28.0"/>
+                    <Label fx:id="bioLabel" text="No bio yet." styleClass="pf-quote"
+                           wrapText="true" HBox.hgrow="ALWAYS"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="80"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="44"/>
+
+        <!-- Colophon -->
+        <Label text="IV. COLOPHON" styleClass="pf-section-label"/>
+        <Region prefHeight="24"/>
+        <GridPane hgap="56" vgap="20" styleClass="pf-colophon">
+            <columnConstraints>
+                <ColumnConstraints minWidth="72"/>
+                <ColumnConstraints minWidth="240"/>
+                <ColumnConstraints minWidth="72"/>
+                <ColumnConstraints minWidth="240"/>
+            </columnConstraints>
+            <Label text="Email"  styleClass="pf-colophon-key" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="emailLabel"        styleClass="pf-colophon-val" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <Label text="Since"  styleClass="pf-colophon-key" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+            <Label fx:id="memberSinceLabel"  styleClass="pf-colophon-val" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+            <Label text="Phone"  styleClass="pf-colophon-key" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Label fx:id="phoneLabel"        styleClass="pf-colophon-val" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <Label text="Gender" styleClass="pf-colophon-key" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+            <Label fx:id="genderLabel"       styleClass="pf-colophon-val" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+
+            <Label text="Born"   styleClass="pf-colophon-key" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <Label fx:id="dobLabel"          styleClass="pf-colophon-val" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        </GridPane>
+
+        <Region prefHeight="64"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="44"/>
+
+        <!-- Chapters + Proficiencies -->
+        <HBox spacing="96" alignment="TOP_LEFT">
+            <VBox HBox.hgrow="ALWAYS" spacing="22">
+                <Label text="V. CHAPTERS" styleClass="pf-section-label"/>
+                <FlowPane hgap="10" vgap="10">
+                    <Label text="First Course" styleClass="pf-tag"/>
+                    <Label text="Fast Learner" styleClass="pf-tag"/>
+                    <Label text="On Fire"     styleClass="pf-tag"/>
+                    <Label text="Top 10%"     styleClass="pf-tag"/>
+                </FlowPane>
+            </VBox>
+
+            <VBox prefWidth="420" minWidth="420" spacing="22">
+                <Label text="VI. PROFICIENCIES" styleClass="pf-section-label"/>
+                <VBox spacing="18">
                     <VBox spacing="8">
-                        <Label text="JavaScript" styleClass="metric-label"/>
-                        <ProgressBar progress="0.85" maxWidth="Infinity"/>
-                        <Label text="Python" styleClass="metric-label"/>
-                        <ProgressBar progress="0.7" maxWidth="Infinity"/>
-                        <Label text="UI / UX" styleClass="metric-label"/>
-                        <ProgressBar progress="0.6" maxWidth="Infinity"/>
+                        <HBox alignment="BASELINE_LEFT">
+                            <Label text="JavaScript" styleClass="pf-skill-name"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="85" styleClass="pf-skill-val"/>
+                        </HBox>
+                        <ProgressBar progress="0.85" styleClass="pf-skill-bar" maxWidth="Infinity"/>
+                    </VBox>
+                    <VBox spacing="8">
+                        <HBox alignment="BASELINE_LEFT">
+                            <Label text="Python" styleClass="pf-skill-name"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="70" styleClass="pf-skill-val"/>
+                        </HBox>
+                        <ProgressBar progress="0.7" styleClass="pf-skill-bar" maxWidth="Infinity"/>
+                    </VBox>
+                    <VBox spacing="8">
+                        <HBox alignment="BASELINE_LEFT">
+                            <Label text="UI / UX" styleClass="pf-skill-name"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="60" styleClass="pf-skill-val"/>
+                        </HBox>
+                        <ProgressBar progress="0.6" styleClass="pf-skill-bar" maxWidth="Infinity"/>
                     </VBox>
                 </VBox>
             </VBox>
         </HBox>
+
     </VBox>
 </ScrollPane>

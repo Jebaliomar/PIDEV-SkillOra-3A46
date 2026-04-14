@@ -83,9 +83,10 @@
 }
 
 .logo-text {
-    -fx-font-size: 22px;
-    -fx-font-weight: 800;
-    -fx-text-fill: #0891b2;
+    -fx-font-family: "Cambria", "Georgia", "Palatino Linotype", serif;
+    -fx-font-size: 26px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #121212;
 }
 
 /* === Typography === */
@@ -798,72 +799,108 @@
    ============================================ */
 
 .student-header {
-    -fx-background-color: white;
-    -fx-border-color: #E2E8F0;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #1a1a1a transparent;
     -fx-border-width: 0 0 1 0;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 6, 0, 0, 2);
+    -fx-effect: null;
+}
+.nav-vrule {
+    -fx-background-color: #1a1a1a;
+    -fx-opacity: 0.28;
 }
 
 .student-nav-btn {
     -fx-background-color: transparent;
-    -fx-text-fill: #475569;
-    -fx-font-size: 14px;
+    -fx-text-fill: #1a1a1a;
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-padding: 8 16 8 16;
-    -fx-background-radius: 8;
+    -fx-padding: 10 4 10 4;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
     -fx-cursor: hand;
 }
-
 .student-nav-btn:hover {
-    -fx-background-color: #F1F5F9;
+    -fx-background-color: transparent;
     -fx-text-fill: #0891b2;
+    -fx-border-color: transparent transparent #0891b2 transparent;
 }
-
 .student-nav-btn-active {
-    -fx-background-color: #E0F2FE;
+    -fx-background-color: transparent;
     -fx-text-fill: #0891b2;
+    -fx-border-color: transparent transparent #0891b2 transparent;
 }
 
 .header-username {
-    -fx-background-color: linear-gradient(to right, rgba(8,145,178,0.08), rgba(124,58,237,0.08));
-    -fx-background-radius: 22;
-    -fx-border-color: rgba(8,145,178,0.25);
-    -fx-border-radius: 22;
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-color: #1a1a1a;
+    -fx-border-radius: 0;
     -fx-border-width: 1;
-    -fx-text-fill: #0e7490;
-    -fx-font-weight: bold;
-    -fx-font-size: 13px;
-    -fx-padding: 6 14 6 10;
+    -fx-text-fill: #1a1a1a;
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-style: italic;
+    -fx-font-weight: normal;
+    -fx-font-size: 14px;
+    -fx-padding: 9 14 9 12;
     -fx-cursor: hand;
-    -fx-graphic-text-gap: 8;
+    -fx-graphic-text-gap: 10;
 }
 .header-username:hover {
-    -fx-background-color: linear-gradient(to right, rgba(8,145,178,0.16), rgba(124,58,237,0.16));
-    -fx-border-color: rgba(8,145,178,0.5);
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #F5F1E8;
+    -fx-border-color: #1a1a1a;
 }
-.header-username .arrow-button { -fx-padding: 0 2 0 4; }
-.header-username .arrow { -fx-background-color: #0891b2; }
+.header-username .arrow-button { -fx-padding: 0 2 0 6; }
+.header-username .arrow { -fx-background-color: #1a1a1a; }
+.header-username:hover .arrow { -fx-background-color: #F5F1E8; }
 .header-username .context-menu {
-    -fx-background-color: white;
-    -fx-background-radius: 12;
-    -fx-border-color: #e2e8f0;
-    -fx-border-radius: 12;
-    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.18), 18, 0, 0, 6);
-    -fx-padding: 6;
+    -fx-background-color: #F8F5EF;
+    -fx-background-radius: 0;
+    -fx-border-color: #1a1a1a;
+    -fx-border-radius: 0;
+    -fx-border-width: 1;
+    -fx-effect: null;
+    -fx-padding: 4;
 }
 .header-username .menu-item {
-    -fx-background-radius: 8;
-    -fx-padding: 8 14 8 12;
+    -fx-background-radius: 0;
+    -fx-padding: 10 20 10 14;
 }
 .header-username .menu-item .label {
-    -fx-text-fill: #334155;
-    -fx-font-size: 13px;
-    -fx-font-weight: 600;
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+    -fx-text-fill: #1a1a1a;
+    -fx-font-weight: normal;
 }
-.header-username .menu-item:focused, .header-username .menu-item:hover {
-    -fx-background-color: linear-gradient(to right, rgba(8,145,178,0.12), rgba(124,58,237,0.12));
+.header-username .menu-item:focused,
+.header-username .menu-item:hover {
+    -fx-background-color: #1a1a1a;
 }
-.header-username .menu-item:focused .label { -fx-text-fill: #0e7490; }
+.header-username .menu-item:focused .label,
+.header-username .menu-item:hover .label {
+    -fx-text-fill: #F5F1E8;
+}
+
+.nav-signout {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1a1a1a;
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 18 10 18;
+    -fx-border-color: #1a1a1a;
+    -fx-border-width: 1;
+    -fx-background-radius: 0;
+    -fx-cursor: hand;
+}
+.nav-signout:hover {
+    -fx-background-color: #dc2626;
+    -fx-border-color: #dc2626;
+    -fx-text-fill: #F5F1E8;
+}
 
 /* Hero */
 .hero-card {
@@ -1035,3 +1072,343 @@
 .avatar-palette-8 { -fx-background-color: linear-gradient(to bottom right, #6366f1, #a5b4fc); }
 .avatar-palette-9 { -fx-background-color: linear-gradient(to bottom right, #d97706, #fcd34d); }
 .avatar-palette-10 { -fx-background-color: linear-gradient(to bottom right, #0ea5e9, #7dd3fc); }
+
+/* ============================================================= */
+/* Profile — editorial redesign                                   */
+/* ============================================================= */
+.pf-scroll { -fx-background-color: transparent; }
+.pf-scroll > .viewport { -fx-background-color: transparent; }
+.pf-root { -fx-background-color: transparent; }
+
+.pf-eyebrow {
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a1a;
+}
+.pf-eyebrow-rule { -fx-background-color: #1a1a1a; -fx-opacity: 0.35; }
+
+.pf-avatar-frame {
+    -fx-background-color: transparent;
+    -fx-border-color: #1a1a1a;
+    -fx-border-width: 1;
+    -fx-padding: 14;
+}
+.pf-avatar-ring {
+    -fx-fill: linear-gradient(to bottom right, #F5F1E8, #E0D9CB);
+    -fx-stroke: #1a1a1a;
+    -fx-stroke-width: 1;
+}
+.pf-avatar-initials {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 60px;
+    -fx-text-fill: #1a1a1a;
+}
+.pf-role {
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0e7490;
+    -fx-padding: 7 14 7 14;
+    -fx-border-color: #0e7490;
+    -fx-border-width: 1;
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+}
+
+.pf-name {
+    -fx-font-family: "Cambria", "Georgia", "Palatino Linotype", serif;
+    -fx-font-size: 64px;
+    -fx-text-fill: #121212;
+}
+.pf-accent-mark { -fx-background-color: #0891b2; }
+.pf-field {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 19px;
+    -fx-font-style: italic;
+    -fx-text-fill: #4a4a4a;
+}
+.pf-origin {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 12px;
+    -fx-text-fill: #6B6158;
+}
+.pf-btn {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #F5F1E8;
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 14 32 14 32;
+    -fx-background-radius: 0;
+    -fx-border-color: #1a1a1a;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+.pf-btn:hover {
+    -fx-background-color: #0891b2;
+    -fx-border-color: #0891b2;
+}
+
+.pf-rule { -fx-background-color: #1a1a1a; -fx-opacity: 0.28; }
+.pf-hairline { -fx-background-color: #1a1a1a; -fx-opacity: 0.15; }
+
+.pf-section-label {
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0891b2;
+}
+
+.pf-ledger-row { -fx-padding: 18 0 18 0; }
+.pf-ledger-num {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+    -fx-text-fill: #a59c90;
+    -fx-min-width: 32;
+}
+.pf-ledger-key {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-text-fill: #1a1a1a;
+}
+.pf-ledger-val {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 30px;
+    -fx-text-fill: #121212;
+}
+
+.pf-big-num {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 88px;
+    -fx-text-fill: #121212;
+}
+.pf-muted-small {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 13px;
+    -fx-font-style: italic;
+    -fx-text-fill: #6B6158;
+}
+
+.pf-quote-mark {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 112px;
+    -fx-text-fill: #0891b2;
+}
+.pf-quote {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 22px;
+    -fx-font-style: italic;
+    -fx-text-fill: #2a2a2a;
+    -fx-line-spacing: 4;
+}
+
+.pf-colophon-key {
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #8a8175;
+}
+.pf-colophon-val {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 15px;
+    -fx-text-fill: #1a1a1a;
+}
+
+.pf-tag {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 11px;
+    -fx-text-fill: #1a1a1a;
+    -fx-padding: 9 18 9 18;
+    -fx-border-color: #1a1a1a;
+    -fx-border-width: 1;
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+}
+.pf-tag:hover {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #F5F1E8;
+}
+
+.pf-skill-name {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 16px;
+    -fx-font-style: italic;
+    -fx-text-fill: #1a1a1a;
+}
+.pf-skill-val {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 13px;
+    -fx-text-fill: #8a8175;
+}
+.pf-skill-bar {
+    -fx-pref-height: 2;
+    -fx-max-height: 2;
+    -fx-min-height: 2;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.pf-skill-bar > .track {
+    -fx-background-color: rgba(26,26,26,0.15);
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+.pf-skill-bar > .bar {
+    -fx-background-color: #1a1a1a;
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+    -fx-padding: 1;
+}
+
+/* ============================================================= */
+/* Settings — editorial                                           */
+/* ============================================================= */
+.set-section-title {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 32px;
+    -fx-text-fill: #121212;
+}
+.set-section-desc {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+    -fx-text-fill: #6B6158;
+    -fx-line-spacing: 2;
+}
+.set-label {
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #8a8175;
+}
+.set-hint {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-text-fill: #9a9185;
+}
+.set-static-val {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 18px;
+    -fx-text-fill: #1a1a1a;
+    -fx-padding: 6 0 6 0;
+}
+
+.set-input {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #1a1a1a transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-radius: 0;
+    -fx-padding: 10 0 10 0;
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 16px;
+    -fx-text-fill: #1a1a1a;
+    -fx-prompt-text-fill: #a59c90;
+    -fx-highlight-fill: rgba(8,145,178,0.25);
+}
+.set-input:focused {
+    -fx-border-color: transparent transparent #0891b2 transparent;
+    -fx-border-width: 0 0 2 0;
+}
+.set-input-locked {
+    -fx-text-fill: #8a8175;
+    -fx-border-color: transparent transparent rgba(26,26,26,0.22) transparent;
+}
+.set-textarea .content,
+.set-textarea .scroll-pane,
+.set-textarea .scroll-pane .viewport,
+.set-textarea .scroll-pane .content {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+}
+.set-textarea .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(26,26,26,0.2);
+    -fx-background-radius: 0;
+}
+
+.set-combo {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #1a1a1a transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-radius: 0;
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 16px;
+    -fx-padding: 0;
+}
+.set-combo:focused {
+    -fx-border-color: transparent transparent #0891b2 transparent;
+    -fx-border-width: 0 0 2 0;
+}
+.set-combo > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 2 0 8;
+}
+.set-combo > .arrow-button > .arrow {
+    -fx-background-color: #1a1a1a;
+}
+.set-combo > .list-cell,
+.set-combo .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1a1a1a;
+    -fx-padding: 10 0 10 0;
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 16px;
+}
+.set-combo .list-view {
+    -fx-background-color: #F8F5EF;
+    -fx-border-color: #1a1a1a;
+    -fx-border-width: 1;
+    -fx-background-radius: 0;
+}
+.set-combo .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1a1a1a;
+    -fx-padding: 10 14 10 14;
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 14px;
+}
+.set-combo .list-view .list-cell:hover,
+.set-combo .list-view .list-cell:filled:selected {
+    -fx-background-color: rgba(8,145,178,0.12);
+    -fx-text-fill: #0e7490;
+}
+
+.set-btn-outline {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1a1a1a;
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 13 28 13 28;
+    -fx-border-color: #1a1a1a;
+    -fx-border-width: 1;
+    -fx-background-radius: 0;
+    -fx-cursor: hand;
+}
+.set-btn-outline:hover {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #F5F1E8;
+}
+
+.set-alert {
+    -fx-padding: 14 20 14 18;
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 0 2;
+}
+.set-alert-success { -fx-border-color: #16a34a; }
+.set-alert-error   { -fx-border-color: #dc2626; }
+.set-alert-mark {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+.set-alert-mark-success { -fx-text-fill: #16a34a; }
+.set-alert-mark-error   { -fx-text-fill: #dc2626; }
+.set-alert-text {
+    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-size: 15px;
+    -fx-font-style: italic;
+    -fx-text-fill: #1a1a1a;
+}

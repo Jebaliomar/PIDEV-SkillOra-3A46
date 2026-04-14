@@ -3,131 +3,223 @@
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
 
-<ScrollPane fitToWidth="true" styleClass="scroll-pane"
+<ScrollPane fitToWidth="true" styleClass="scroll-pane pf-scroll"
             xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.controllers.SettingsController">
-    <VBox spacing="24">
-        <padding><Insets top="40" right="60" bottom="60" left="60"/></padding>
+    <VBox styleClass="pf-root" spacing="0">
+        <padding><Insets top="56" right="96" bottom="96" left="96"/></padding>
 
-        <VBox spacing="6">
-            <Label text="Account Settings" styleClass="dashboard-title"/>
-            <Label text="Manage your profile, contact, education and account details" styleClass="dashboard-subtitle"/>
-        </VBox>
-
-        <HBox fx:id="successBox" styleClass="success-box" visible="false" managed="false">
-            <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
-            <Label fx:id="successLabel" styleClass="success-text"/>
-        </HBox>
-        <HBox fx:id="errorBox" styleClass="error-box" visible="false" managed="false">
-            <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
-            <Label fx:id="errorLabel" styleClass="error-text"/>
+        <!-- Eyebrow -->
+        <HBox alignment="CENTER_LEFT" spacing="18">
+            <Label text="SETTINGS" styleClass="pf-eyebrow"/>
+            <Region styleClass="pf-eyebrow-rule" prefHeight="1" maxHeight="1" HBox.hgrow="ALWAYS"/>
+            <Label text="N° 002" styleClass="pf-eyebrow"/>
+            <Region styleClass="pf-eyebrow-rule" prefHeight="1" maxHeight="1" prefWidth="80" maxWidth="80"/>
+            <Label text="SKILLORA — ACCOUNT" styleClass="pf-eyebrow"/>
         </HBox>
 
-        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="settings-tabs">
+        <Region prefHeight="56"/>
 
-            <!-- Personal Info -->
-            <Tab text="Personal Info">
-                <VBox spacing="18" styleClass="chart-card">
-                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+        <Label text="Account" styleClass="pf-name"/>
+        <Region prefHeight="16"/>
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <Region styleClass="pf-accent-mark" prefWidth="32" prefHeight="2"
+                    maxWidth="32" maxHeight="2" minHeight="2"/>
+            <Label text="Manage personal details, contact, education and credentials."
+                   styleClass="pf-field" wrapText="true"/>
+        </HBox>
 
-                    <VBox spacing="8">
-                        <Label text="3D Avatar" styleClass="input-label"/>
-                        <HBox spacing="14" alignment="CENTER_LEFT">
-                            <Label fx:id="currentAvatarLabel" text="No avatar selected" styleClass="profile-meta"/>
-                            <Button text="Change Avatar" onAction="#handleChangeAvatar" styleClass="btn-outline"/>
+        <Region prefHeight="40"/>
+
+        <!-- Alerts -->
+        <HBox fx:id="successBox" styleClass="set-alert set-alert-success"
+              visible="false" managed="false" alignment="CENTER_LEFT" spacing="14">
+            <Label text="✓" styleClass="set-alert-mark set-alert-mark-success"/>
+            <Label fx:id="successLabel" styleClass="set-alert-text" wrapText="true"/>
+        </HBox>
+        <HBox fx:id="errorBox" styleClass="set-alert set-alert-error"
+              visible="false" managed="false" alignment="CENTER_LEFT" spacing="14">
+            <Label text="!" styleClass="set-alert-mark set-alert-mark-error"/>
+            <Label fx:id="errorLabel" styleClass="set-alert-text" wrapText="true"/>
+        </HBox>
+
+        <Region prefHeight="12"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- I. PERSONAL -->
+        <HBox spacing="88" alignment="TOP_LEFT">
+            <VBox prefWidth="280" minWidth="280" spacing="12">
+                <Label text="I. PERSONAL" styleClass="pf-section-label"/>
+                <Label text="Identity" styleClass="set-section-title"/>
+                <Label text="Your name, avatar and biographical details."
+                       styleClass="set-section-desc" wrapText="true"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="26">
+
+                <VBox spacing="10">
+                    <Label text="3D AVATAR" styleClass="set-label"/>
+                    <HBox spacing="16" alignment="CENTER_LEFT">
+                        <Label fx:id="currentAvatarLabel" text="No avatar selected"
+                               styleClass="set-static-val"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="CHANGE AVATAR" onAction="#handleChangeAvatar"
+                                styleClass="set-btn-outline"/>
+                    </HBox>
+                    <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+                </VBox>
+
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="FIRST NAME" styleClass="set-label"/>
+                        <TextField fx:id="firstNameField" styleClass="set-input" promptText="First name"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="LAST NAME" styleClass="set-label"/>
+                        <TextField fx:id="lastNameField" styleClass="set-input" promptText="Last name"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="GENDER" styleClass="set-label"/>
+                        <ComboBox fx:id="genderCombo" styleClass="set-combo" maxWidth="Infinity"
+                                  promptText="Select gender"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="DATE OF BIRTH" styleClass="set-label"/>
+                        <DatePicker fx:id="dobPicker" styleClass="set-combo" maxWidth="Infinity"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="10">
+                    <Label text="BIO" styleClass="set-label"/>
+                    <TextArea fx:id="bioArea" styleClass="set-input set-textarea"
+                              prefRowCount="4" wrapText="true"
+                              promptText="Tell us about yourself"/>
+                    <Label text="Maximum 500 characters" styleClass="set-hint"/>
+                </VBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="72"/>
+        <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- II. CONTACT -->
+        <HBox spacing="88" alignment="TOP_LEFT">
+            <VBox prefWidth="280" minWidth="280" spacing="12">
+                <Label text="II. CONTACT" styleClass="pf-section-label"/>
+                <Label text="Whereabouts" styleClass="set-section-title"/>
+                <Label text="How students and professors can reach you."
+                       styleClass="set-section-desc" wrapText="true"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="26">
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="COUNTRY CODE" styleClass="set-label"/>
+                        <ComboBox fx:id="countryCodeCombo" styleClass="set-combo" maxWidth="Infinity"
+                                  promptText="Select"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="PHONE NUMBER" styleClass="set-label"/>
+                        <TextField fx:id="phoneField" styleClass="set-input" promptText="e.g. 12345678"/>
+                    </VBox>
+                </HBox>
+                <VBox spacing="10">
+                    <Label text="COUNTRY" styleClass="set-label"/>
+                    <TextField fx:id="countryField" styleClass="set-input" promptText="Country"/>
+                </VBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="72"/>
+        <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- III. EDUCATION -->
+        <HBox spacing="88" alignment="TOP_LEFT">
+            <VBox prefWidth="280" minWidth="280" spacing="12">
+                <Label text="III. EDUCATION" styleClass="pf-section-label"/>
+                <Label text="Studies" styleClass="set-section-title"/>
+                <Label text="Your field of study and home institution."
+                       styleClass="set-section-desc" wrapText="true"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="26">
+                <VBox spacing="10">
+                    <Label text="FIELD OF STUDY" styleClass="set-label"/>
+                    <TextField fx:id="fieldOfStudyField" styleClass="set-input"
+                               promptText="e.g. Computer Science"/>
+                </VBox>
+                <VBox spacing="10">
+                    <Label text="UNIVERSITY" styleClass="set-label"/>
+                    <TextField fx:id="universityField" styleClass="set-input"
+                               promptText="University name"/>
+                </VBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="72"/>
+        <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- IV. ACCOUNT -->
+        <HBox spacing="88" alignment="TOP_LEFT">
+            <VBox prefWidth="280" minWidth="280" spacing="12">
+                <Label text="IV. ACCOUNT" styleClass="pf-section-label"/>
+                <Label text="Credentials" styleClass="set-section-title"/>
+                <Label text="Login and security. Email cannot be changed once set."
+                       styleClass="set-section-desc" wrapText="true"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="26">
+                <VBox spacing="10">
+                    <Label text="EMAIL" styleClass="set-label"/>
+                    <TextField fx:id="emailField" styleClass="set-input set-input-locked" editable="false"/>
+                </VBox>
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="ACCOUNT TYPE" styleClass="set-label"/>
+                        <HBox alignment="CENTER_LEFT">
+                            <Label fx:id="accountTypeBadge" text="Student" styleClass="pf-role"/>
                         </HBox>
                     </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="MEMBER SINCE" styleClass="set-label"/>
+                        <Label fx:id="memberSinceLabel" styleClass="set-static-val"/>
+                    </VBox>
+                </HBox>
 
-                    <VBox spacing="6">
-                        <Label text="First Name" styleClass="input-label"/>
-                        <TextField fx:id="firstNameField" styleClass="text-input" promptText="First name"/>
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="Last Name" styleClass="input-label"/>
-                        <TextField fx:id="lastNameField" styleClass="text-input" promptText="Last name"/>
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="Gender" styleClass="input-label"/>
-                        <ComboBox fx:id="genderCombo" styleClass="combo-box" promptText="Select gender"/>
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="Date of Birth" styleClass="input-label"/>
-                        <DatePicker fx:id="dobPicker" styleClass="combo-box"/>
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="Bio (max 500 chars)" styleClass="input-label"/>
-                        <TextArea fx:id="bioArea" styleClass="text-input" prefRowCount="4" wrapText="true" promptText="Tell us about yourself"/>
-                    </VBox>
-                </VBox>
-            </Tab>
+                <Region prefHeight="20"/>
+                <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+                <Region prefHeight="8"/>
 
-            <!-- Contact Details -->
-            <Tab text="Contact Details">
-                <VBox spacing="18" styleClass="chart-card">
-                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
+                <Label text="CHANGE PASSWORD" styleClass="pf-section-label"/>
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="CURRENT PASSWORD" styleClass="set-label"/>
+                        <PasswordField fx:id="currentPasswordField" styleClass="set-input"
+                                       promptText="Current password"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="NEW PASSWORD" styleClass="set-label"/>
+                        <PasswordField fx:id="newPasswordField" styleClass="set-input"
+                                       promptText="At least 8 characters"/>
+                    </VBox>
+                </HBox>
+                <HBox alignment="CENTER_LEFT">
+                    <Button text="UPDATE PASSWORD" onAction="#handleChangePassword"
+                            styleClass="set-btn-outline"/>
+                </HBox>
+            </VBox>
+        </HBox>
 
-                    <VBox spacing="6">
-                        <Label text="Country Code" styleClass="input-label"/>
-                        <ComboBox fx:id="countryCodeCombo" styleClass="combo-box" promptText="Select country code"/>
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="Phone Number" styleClass="input-label"/>
-                        <TextField fx:id="phoneField" styleClass="text-input" promptText="e.g. 12345678"/>
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="Country" styleClass="input-label"/>
-                        <TextField fx:id="countryField" styleClass="text-input" promptText="Country"/>
-                    </VBox>
-                </VBox>
-            </Tab>
+        <Region prefHeight="80"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="40"/>
 
-            <!-- Education -->
-            <Tab text="Education">
-                <VBox spacing="18" styleClass="chart-card">
-                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
-
-                    <VBox spacing="6">
-                        <Label text="Field of Study" styleClass="input-label"/>
-                        <TextField fx:id="fieldOfStudyField" styleClass="text-input" promptText="e.g. Computer Science"/>
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="University" styleClass="input-label"/>
-                        <TextField fx:id="universityField" styleClass="text-input" promptText="University name"/>
-                    </VBox>
-                </VBox>
-            </Tab>
-
-            <!-- Account -->
-            <Tab text="Account">
-                <VBox spacing="18" styleClass="chart-card">
-                    <padding><Insets top="28" right="28" bottom="28" left="28"/></padding>
-
-                    <VBox spacing="6">
-                        <Label text="Email (read-only)" styleClass="input-label"/>
-                        <TextField fx:id="emailField" styleClass="text-input" editable="false"/>
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="Account Type" styleClass="input-label"/>
-                        <Label fx:id="accountTypeBadge" text="Student" styleClass="badge-student"/>
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="Member Since" styleClass="input-label"/>
-                        <Label fx:id="memberSinceLabel" styleClass="metric-value"/>
-                    </VBox>
-                    <Separator/>
-                    <VBox spacing="6">
-                        <Label text="Change Password" styleClass="input-label"/>
-                        <PasswordField fx:id="currentPasswordField" styleClass="password-field" promptText="Current password"/>
-                        <PasswordField fx:id="newPasswordField" styleClass="password-field" promptText="New password"/>
-                        <Button text="Update Password" onAction="#handleChangePassword" styleClass="btn-outline"/>
-                    </VBox>
-                </VBox>
-            </Tab>
-        </TabPane>
-
-        <HBox spacing="14">
-            <Button text="Save Changes" onAction="#handleSave" styleClass="btn-primary"/>
-            <Button text="Cancel" onAction="#handleCancel" styleClass="btn-outline"/>
+        <HBox spacing="18" alignment="CENTER_LEFT">
+            <Button text="SAVE CHANGES" onAction="#handleSave" styleClass="pf-btn"/>
+            <Button text="CANCEL" onAction="#handleCancel" styleClass="set-btn-outline"/>
         </HBox>
     </VBox>
 </ScrollPane>
