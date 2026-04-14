@@ -2,8 +2,10 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
@@ -49,16 +51,52 @@
         </HBox>
     </top>
     <center>
-        <ScrollPane fitToWidth="true"
-                    style="-fx-background-color: transparent; -fx-background: transparent;
-                           -fx-border-color: transparent;">
-            <content>
-                <VBox fx:id="postsContainer" spacing="14" alignment="TOP_CENTER">
-                    <padding>
-                        <Insets top="28" right="40" bottom="40" left="40"/>
-                    </padding>
-                </VBox>
-            </content>
-        </ScrollPane>
+        <VBox spacing="18">
+            <padding>
+                <Insets top="22" right="32" bottom="24" left="32"/>
+            </padding>
+            <HBox spacing="12" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white;
+                         -fx-background-radius: 14;
+                         -fx-border-color: #e2e8f0;
+                         -fx-border-radius: 14;
+                         -fx-padding: 16;">
+                <TextField fx:id="searchField"
+                           promptText="Search by title, topic, or content..."
+                           onAction="#handleSearch"
+                           HBox.hgrow="ALWAYS"
+                           style="-fx-background-radius: 10; -fx-border-radius: 10;"/>
+                <ComboBox fx:id="typeFilterComboBox"
+                          onAction="#handleSearch"
+                          prefWidth="160"/>
+                <ComboBox fx:id="topicFilterComboBox"
+                          onAction="#handleSearch"
+                          prefWidth="180"/>
+                <Button text="Search" onAction="#handleSearch"
+                        style="-fx-background-color: #0f172a;
+                               -fx-text-fill: white;
+                               -fx-font-weight: 700;
+                               -fx-background-radius: 10;
+                               -fx-padding: 10 16 10 16;"/>
+                <Button text="Reset" onAction="#handleResetFilters"
+                        style="-fx-background-color: #e2e8f0;
+                               -fx-text-fill: #0f172a;
+                               -fx-font-weight: 700;
+                               -fx-background-radius: 10;
+                               -fx-padding: 10 16 10 16;"/>
+            </HBox>
+            <ScrollPane fitToWidth="true"
+                        VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: transparent; -fx-background: transparent;
+                               -fx-border-color: transparent;">
+                <content>
+                    <VBox fx:id="postsContainer" spacing="14" alignment="TOP_CENTER">
+                        <padding>
+                            <Insets top="6" right="8" bottom="8" left="8"/>
+                        </padding>
+                    </VBox>
+                </content>
+            </ScrollPane>
+        </VBox>
     </center>
 </BorderPane>

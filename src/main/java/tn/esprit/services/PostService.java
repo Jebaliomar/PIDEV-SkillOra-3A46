@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class PostService {
 
@@ -90,6 +91,56 @@ public class PostService {
         return posts;
     }
 
+    public List<Post> searchAndFilter(String searchTerm, String type, String topic) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT * FROM post WHERE 1=1");
+        List<Object> parameters = new ArrayList<>();
+
+        String normalizedSearch = normalizeFilterValue(searchTerm);
+        String normalizedType = normalizeFilterValue(type);
+        String normalizedTopic = normalizeFilterValue(topic);
+
+        if (normalizedSearch != null) {
+            sql.append(" AND (LOWER(title) LIKE ? OR LOWER(topic) LIKE ? OR LOWER(content) LIKE ?)");
+            String pattern = "%" + normalizedSearch.toLowerCase(Locale.ROOT) + "%";
+            parameters.add(pattern);
+            parameters.add(pattern);
+            parameters.add(pattern);
+        }
+
+        if (normalizedType != null) {
+            sql.append(" AND type = ?");
+            parameters.add(normalizedType);
+        }
+
+        if (normalizedTopic != null) {
+            sql.append(" AND topic = ?");
+            parameters.add(normalizedTopic);
+        }
+
+        sql.append(" ORDER BY created_at DESC, id DESC");
+
+        List<Post> posts = new ArrayList<>();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
+            bindParameters(preparedStatement, parameters);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    posts.add(mapResultSetToPost(resultSet));
+                }
+            }
+        }
+
+        return posts;
+    }
+
+    public List<String> getDistinctTypes() throws SQLException {
+        return getDistinctValues("type");
+    }
+
+    public List<String> getDistinctTopics() throws SQLException {
+        return getDistinctValues("topic");
+    }
+
     public boolean update(Post post) throws SQLException {
         String sql = "UPDATE post SET type = ?, title = ?, topic = ?, content = ?, created_at = ?, updated_at = ?, user_id = ? "
                 + "WHERE id = ?";
@@ -115,6 +166,21 @@ public class PostService {
             preparedStatement.setInt(1, id);
             return preparedStatement.executeUpdate() > 0;
         }
+    }
+
+    private List<String> getDistinctValues(String columnName) throws SQLException {
+        String sql = "SELECT DISTINCT " + columnName + " FROM post WHERE " + columnName
+                + " IS NOT NULL AND TRIM(" + columnName + ") <> '' ORDER BY " + columnName + " ASC";
+        List<String> values = new ArrayList<>();
+
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+            while (resultSet.next()) {
+                values.add(resultSet.getString(1));
+            }
+        }
+
+        return values;
     }
 
     private Post mapResultSetToPost(ResultSet resultSet) throws SQLException {
@@ -143,6 +209,28 @@ public class PostService {
         } else {
             preparedStatement.setInt(index, value);
         }
+    }
+
+    private void bindParameters(PreparedStatement preparedStatement, List<Object> parameters) throws SQLException {
+        for (int index = 0; index < parameters.size(); index++) {
+            Object parameter = parameters.get(index);
+            if (parameter instanceof String stringValue) {
+                preparedStatement.setString(index + 1, stringValue);
+            } else if (parameter instanceof Integer integerValue) {
+                preparedStatement.setInt(index + 1, integerValue);
+            } else {
+                preparedStatement.setObject(index + 1, parameter);
+            }
+        }
+    }
+
+    private String normalizeFilterValue(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmedValue = value.trim();
+        return trimmedValue.isEmpty() ? null : trimmedValue;
     }
 
     private void setTimestamp(PreparedStatement preparedStatement, int index, java.time.LocalDateTime value) throws SQLException {
