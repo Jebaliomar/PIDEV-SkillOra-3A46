@@ -48,7 +48,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -77,6 +79,9 @@ public class RendezVousController {
     private FlowPane cardsContainer;
 
     @FXML
+    private ScrollPane cardsScrollPane;
+
+    @FXML
     private Button filterAllBtn;
 
     @FXML
@@ -91,9 +96,17 @@ public class RendezVousController {
     @FXML
     private Button notificationButton;
 
+    @FXML
+    private Button createTopBtn;
+
+    @FXML
+    private Button createBottomBtn;
+
     private final RendezVousService rendezVousService = new RendezVousService();
     private final AvailabilitySlotService availabilitySlotService = new AvailabilitySlotService();
     private final NotificationService notificationService = new NotificationService();
+    private final Map<Integer, String> userDisplayNameCache = new HashMap<>();
+    private final Map<Integer, String> courseTitleCache = new HashMap<>();
     private List<RendezVous> allRendezVous = List.of();
     private RendezVous selectedRendezVous;
     private RendezVousFilter currentFilter = RendezVousFilter.ALL;
@@ -108,14 +121,32 @@ public class RendezVousController {
     @FXML
     public void initialize() {
         searchField.textProperty().addListener((obs, oldValue, newValue) -> applyFiltersAndRender());
+        if (cardsScrollPane != null) {
+            cardsScrollPane.viewportBoundsProperty().addListener((obs, oldValue, newValue) -> applyFiltersAndRender());
+        }
+        applyRolePermissions();
         setActiveFilter(RendezVousFilter.ALL);
         refreshRendezVous();
         updateNotificationBadge();
     }
 
+    private void applyRolePermissions() {
+        boolean studentMode = isStudentMode();
+        if (createTopBtn != null) {
+            createTopBtn.setManaged(studentMode);
+            createTopBtn.setVisible(studentMode);
+        }
+        if (createBottomBtn != null) {
+            createBottomBtn.setManaged(studentMode);
+            createBottomBtn.setVisible(studentMode);
+        }
+    }
+
     @FXML
     private void refreshRendezVous() {
         try {
+            userDisplayNameCache.clear();
+            courseTitleCache.clear();
             allRendezVous = rendezVousService.getAll().stream()
                     .filter(this::isVisibleForCurrentUser)
                     .collect(Collectors.toList());
@@ -196,6 +227,9 @@ public class RendezVousController {
                 || String.valueOf(rdv.getStudentId()).toLowerCase().contains(q)
                 || String.valueOf(rdv.getProfessorId()).toLowerCase().contains(q)
                 || String.valueOf(rdv.getSlotId()).toLowerCase().contains(q)
+                || resolveStudentName(rdv.getStudentId()).toLowerCase().contains(q)
+                || resolveProfessorName(rdv.getProfessorId()).toLowerCase().contains(q)
+                || resolveCourseName(rdv.getCourseId()).toLowerCase().contains(q)
                 || normalizeDefault(rdv.getStatut(), "-").toLowerCase().contains(q)
                 || normalizeDefault(rdv.getMeetingType(), "-").toLowerCase().contains(q)
                 || normalizeDefault(formatDateTime(rdv.getCreatedAt()), "-").toLowerCase().contains(q);
@@ -209,12 +243,43 @@ public class RendezVousController {
             cardsContainer.getChildren().add(empty);
             return;
         }
+        double cardWidth = computeCardWidth(rendezVousList.size());
         for (RendezVous rdv : rendezVousList) {
-            cardsContainer.getChildren().add(buildRendezVousCard(rdv));
+            cardsContainer.getChildren().add(buildRendezVousCard(rdv, cardWidth));
         }
     }
 
-    private VBox buildRendezVousCard(RendezVous rdv) {
+    private double computeCardWidth(int cardCount) {
+        double viewportWidth = 0;
+        if (cardsScrollPane != null && cardsScrollPane.getViewportBounds() != null) {
+            viewportWidth = cardsScrollPane.getViewportBounds().getWidth();
+        }
+        if (viewportWidth <= 0) {
+            viewportWidth = cardsContainer.getWidth();
+        }
+        if (viewportWidth <= 0) {
+            return 540;
+        }
+
+        double horizontalPadding = cardsContainer.getInsets().getLeft() + cardsContainer.getInsets().getRight();
+        double usableWidth = Math.max(0, viewportWidth - horizontalPadding);
+        cardsContainer.setPrefWrapLength(usableWidth);
+
+        int columns;
+        if (cardCount <= 1) {
+            columns = 1;
+        } else if (usableWidth >= 920) {
+            columns = 2;
+        } else {
+            columns = 1;
+        }
+
+        double totalGap = cardsContainer.getHgap() * (columns - 1);
+        double width = (usableWidth - totalGap) / columns;
+        return Math.max(340, Math.floor(width));
+    }
+
+    private VBox buildRendezVousCard(RendezVous rdv, double cardWidth) {
         boolean selected = selectedRendezVous != null
                 && selectedRendezVous.getId() != null
                 && selectedRendezVous.getId().equals(rdv.getId());
@@ -222,9 +287,9 @@ public class RendezVousController {
         VBox card = new VBox(10);
         String borderColor = selected ? "#38bdf8" : "#1f3b70";
         card.setStyle("-fx-background-color: #020f2d; -fx-border-color: " + borderColor + "; -fx-border-width: 1.2; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 16;");
-        card.setMaxWidth(Double.MAX_VALUE);
-        card.setPrefWidth(540);
-        card.setMinWidth(520);
+        card.setPrefWidth(cardWidth);
+        card.setMinWidth(cardWidth);
+        card.setMaxWidth(cardWidth);
 
         HBox header = new HBox(8);
         Label idLabel = new Label("Rendez-vous " + safeNumber(rdv.getId()));
@@ -247,11 +312,11 @@ public class RendezVousController {
         durationLabel.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 13px; -fx-font-weight: 700;");
         dateRow.getChildren().addAll(dateLabel, dateSpacer, durationLabel);
 
-        Label line1 = new Label("Professeur :  #" + safeNumber(rdv.getProfessorId()));
+        Label line1 = new Label("Professeur :  " + resolveProfessorName(rdv.getProfessorId()));
         line1.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 15px;");
-        Label line2 = new Label("Etudiant  :  #" + safeNumber(rdv.getStudentId()));
+        Label line2 = new Label("Etudiant  :  " + resolveStudentName(rdv.getStudentId()));
         line2.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 15px;");
-        Label line3 = new Label("Cours     :  " + (rdv.getCourseId() == null ? "-" : ("#" + rdv.getCourseId())));
+        Label line3 = new Label("Cours     :  " + resolveCourseName(rdv.getCourseId()));
         line3.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 15px;");
 
         HBox linkRow = new HBox();
@@ -272,9 +337,7 @@ public class RendezVousController {
             selectedRendezVous = rdv;
             editSelectedRendezVous();
         });
-        Button pdfBtn = new Button("Exporter PDF");
-        pdfBtn.setStyle("-fx-background-color: #1e293b; -fx-background-radius: 18; -fx-text-fill: #e2e8f0; -fx-font-weight: 700;");
-        pdfBtn.setOnAction(event -> exportRendezVousDetailsPdf(rdv));
+        Button coursePdfBtn = buildCoursePdfButton(rdv);
 
         if (isProfessorMode()) {
             boolean pending = isPendingStatus(rdv.getStatut());
@@ -297,14 +360,14 @@ public class RendezVousController {
             refuseBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "refuse"));
 
             VBox professorActions = new VBox(8);
-            HBox firstRow = new HBox(10, detailsBtn, pdfBtn);
+            HBox firstRow = new HBox(10, detailsBtn, coursePdfBtn);
             HBox secondRow = new HBox(10, meetingLinkField, acceptBtn, refuseBtn);
             HBox.setHgrow(meetingLinkField, javafx.scene.layout.Priority.ALWAYS);
             VBox linkInput = new VBox(4, meetingLinkLabel, secondRow);
             professorActions.getChildren().addAll(firstRow, linkInput);
             card.getChildren().addAll(header, dateRow, line1, line2, line3, linkRow, professorActions);
         } else {
-            actions.getChildren().addAll(detailsBtn, editBtn, pdfBtn);
+            actions.getChildren().addAll(detailsBtn, editBtn, coursePdfBtn);
             card.getChildren().addAll(header, dateRow, line1, line2, line3, linkRow, actions);
         }
 
@@ -446,6 +509,10 @@ public class RendezVousController {
 
     @FXML
     private void goToSlots(ActionEvent event) {
+        if (isStudentMode()) {
+            switchScene(event, "/tn/esprit/views/availability-slot/slot-calendar.fxml", "SkillOra - Slots Calendar");
+            return;
+        }
         switchScene(event, "/tn/esprit/views/availability-slot/availability-slot-list.fxml", "SkillOra - Availability Slots");
     }
 
@@ -468,16 +535,16 @@ public class RendezVousController {
         }
 
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Détails rendez-vous #" + safeNumber(rdv.getId()));
+        dialog.setTitle("Détails rendez-vous " + safeNumber(rdv.getId()));
         ButtonType closeType = new ButtonType("Fermer", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().add(closeType);
 
-        Label title = new Label("Rendez-vous #" + safeNumber(rdv.getId()));
+        Label title = new Label("Rendez-vous " + safeNumber(rdv.getId()));
         title.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 24px; -fx-font-weight: 800;");
         Label subtitle = new Label("Statut : " + statusDisplay(rdv.getStatut()));
         subtitle.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 14px; -fx-font-weight: 700;");
 
-        Button exportBtn = new Button("Exporter ce détail en PDF");
+        Button exportBtn = new Button("Exporter en PDF");
         exportBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 700; -fx-background-radius: 12;");
         exportBtn.setOnAction(event -> exportRendezVousDetailsPdf(rdv));
 
@@ -488,11 +555,11 @@ public class RendezVousController {
 
         VBox detailsBox = new VBox(8);
         detailsBox.getChildren().addAll(
-                buildDetailsRow("ID", "#" + safeNumber(rdv.getId())),
+                buildDetailsRow("ID", safeNumber(rdv.getId())),
                 buildDetailsRow("Statut", statusDisplay(rdv.getStatut())),
-                buildDetailsRow("Professeur", "#" + safeNumber(rdv.getProfessorId())),
-                buildDetailsRow("Etudiant", "#" + safeNumber(rdv.getStudentId())),
-                buildDetailsRow("Cours", rdv.getCourseId() == null ? "-" : "#" + rdv.getCourseId()),
+                buildDetailsRow("Professeur", safeNumber(rdv.getProfessorId())),
+                buildDetailsRow("Etudiant", safeNumber(rdv.getStudentId())),
+                buildDetailsRow("Cours", rdv.getCourseId() == null ? "-" : safeNumber(rdv.getCourseId())),
                 buildDetailsRow("Créneau", resolveSlotSummary(rdv.getSlotId())),
                 buildDetailsRow("Type", meetingTypeDisplay(rdv.getMeetingType())),
                 buildDetailsRow("Lien de réunion", normalizeDefault(rdv.getMeetingLink(), "-")),
@@ -541,6 +608,68 @@ public class RendezVousController {
         return row;
     }
 
+    private Button buildCoursePdfButton(RendezVous rdv) {
+        Button button = new Button();
+        button.setStyle("-fx-background-color: #1e293b; -fx-background-radius: 18; -fx-text-fill: #e2e8f0; -fx-font-weight: 700;");
+
+        boolean canEditPdf = canManageCoursePdf(rdv);
+        String existingPdf = toNull(rdv == null ? null : rdv.getCoursePdfName());
+
+        if (canEditPdf) {
+            button.setText(existingPdf == null ? "Ajouter PDF cours" : "Modifier PDF cours");
+            button.setOnAction(event -> attachCoursePdf(rdv));
+            return button;
+        }
+
+        if (existingPdf != null) {
+            button.setText("PDF cours");
+            button.setOnAction(event -> showInfo("PDF cours", existingPdf));
+        } else {
+            button.setText("Aucun PDF");
+            button.setDisable(true);
+        }
+        return button;
+    }
+
+    private boolean canManageCoursePdf(RendezVous rdv) {
+        return (rdv != null) && (isAdminMode() || canStudentManage(rdv));
+    }
+
+    private void attachCoursePdf(RendezVous source) {
+        if (source == null) {
+            showWarning("Selection required", "Select a rendez-vous first.");
+            return;
+        }
+        if (!canManageCoursePdf(source)) {
+            showWarning("Action not allowed", "Only student owner can add course PDF.");
+            return;
+        }
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Ajouter un PDF de cours");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF files", "*.pdf"));
+        File picked = chooser.showOpenDialog(statusLabel == null || statusLabel.getScene() == null ? null : statusLabel.getScene().getWindow());
+        if (picked == null) {
+            return;
+        }
+
+        RendezVous updated = copyRendezVous(source);
+        updated.setCoursePdfName(picked.getName());
+        try {
+            boolean ok = rendezVousService.update(updated);
+            if (!ok) {
+                showWarning("Update failed", "Unable to save PDF for this rendez-vous.");
+                return;
+            }
+            refreshRendezVous();
+            if (statusLabel != null) {
+                statusLabel.setText("PDF ajouté au rendez-vous #" + safeNumber(updated.getId()));
+            }
+        } catch (SQLException exception) {
+            showError("Unable to update rendez-vous PDF", exception);
+        }
+    }
+
     private String resolveSlotSummary(Integer slotId) {
         if (slotId == null) {
             return "-";
@@ -548,13 +677,13 @@ public class RendezVousController {
         try {
             AvailabilitySlot slot = availabilitySlotService.getById(slotId);
             if (slot == null) {
-                return "#" + slotId;
+                return safeNumber(slotId);
             }
             String start = formatDateTime(slot.getStartAt());
             String end = formatDateTime(slot.getEndAt());
-            return "#" + safeNumber(slot.getId()) + "  " + start + " -> " + end;
+            return safeNumber(slot.getId()) + "  " + start + " -> " + end;
         } catch (SQLException exception) {
-            return "#" + slotId;
+            return safeNumber(slotId);
         }
     }
 
@@ -585,7 +714,7 @@ public class RendezVousController {
             document.addPage(page);
 
             List<String> lines = new ArrayList<>();
-            lines.add("Details du rendez-vous #" + safeNumber(rdv.getId()));
+            lines.add("Details du rendez-vous " + safeNumber(rdv.getId()));
             lines.add("");
             lines.addAll(buildRendezVousDetailLines(rdv));
 
@@ -634,9 +763,9 @@ public class RendezVousController {
     private List<String> buildRendezVousDetailLines(RendezVous rdv) {
         List<String> lines = new ArrayList<>();
         lines.add("Statut: " + statusDisplay(rdv.getStatut()));
-        lines.add("Professeur: #" + safeNumber(rdv.getProfessorId()));
-        lines.add("Etudiant: #" + safeNumber(rdv.getStudentId()));
-        lines.add("Cours: " + (rdv.getCourseId() == null ? "-" : "#" + rdv.getCourseId()));
+        lines.add("Professeur: " + safeNumber(rdv.getProfessorId()));
+        lines.add("Etudiant: " + safeNumber(rdv.getStudentId()));
+        lines.add("Cours: " + (rdv.getCourseId() == null ? "-" : safeNumber(rdv.getCourseId())));
         lines.add("Créneau: " + resolveSlotSummary(rdv.getSlotId()));
         lines.add("Type: " + meetingTypeDisplay(rdv.getMeetingType()));
         lines.add("Lien de réunion: " + normalizeDefault(rdv.getMeetingLink(), "-"));
@@ -682,7 +811,7 @@ public class RendezVousController {
     private Optional<RendezVous> showCreateRendezVousDialog() {
         List<SlotOption> slotOptions;
         try {
-            slotOptions = loadSlotOptions(null);
+            slotOptions = loadSlotOptions(null, null);
         } catch (SQLException exception) {
             showError("Unable to load slots for rendez-vous creation", exception);
             return Optional.empty();
@@ -707,8 +836,6 @@ public class RendezVousController {
         ComboBox<CourseOption> courseCombo = new ComboBox<>();
         styleCombo(courseCombo);
         refreshCourseOptionsForSlot(slotCombo.getValue(), courseCombo, null);
-        slotCombo.valueProperty().addListener((obs, oldValue, newValue) ->
-                refreshCourseOptionsForSlot(newValue, courseCombo, null));
 
         ToggleGroup typeGroup = new ToggleGroup();
         RadioButton onlineRadio = new RadioButton("En ligne");
@@ -751,14 +878,35 @@ public class RendezVousController {
         infoText.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 13px;");
         Label messageLabel = sectionLabel("Message (optionnel)");
         Label pdfLabel = sectionLabel("Cours PDF (optionnel)");
+        Label locationTitle = sectionLabel("Lieu du créneau (en personne)");
+        Label locationPreview = new Label();
+        locationPreview.setWrapText(true);
+        locationPreview.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 13px;");
+        VBox locationPreviewBox = new VBox(6, locationTitle, locationPreview);
+        locationPreviewBox.setStyle("-fx-background-color: #0d224c; -fx-padding: 10 12; -fx-border-color: #2754a3; -fx-border-radius: 10; -fx-background-radius: 10;");
 
         HBox typeBox = new HBox(16, onlineRadio, inPersonRadio);
         HBox pdfBox = new HBox(10, fileBtn, pdfNameLabel);
+
+        Runnable refreshLocationPreview = () -> {
+            locationPreview.setText(formatSlotLocationDisplay(slotCombo.getValue()));
+            boolean showLocation = inPersonRadio.isSelected();
+            locationPreviewBox.setManaged(showLocation);
+            locationPreviewBox.setVisible(showLocation);
+        };
+
+        slotCombo.valueProperty().addListener((obs, oldValue, newValue) -> {
+            refreshCourseOptionsForSlot(newValue, courseCombo, null);
+            refreshLocationPreview.run();
+        });
+        typeGroup.selectedToggleProperty().addListener((obs, oldValue, newValue) -> refreshLocationPreview.run());
+        refreshLocationPreview.run();
 
         content.getChildren().addAll(
                 slotLabel, slotCombo,
                 courseLabel, courseCombo,
                 typeLabel, typeBox,
+                locationPreviewBox,
                 infoTitle, infoText,
                 messageLabel, messageArea,
                 pdfLabel, pdfBox
@@ -791,10 +939,21 @@ public class RendezVousController {
             rdv.setProfessorId(selectedSlot.professorId());
             rdv.setStudentId(CURRENT_USER_ID);
             rdv.setCourseId(selectedCourse.id());
-            rdv.setMeetingType(onlineRadio.isSelected() ? "en_ligne" : "en_personne");
+            boolean inPerson = inPersonRadio.isSelected();
+            rdv.setMeetingType(inPerson ? "en_personne" : "en_ligne");
             rdv.setStatut("en_attente");
             rdv.setMeetingLink(null);
-            rdv.setLocation(null);
+            if (inPerson) {
+                rdv.setLocation(resolveSlotLocationValue(selectedSlot));
+                rdv.setLocationLabel(toNull(selectedSlot.locationLabel()));
+                rdv.setLocationLat(selectedSlot.locationLat());
+                rdv.setLocationLng(selectedSlot.locationLng());
+            } else {
+                rdv.setLocation(null);
+                rdv.setLocationLabel(null);
+                rdv.setLocationLat(null);
+                rdv.setLocationLng(null);
+            }
             rdv.setMessage(toNull(messageArea.getText()));
             rdv.setCreatedAt(LocalDateTime.now());
             rdv.setCoursePdfName(selectedFile[0] != null ? selectedFile[0].getName() : null);
@@ -808,9 +967,19 @@ public class RendezVousController {
     private Optional<RendezVous> showEditRendezVousDialog(RendezVous source) {
         List<SlotOption> slotOptions;
         try {
-            slotOptions = loadSlotOptions(source.getSlotId());
+            Integer professorScope = resolveProfessorScopeForEdit(source);
+            if (professorScope == null) {
+                showWarning("Professor not found", "Unable to resolve professor for this rendez-vous.");
+                return Optional.empty();
+            }
+            slotOptions = loadSlotOptions(source.getSlotId(), professorScope);
         } catch (SQLException exception) {
             showError("Unable to load slots for edit", exception);
+            return Optional.empty();
+        }
+
+        if (slotOptions.isEmpty()) {
+            showWarning("No slot available", "No available slot found for this professor.");
             return Optional.empty();
         }
 
@@ -834,6 +1003,23 @@ public class RendezVousController {
         slotCombo.valueProperty().addListener((obs, oldValue, newValue) ->
                 refreshCourseOptionsForSlot(newValue, courseCombo, null));
 
+        Label pdfNameLabel = new Label(normalizeDefault(source.getCoursePdfName(), "Aucun fichier choisi"));
+        pdfNameLabel.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 13px;");
+        Button fileBtn = new Button("Choisir PDF cours");
+        fileBtn.setStyle("-fx-background-color: #1e293b; -fx-text-fill: #e2e8f0; -fx-font-weight: 700; -fx-background-radius: 10;");
+        File[] selectedFile = new File[1];
+        fileBtn.setOnAction(event -> {
+            FileChooser chooser = new FileChooser();
+            chooser.setTitle("Cours PDF");
+            chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF files", "*.pdf"));
+            File picked = chooser.showOpenDialog(fileBtn.getScene().getWindow());
+            if (picked != null) {
+                selectedFile[0] = picked;
+                pdfNameLabel.setText(picked.getName());
+            }
+        });
+        HBox pdfBox = new HBox(10, fileBtn, pdfNameLabel);
+
         VBox content = new VBox(10);
         content.setStyle("-fx-background-color: #101b36; -fx-padding: 18; -fx-border-color: #2b3f67; -fx-border-radius: 14; -fx-background-radius: 14;");
         content.getChildren().addAll(
@@ -841,7 +1027,9 @@ public class RendezVousController {
                 sectionLabel("Nouveau créneau"),
                 slotCombo,
                 sectionLabel("Cours"),
-                courseCombo
+                courseCombo,
+                sectionLabel("PDF cours"),
+                pdfBox
         );
 
         styleDialog(dialog.getDialogPane());
@@ -869,12 +1057,22 @@ public class RendezVousController {
         if (chosen.professorId() != null) {
             updated.setProfessorId(chosen.professorId());
         }
+        if (isInPersonMeetingType(updated.getMeetingType())) {
+            updated.setLocation(resolveSlotLocationValue(chosen));
+            updated.setLocationLabel(toNull(chosen.locationLabel()));
+            updated.setLocationLat(chosen.locationLat());
+            updated.setLocationLng(chosen.locationLng());
+        }
         updated.setCourseId(chosenCourse.id());
+        if (selectedFile[0] != null) {
+            updated.setCoursePdfName(selectedFile[0].getName());
+        }
         return Optional.of(updated);
     }
 
-    private List<SlotOption> loadSlotOptions(Integer includeSlotId) throws SQLException {
+    private List<SlotOption> loadSlotOptions(Integer includeSlotId, Integer professorIdScope) throws SQLException {
         return availabilitySlotService.getAll().stream()
+                .filter(slot -> professorIdScope == null || sameInteger(slot.getProfessorId(), professorIdScope))
                 .filter(slot -> isSlotAvailable(slot, includeSlotId))
                 .map(slot -> {
                     String professorName = resolveProfessorName(slot.getProfessorId());
@@ -882,10 +1080,27 @@ public class RendezVousController {
                             slot.getId(),
                             slot.getProfessorId(),
                             professorName,
-                            formatSlotRange(slot, professorName)
+                            formatSlotRange(slot, professorName),
+                            slot.getLocationLabel(),
+                            slot.getLocationLat(),
+                            slot.getLocationLng()
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    private Integer resolveProfessorScopeForEdit(RendezVous source) throws SQLException {
+        if (source == null) {
+            return null;
+        }
+        if (source.getProfessorId() != null) {
+            return source.getProfessorId();
+        }
+        if (source.getSlotId() == null) {
+            return null;
+        }
+        AvailabilitySlot slot = availabilitySlotService.getById(source.getSlotId());
+        return slot == null ? null : slot.getProfessorId();
     }
 
     private boolean isSlotAvailable(AvailabilitySlot slot, Integer includeSlotId) {
@@ -904,40 +1119,148 @@ public class RendezVousController {
         return "#" + safeNumber(slot.getId()) + "  " + start + " -> " + end + "  |  " + professor + currentFlag;
     }
 
+    private String formatSlotLocationDisplay(SlotOption slotOption) {
+        if (slotOption == null) {
+            return "Choisissez un créneau.";
+        }
+        String label = normalizeDefault(slotOption.locationLabel(), "-");
+        String coordinates = formatCoordinates(slotOption.locationLat(), slotOption.locationLng());
+        if ("-".equals(label) && "-".equals(coordinates)) {
+            return "Lieu non défini pour ce créneau.";
+        }
+        if ("-".equals(coordinates)) {
+            return label;
+        }
+        if ("-".equals(label)) {
+            return coordinates;
+        }
+        return label + " (" + coordinates + ")";
+    }
+
+    private String resolveSlotLocationValue(SlotOption slotOption) {
+        if (slotOption == null) {
+            return null;
+        }
+        String label = toNull(slotOption.locationLabel());
+        if (label != null) {
+            return label;
+        }
+        if (slotOption.locationLat() != null && slotOption.locationLng() != null) {
+            return slotOption.locationLat() + ", " + slotOption.locationLng();
+        }
+        return null;
+    }
+
     private String resolveProfessorName(Integer professorId) {
-        if (professorId == null) {
-            return "Professeur inconnu";
+        String fallback = professorId == null ? "Professeur inconnu" : ("Prof #" + professorId);
+        return resolveUserDisplayName(professorId, fallback);
+    }
+
+    private String resolveStudentName(Integer studentId) {
+        String fallback = studentId == null ? "Etudiant inconnu" : ("Etudiant #" + studentId);
+        return resolveUserDisplayName(studentId, fallback);
+    }
+
+    private String resolveUserDisplayName(Integer userId, String fallback) {
+        if (userId == null) {
+            return fallback;
+        }
+        String cached = userDisplayNameCache.get(userId);
+        if (cached != null) {
+            return cached;
         }
 
+        String resolved = fallback;
         try {
             String userTable = findExistingTable("user", "users");
-            if (userTable == null) {
-                return "Prof #" + professorId;
-            }
+            if (userTable != null) {
+                Connection connection = MyConnection.getInstance().getConnection();
+                String firstNameColumn = findExistingColumn(userTable, "first_name", "firstname");
+                String lastNameColumn = findExistingColumn(userTable, "last_name", "lastname");
+                String usernameColumn = findExistingColumn(userTable, "username", "user_name", "login");
+                String emailColumn = findExistingColumn(userTable, "email", "mail");
 
-            Connection connection = MyConnection.getInstance().getConnection();
-            String sql = "SELECT first_name, last_name, username FROM `" + userTable + "` WHERE id = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setInt(1, professorId);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        String fullName = (normalizeDefault(resultSet.getString("first_name"), "") + " "
-                                + normalizeDefault(resultSet.getString("last_name"), "")).trim();
-                        if (!fullName.isBlank()) {
-                            return fullName;
-                        }
-                        String username = normalizeDefault(resultSet.getString("username"), "");
-                        if (!username.isBlank()) {
-                            return username;
+                List<String> projections = new ArrayList<>();
+                if (firstNameColumn != null) {
+                    projections.add("`" + firstNameColumn + "` AS first_name");
+                }
+                if (lastNameColumn != null) {
+                    projections.add("`" + lastNameColumn + "` AS last_name");
+                }
+                if (usernameColumn != null) {
+                    projections.add("`" + usernameColumn + "` AS username");
+                }
+                if (emailColumn != null) {
+                    projections.add("`" + emailColumn + "` AS email");
+                }
+
+                if (!projections.isEmpty()) {
+                    String sql = "SELECT " + String.join(", ", projections) + " FROM `" + userTable + "` WHERE id = ? LIMIT 1";
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                        preparedStatement.setInt(1, userId);
+                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                            if (resultSet.next()) {
+                                String firstName = firstNameColumn == null ? null : toNull(resultSet.getString("first_name"));
+                                String lastName = lastNameColumn == null ? null : toNull(resultSet.getString("last_name"));
+                                String username = usernameColumn == null ? null : toNull(resultSet.getString("username"));
+                                String email = emailColumn == null ? null : toNull(resultSet.getString("email"));
+                                String fullName = ((firstName == null ? "" : firstName) + " " + (lastName == null ? "" : lastName)).trim();
+                                if (!fullName.isBlank()) {
+                                    resolved = fullName;
+                                } else if (username != null) {
+                                    resolved = username;
+                                } else if (email != null) {
+                                    resolved = email;
+                                }
+                            }
                         }
                     }
                 }
             }
         } catch (SQLException ignored) {
-            // Fallback to ID-based label when user lookup is unavailable.
+            // Keep fallback display when user lookup is unavailable.
         }
 
-        return "Prof #" + professorId;
+        userDisplayNameCache.put(userId, resolved);
+        return resolved;
+    }
+
+    private String resolveCourseName(Integer courseId) {
+        if (courseId == null) {
+            return "-";
+        }
+        String cached = courseTitleCache.get(courseId);
+        if (cached != null) {
+            return cached;
+        }
+
+        String resolved = "Cours #" + courseId;
+        try {
+            String courseTable = findExistingTable("course", "courses");
+            if (courseTable != null) {
+                String titleColumn = findExistingColumn(courseTable, "title", "name", "label");
+                if (titleColumn != null) {
+                    Connection connection = MyConnection.getInstance().getConnection();
+                    String sql = "SELECT `" + titleColumn + "` AS course_title FROM `" + courseTable + "` WHERE id = ? LIMIT 1";
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                        preparedStatement.setInt(1, courseId);
+                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                            if (resultSet.next()) {
+                                String title = toNull(resultSet.getString("course_title"));
+                                if (title != null) {
+                                    resolved = title;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SQLException ignored) {
+            // Keep fallback display when course lookup is unavailable.
+        }
+
+        courseTitleCache.put(courseId, resolved);
+        return resolved;
     }
 
     private void refreshCourseOptionsForSlot(SlotOption selectedSlot, ComboBox<CourseOption> courseCombo, Integer preferredCourseId) {
@@ -964,18 +1287,17 @@ public class RendezVousController {
 
     private List<CourseOption> loadCourseOptionsForProfessor(Integer professorId) throws SQLException {
         String courseTable = findExistingTable("course", "courses");
-        if (courseTable == null) {
+        if (courseTable == null || professorId == null) {
             return List.of();
         }
 
         String titleColumn = findExistingColumn(courseTable, "title", "name", "label");
         String professorColumn = findExistingColumn(courseTable, "professor_id", "teacher_id", "instructor_id", "author_id", "user_id", "created_by");
-
-        List<CourseOption> options = queryCourseOptions(courseTable, titleColumn, professorColumn, professorId);
-        if (options.isEmpty() && professorColumn != null && professorId != null) {
-            options = queryCourseOptions(courseTable, titleColumn, null, null);
+        if (professorColumn == null) {
+            return List.of();
         }
-        return options;
+
+        return queryCourseOptions(courseTable, titleColumn, professorColumn, professorId);
     }
 
     private List<CourseOption> queryCourseOptions(String courseTable, String titleColumn, String professorColumn, Integer professorId) throws SQLException {
@@ -1135,7 +1457,15 @@ public class RendezVousController {
         return copy;
     }
 
-    private record SlotOption(Integer id, Integer professorId, String professorName, String label) {
+    private record SlotOption(
+            Integer id,
+            Integer professorId,
+            String professorName,
+            String label,
+            String locationLabel,
+            Float locationLat,
+            Float locationLng
+    ) {
         @Override
         public String toString() {
             return label;
@@ -1230,11 +1560,9 @@ public class RendezVousController {
 
             if (isConfirmedStatus(newStatus)) {
                 String meetingLink = toNull(meetingLinkInput);
-                if (meetingLink == null) {
-                    showWarning("Validation error", "Le lien de réunion est obligatoire lors de l'acceptation.");
-                    return;
+                if (meetingLink != null) {
+                    updated.setMeetingLink(meetingLink);
                 }
-                updated.setMeetingLink(meetingLink);
                 updated.setRefusalReason(null);
             }
 
@@ -1327,6 +1655,10 @@ public class RendezVousController {
         return normalizeDefault(rawType, "-");
     }
 
+    private boolean isInPersonMeetingType(String rawType) {
+        return normalizeDefault(rawType, "").toLowerCase().contains("personne");
+    }
+
     private String formatCardDate(LocalDateTime value) {
         if (value == null) {
             return "-";
@@ -1417,48 +1749,46 @@ public class RendezVousController {
             closeButton.setManaged(false);
         }
 
-        VBox root = new VBox();
-        root.setStyle("-fx-background-color: #08142d; -fx-border-color: #1f325f; -fx-border-width: 1; -fx-border-radius: 18; -fx-background-radius: 18;");
+        int unreadCount = unread == null ? 0 : unread.size();
+
+        VBox root = new VBox(0);
+        root.setStyle("-fx-background-color: #081a3f; -fx-border-color: #1e3a66; -fx-border-width: 1; -fx-border-radius: 16; -fx-background-radius: 16;");
         root.setPrefWidth(360);
         root.setMaxWidth(360);
 
         Label title = new Label("Notifications");
-        title.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 16px; -fx-font-weight: 700;");
-        VBox titleWrap = new VBox(title);
-        titleWrap.setStyle("-fx-padding: 20 24 16 24;");
+        title.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 24px; -fx-font-weight: 800;");
+        Label count = new Label(unreadCount + " non lue(s)");
+        count.setStyle("-fx-text-fill: #ff4d6d; -fx-font-size: 14px; -fx-font-weight: 700;");
+        Region titleSpacer = new Region();
+        HBox.setHgrow(titleSpacer, javafx.scene.layout.Priority.ALWAYS);
+        HBox titleWrap = new HBox(10, title, titleSpacer, count);
+        titleWrap.setStyle("-fx-alignment: center-left; -fx-padding: 16 16 12 16;");
 
         Region topDivider = new Region();
-        topDivider.setStyle("-fx-border-color: #162a4f; -fx-border-width: 1 0 0 0; -fx-min-height: 1;");
+        topDivider.setStyle("-fx-border-color: #234572; -fx-border-width: 1 0 0 0; -fx-min-height: 1;");
 
         VBox center = new VBox(10);
-        center.setStyle("-fx-padding: 22 24 22 24; -fx-alignment: center;");
+        center.setStyle("-fx-padding: 12 16 14 16;");
         if (unread == null || unread.isEmpty()) {
             Label empty = new Label("Aucune notification non lue.");
-            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 15px; -fx-font-weight: 500;");
+            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 14px; -fx-font-weight: 500;");
             center.getChildren().add(empty);
         } else {
-            int limit = Math.min(unread.size(), 5);
-            for (int i = 0; i < limit; i++) {
-                Notification notification = unread.get(i);
-                Label line = new Label("• " + normalizeDefault(notification.getTitle(), "Notification")
-                        + " : " + normalizeDefault(notification.getMessage(), ""));
-                line.setWrapText(true);
-                line.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 14px;");
-                center.getChildren().add(line);
-            }
+            center.getChildren().add(buildUnreadPreviewCard(unread.get(0)));
         }
 
         Region bottomDivider = new Region();
-        bottomDivider.setStyle("-fx-border-color: #162a4f; -fx-border-width: 1 0 0 0; -fx-min-height: 1;");
+        bottomDivider.setStyle("-fx-border-color: #234572; -fx-border-width: 1 0 0 0; -fx-min-height: 1;");
 
         Button footerAction = new Button("Voir toutes les notifications");
-        footerAction.setStyle("-fx-background-color: transparent; -fx-text-fill: #3b82f6; -fx-font-size: 16px; -fx-font-weight: 700;");
+        footerAction.setStyle("-fx-background-color: transparent; -fx-text-fill: #53a6ff; -fx-font-size: 15px; -fx-font-weight: 700;");
         footerAction.setOnAction(event -> {
             openAll.set(true);
             dialog.setResult(closeType);
         });
         VBox footerWrap = new VBox(footerAction);
-        footerWrap.setStyle("-fx-padding: 14 24 16 24; -fx-alignment: center;");
+        footerWrap.setStyle("-fx-padding: 12 16 14 16; -fx-alignment: center;");
 
         root.getChildren().addAll(titleWrap, topDivider, center, bottomDivider, footerWrap);
 
@@ -1474,6 +1804,33 @@ public class RendezVousController {
 
         dialog.showAndWait();
         return openAll.get();
+    }
+
+    private HBox buildUnreadPreviewCard(Notification notification) {
+        HBox row = new HBox(12);
+        row.setStyle("-fx-background-color: #1b2a49; -fx-background-radius: 12; -fx-padding: 12;");
+
+        Label icon = new Label("🔔");
+        icon.setStyle("-fx-background-color: #1d4f94; -fx-text-fill: #8bc6ff; -fx-font-size: 15px; -fx-padding: 8; -fx-background-radius: 18;");
+
+        VBox textBox = new VBox(4);
+        textBox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(textBox, javafx.scene.layout.Priority.ALWAYS);
+
+        Label title = new Label(normalizeDefault(notification.getTitle(), "Notification"));
+        title.setWrapText(true);
+        title.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 16px; -fx-font-weight: 800;");
+
+        Label message = new Label(normalizeDefault(notification.getMessage(), "-"));
+        message.setWrapText(true);
+        message.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 14px; -fx-font-weight: 600;");
+
+        Label time = new Label(formatNotificationDate(notification.getCreatedAt()));
+        time.setStyle("-fx-text-fill: #8ba9cc; -fx-font-size: 13px;");
+
+        textBox.getChildren().addAll(title, message, time);
+        row.getChildren().addAll(icon, textBox);
+        return row;
     }
 
     private void showAllNotificationsDialog() {

@@ -67,6 +67,22 @@ public class RendezVousService {
         return null;
     }
 
+    public List<RendezVous> findBySlotId(int slotId) throws SQLException {
+        String sql = "SELECT * FROM rendez_vous WHERE slot_id = ? ORDER BY created_at DESC, id DESC";
+        List<RendezVous> rendezVousList = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, slotId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    rendezVousList.add(mapResultSetToRendezVous(resultSet));
+                }
+            }
+        }
+
+        return rendezVousList;
+    }
+
     public boolean update(RendezVous rendezVous) throws SQLException {
         String sql = "UPDATE rendez_vous SET student_id = ?, professor_id = ?, course_id = ?, slot_id = ?, "
                 + "statut = ?, meeting_type = ?, meeting_link = ?, location = ?, message = ?, created_at = ?, "

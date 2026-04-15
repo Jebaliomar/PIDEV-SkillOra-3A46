@@ -57,7 +57,7 @@
                 <Region HBox.hgrow="ALWAYS" />
                 <Button mnemonicParsing="false" onAction="#goToSlots" text="Voir les créneaux"
                         style="-fx-background-color: #111f3d; -fx-text-fill: #e2e8f0; -fx-border-color: #324a7d; -fx-border-radius: 16; -fx-background-radius: 16; -fx-font-weight: 700;" />
-                <Button mnemonicParsing="false" onAction="#handleCreate" text="Nouveau rendez-vous"
+                <Button fx:id="createTopBtn" mnemonicParsing="false" onAction="#handleCreate" text="Nouveau rendez-vous"
                         style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 16; -fx-font-weight: 700;" />
             </HBox>
         </VBox>
@@ -69,7 +69,7 @@
                 <Insets top="8.0" right="18.0" bottom="12.0" left="18.0" />
             </padding>
             <Label text="Cards des Rendez-vous" style="-fx-text-fill: #e2e8f0; -fx-font-size: 18px; -fx-font-weight: bold;" />
-            <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+            <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
                 <content>
                     <FlowPane fx:id="cardsContainer" hgap="12.0" vgap="12.0" prefWrapLength="1110.0" style="-fx-padding: 8;" />
                 </content>
@@ -81,7 +81,7 @@
         <HBox spacing="10.0" style="-fx-padding: 12 18 16 18;">
             <Button mnemonicParsing="false" onAction="#refreshRendezVous" text="Refresh"
                     style="-fx-background-color: #1e293b; -fx-text-fill: #e2e8f0; -fx-font-weight: bold;" />
-            <Button mnemonicParsing="false" onAction="#handleCreate" text="Ajouter"
+            <Button fx:id="createBottomBtn" mnemonicParsing="false" onAction="#handleCreate" text="Ajouter"
                     style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold;" />
             <Button mnemonicParsing="false" onAction="#handleEdit" text="Modifier"
                     style="-fx-background-color: #16a34a; -fx-text-fill: white; -fx-font-weight: bold;" />

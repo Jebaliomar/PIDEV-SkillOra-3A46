@@ -75,19 +75,18 @@ public class AvailabilitySlotService {
     }
 
     public boolean update(AvailabilitySlot slot) throws SQLException {
-        String sql = "UPDATE availability_slots SET professor_id = ?, start_at = ?, end_at = ?, is_booked = ?, "
+        String sql = "UPDATE availability_slots SET start_at = ?, end_at = ?, is_booked = ?, "
                 + "location_label = ?, location_lat = ?, location_lng = ?, created_at = ? WHERE id = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            setNullableInteger(preparedStatement, 1, slot.getProfessorId());
-            preparedStatement.setTimestamp(2, Timestamp.valueOf(slot.getStartAt()));
-            preparedStatement.setTimestamp(3, Timestamp.valueOf(slot.getEndAt()));
-            setNullableBoolean(preparedStatement, 4, slot.getIsBooked());
-            preparedStatement.setString(5, slot.getLocationLabel());
-            setNullableFloat(preparedStatement, 6, slot.getLocationLat());
-            setNullableFloat(preparedStatement, 7, slot.getLocationLng());
-            setNullableTimestamp(preparedStatement, 8, slot.getCreatedAt());
-            preparedStatement.setInt(9, slot.getId());
+            preparedStatement.setTimestamp(1, Timestamp.valueOf(slot.getStartAt()));
+            preparedStatement.setTimestamp(2, Timestamp.valueOf(slot.getEndAt()));
+            setNullableBoolean(preparedStatement, 3, slot.getIsBooked());
+            preparedStatement.setString(4, slot.getLocationLabel());
+            setNullableFloat(preparedStatement, 5, slot.getLocationLat());
+            setNullableFloat(preparedStatement, 6, slot.getLocationLng());
+            setNullableTimestamp(preparedStatement, 7, slot.getCreatedAt());
+            preparedStatement.setInt(8, slot.getId());
 
             return preparedStatement.executeUpdate() > 0;
         }

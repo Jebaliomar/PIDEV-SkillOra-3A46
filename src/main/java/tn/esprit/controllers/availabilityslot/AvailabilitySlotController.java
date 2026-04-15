@@ -34,7 +34,12 @@ import netscape.javascript.JSObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import tn.esprit.entities.AvailabilitySlot;
+import tn.esprit.entities.Notification;
+import tn.esprit.entities.RendezVous;
 import tn.esprit.services.AvailabilitySlotService;
+import tn.esprit.services.NotificationService;
+import tn.esprit.services.RendezVousService;
+import tn.esprit.tools.MyConnection;
 
 import java.io.IOException;
 import java.net.URI;
@@ -43,29 +48,44 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import javafx.geometry.Insets;
 
 public class AvailabilitySlotController {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter CALENDAR_API_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter CARD_DATE_FORMATTER = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter CARD_DATE_FORMATTER = DateTimeFormatter.ofPattern("EEE d MMM yyyy", Locale.ENGLISH);
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
     private static final double DEFAULT_MAP_LAT = 36.82364;
     private static final double DEFAULT_MAP_LON = 10.15813;
     private static final int CURRENT_USER_ID = parseCurrentUserId();
+    private static final String CURRENT_USER_ROLE = normalizeRole(System.getProperty("skillora.role", "student"));
+    private static final String DEFAULT_GOOGLE_CALENDAR_ID = "yesserboubakri8@gmail.com";
+    private static final String GOOGLE_CALENDAR_ID = resolveConfigValue("GOOGLE_CALENDAR_ID", "skillora.googleCalendarId", DEFAULT_GOOGLE_CALENDAR_ID);
+    private static final String GOOGLE_CALENDAR_API_KEY = resolveConfigValue("GOOGLE_CALENDAR_API_KEY", "skillora.googleCalendarApiKey", null);
     private static final int CARDS_PER_ROW = 3;
     private static final int ROWS_PER_PAGE = 3;
     private static final int CARDS_PER_PAGE = CARDS_PER_ROW * ROWS_PER_PAGE;
@@ -81,6 +101,12 @@ public class AvailabilitySlotController {
 
     @FXML
     private GridPane cardsContainer;
+
+    @FXML
+    private ScrollPane cardsScrollPane;
+
+    @FXML
+    private WebView calendarWebView;
 
     @FXML
     private Pagination slotsPagination;
@@ -103,9 +129,25 @@ public class AvailabilitySlotController {
     @FXML
     private Label bookedCountLabel;
 
+    @FXML
+    private Button heroCreateBtn;
+
+    @FXML
+    private Button addSlotBtn;
+
+    @FXML
+    private Button editSlotBtn;
+
+    @FXML
+    private Button deleteSlotBtn;
+
     private final AvailabilitySlotService availabilitySlotService = new AvailabilitySlotService();
+    private final RendezVousService rendezVousService = new RendezVousService();
+    private final NotificationService notificationService = new NotificationService();
+    private final Map<Integer, String> professorNameCache = new HashMap<>();
     private List<AvailabilitySlot> allSlots = List.of();
     private List<AvailabilitySlot> filteredSlots = List.of();
+    private Set<Integer> lockedSlotIds = Set.of();
     private AvailabilitySlot selectedSlot;
     private SlotFilter currentFilter = SlotFilter.ALL;
 
@@ -117,18 +159,60 @@ public class AvailabilitySlotController {
 
     @FXML
     public void initialize() {
+        if (calendarWebView != null) {
+            refreshCalendar();
+            return;
+        }
+
         searchField.textProperty().addListener((obs, oldValue, newValue) -> applyFiltersAndRender());
         if (slotsPagination != null) {
             slotsPagination.currentPageIndexProperty().addListener((obs, oldValue, newValue) -> renderCurrentPage());
         }
+        if (cardsScrollPane != null) {
+            cardsScrollPane.viewportBoundsProperty().addListener((obs, oldValue, newValue) -> renderCurrentPage());
+        }
+        applyRolePermissions();
         setActiveFilter(SlotFilter.ALL);
         refreshSlots();
+    }
+
+    private void applyRolePermissions() {
+        boolean canManage = canManageSlots();
+
+        if (heroCreateBtn != null) {
+            heroCreateBtn.setManaged(canManage);
+            heroCreateBtn.setVisible(canManage);
+        }
+        if (addSlotBtn != null) {
+            addSlotBtn.setDisable(!canManage);
+            addSlotBtn.setManaged(canManage);
+            addSlotBtn.setVisible(canManage);
+        }
+        if (editSlotBtn != null) {
+            editSlotBtn.setDisable(!canManage);
+            editSlotBtn.setManaged(canManage);
+            editSlotBtn.setVisible(canManage);
+        }
+        if (deleteSlotBtn != null) {
+            deleteSlotBtn.setDisable(!canManage);
+            deleteSlotBtn.setManaged(canManage);
+            deleteSlotBtn.setVisible(canManage);
+        }
     }
 
     @FXML
     private void refreshSlots() {
         try {
-            allSlots = availabilitySlotService.getAll();
+            List<AvailabilitySlot> loaded = availabilitySlotService.getAll();
+            lockedSlotIds = fetchLockedSlotIds();
+            if (isProfessorMode()) {
+                allSlots = loaded.stream()
+                        .filter(slot -> slot != null && slot.getProfessorId() != null && slot.getProfessorId().equals(CURRENT_USER_ID))
+                        .collect(Collectors.toList());
+            } else {
+                allSlots = loaded;
+            }
+            professorNameCache.clear();
             filteredSlots = List.of();
             selectedSlot = null;
             if (slotsPagination != null) {
@@ -139,6 +223,422 @@ public class AvailabilitySlotController {
         } catch (SQLException exception) {
             showError("Unable to load slots", exception);
         }
+    }
+
+    @FXML
+    private void refreshCalendar() {
+        if (calendarWebView == null) {
+            return;
+        }
+        try {
+            JSONArray events = fetchGoogleCalendarEvents();
+            calendarWebView.getEngine().loadContent(buildSlotsCalendarHtml(events.toString()));
+            if (statusLabel != null) {
+                statusLabel.setText(events.length() + " événement(s) Google Calendar chargé(s)");
+            }
+        } catch (Exception exception) {
+            // Keep calendar usable even if Google API is temporarily unavailable.
+            try {
+                List<AvailabilitySlot> slots = availabilitySlotService.getAll();
+                JSONArray fallbackEvents = mapSlotsToCalendarEvents(slots);
+                calendarWebView.getEngine().loadContent(buildSlotsCalendarHtml(fallbackEvents.toString()));
+                if (statusLabel != null) {
+                    statusLabel.setText("Google indisponible, fallback local: " + slots.size() + " créneau(x)");
+                }
+            } catch (SQLException fallbackException) {
+                showError("Unable to load slots calendar", fallbackException);
+            }
+        }
+    }
+
+    private JSONArray fetchGoogleCalendarEvents() throws IOException, InterruptedException {
+        String apiKey = sanitizeConfigValue(GOOGLE_CALENDAR_API_KEY);
+        if (apiKey == null) {
+            throw new IOException("GOOGLE_CALENDAR_API_KEY is missing.");
+        }
+
+        String calendarId = sanitizeConfigValue(GOOGLE_CALENDAR_ID);
+        if (calendarId == null) {
+            throw new IOException("GOOGLE_CALENDAR_ID is missing.");
+        }
+
+        String encodedCalendarId = URLEncoder.encode(calendarId, StandardCharsets.UTF_8);
+        String encodedApiKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
+        String url = "https://www.googleapis.com/calendar/v3/calendars/" + encodedCalendarId
+                + "/events?singleEvents=true&orderBy=startTime&maxResults=2500&key=" + encodedApiKey;
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                .header("Accept", "application/json")
+                .header("User-Agent", "SkillOraDesktop/1.0 (JavaFX slots calendar)")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IOException("Google Calendar HTTP " + response.statusCode());
+        }
+
+        JSONObject root = new JSONObject(response.body());
+        JSONArray items = root.optJSONArray("items");
+        return mapGoogleEventsToCalendarEvents(items == null ? new JSONArray() : items);
+    }
+
+    private JSONArray mapGoogleEventsToCalendarEvents(JSONArray items) {
+        JSONArray events = new JSONArray();
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.optJSONObject(i);
+            if (item == null) {
+                continue;
+            }
+            String status = sanitizeConfigValue(item.optString("status", ""));
+            if ("cancelled".equalsIgnoreCase(status)) {
+                continue;
+            }
+
+            JSONObject start = item.optJSONObject("start");
+            JSONObject end = item.optJSONObject("end");
+            String startRaw = extractGoogleDateValue(start);
+            String endRaw = extractGoogleDateValue(end);
+            if (startRaw == null || endRaw == null) {
+                continue;
+            }
+
+            String summary = sanitizeConfigValue(item.optString("summary", ""));
+            String description = sanitizeConfigValue(item.optString("description", ""));
+            boolean booked = inferBookedFromGoogleEvent(summary, description, status);
+
+            JSONObject event = new JSONObject();
+            event.put("id", sanitizeConfigValue(item.optString("id", String.valueOf(i))));
+            event.put("title", summary == null ? (booked ? "Réservé" : "Disponible") : summary);
+            event.put("start", startRaw);
+            event.put("end", endRaw);
+            event.put("booked", booked);
+            event.put("color", booked ? "#ef4444" : "#22c55e");
+            event.put("professor", "-");
+            event.put("locationLabel", defaultValue(item.optString("location", null)));
+            events.put(event);
+        }
+        return events;
+    }
+
+    private String extractGoogleDateValue(JSONObject dateObject) {
+        if (dateObject == null) {
+            return null;
+        }
+        String dateTime = sanitizeConfigValue(dateObject.optString("dateTime", null));
+        if (dateTime != null) {
+            return dateTime;
+        }
+        String date = sanitizeConfigValue(dateObject.optString("date", null));
+        if (date == null) {
+            return null;
+        }
+        return date + "T00:00:00";
+    }
+
+    private boolean inferBookedFromGoogleEvent(String summary, String description, String status) {
+        String source = defaultValue(summary) + " " + defaultValue(description) + " " + defaultValue(status);
+        String normalized = source.toLowerCase(Locale.ROOT);
+
+        if (normalized.contains("dispon") || normalized.contains("available")
+                || normalized.contains("free") || normalized.contains("libre")) {
+            return false;
+        }
+        return normalized.contains("reserv")
+                || normalized.contains("booked")
+                || normalized.contains("busy")
+                || normalized.contains("occup")
+                || normalized.contains("indispon")
+                || normalized.contains("unavailable")
+                || normalized.contains("taken");
+    }
+
+    private JSONArray mapSlotsToCalendarEvents(List<AvailabilitySlot> slots) {
+        JSONArray events = new JSONArray();
+        for (AvailabilitySlot slot : slots) {
+            if (slot == null || slot.getStartAt() == null || slot.getEndAt() == null) {
+                continue;
+            }
+
+            boolean booked = Boolean.TRUE.equals(slot.getIsBooked());
+            JSONObject event = new JSONObject();
+            event.put("id", slot.getId());
+            event.put("title", booked ? "Réservé" : "Disponible");
+            event.put("start", slot.getStartAt().format(CALENDAR_API_DATE_TIME_FORMATTER));
+            event.put("end", slot.getEndAt().format(CALENDAR_API_DATE_TIME_FORMATTER));
+            event.put("booked", booked);
+            event.put("color", booked ? "#ef4444" : "#22c55e");
+            event.put("professor", slot.getProfessorId() == null ? "-" : String.valueOf(slot.getProfessorId()));
+            event.put("locationLabel", defaultValue(slot.getLocationLabel()));
+            events.put(event);
+        }
+        return events;
+    }
+
+    private String buildSlotsCalendarHtml(String eventsJson) {
+        String html = """
+                <!DOCTYPE html>
+                <html lang="fr">
+                <head>
+                  <meta charset="UTF-8" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                  <style>
+                    :root {
+                      --bg: #041237;
+                      --panel: #071a49;
+                      --panel-2: #0b255f;
+                      --text: #e2e8f0;
+                      --muted: #94a3b8;
+                      --border: #1f3f7c;
+                    }
+                    * { box-sizing: border-box; }
+                    html, body {
+                      margin: 0;
+                      padding: 0;
+                      width: 100%;
+                      height: 100%;
+                      font-family: "Segoe UI", Arial, sans-serif;
+                      background: var(--bg);
+                      color: var(--text);
+                    }
+                    .wrap {
+                      width: 100%;
+                      height: 100%;
+                      display: flex;
+                      flex-direction: column;
+                      gap: 10px;
+                      padding: 12px;
+                    }
+                    .toolbar {
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                      background: var(--panel);
+                      border: 1px solid var(--border);
+                      border-radius: 12px;
+                      padding: 10px 12px;
+                    }
+                    .toolbar-left {
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                    }
+                    .title {
+                      font-size: 22px;
+                      font-weight: 800;
+                    }
+                    .btn {
+                      border: 1px solid #335ea4;
+                      background: #143271;
+                      color: var(--text);
+                      border-radius: 10px;
+                      padding: 6px 10px;
+                      font-weight: 700;
+                      cursor: pointer;
+                    }
+                    .legend {
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      font-size: 13px;
+                      color: var(--muted);
+                    }
+                    .dot {
+                      width: 12px;
+                      height: 12px;
+                      border-radius: 999px;
+                      display: inline-block;
+                      margin-right: 6px;
+                    }
+                    .calendar {
+                      display: grid;
+                      grid-template-columns: repeat(7, minmax(0, 1fr));
+                      gap: 8px;
+                      height: calc(100% - 64px);
+                    }
+                    .weekday {
+                      text-align: center;
+                      padding: 8px;
+                      font-size: 12px;
+                      font-weight: 700;
+                      color: #93c5fd;
+                      background: var(--panel-2);
+                      border: 1px solid var(--border);
+                      border-radius: 10px;
+                    }
+                    .day {
+                      background: var(--panel);
+                      border: 1px solid var(--border);
+                      border-radius: 10px;
+                      min-height: 110px;
+                      display: flex;
+                      flex-direction: column;
+                      overflow: hidden;
+                    }
+                    .day.muted {
+                      opacity: 0.45;
+                    }
+                    .day-number {
+                      font-size: 12px;
+                      font-weight: 800;
+                      color: #bfdbfe;
+                      padding: 6px 8px 4px 8px;
+                    }
+                    .slots {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 4px;
+                      padding: 0 6px 6px 6px;
+                      overflow: auto;
+                    }
+                    .slot {
+                      border-radius: 7px;
+                      padding: 4px 6px;
+                      font-size: 11px;
+                      font-weight: 700;
+                      color: #fff;
+                      border: 1px solid rgba(255,255,255,0.16);
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    }
+                    .slot.available { background: #16a34a; }
+                    .slot.booked { background: #dc2626; }
+                    .empty-hint {
+                      color: var(--muted);
+                      font-size: 12px;
+                      padding: 6px 8px;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div class="wrap">
+                    <div class="toolbar">
+                      <div class="toolbar-left">
+                        <button class="btn" id="prevBtn">◀</button>
+                        <div class="title" id="monthLabel">Calendrier</div>
+                        <button class="btn" id="nextBtn">▶</button>
+                      </div>
+                      <div class="legend">
+                        <span><span class="dot" style="background:#22c55e;"></span>Disponible</span>
+                        <span><span class="dot" style="background:#ef4444;"></span>Réservé</span>
+                      </div>
+                    </div>
+                    <div class="calendar" id="calendarGrid"></div>
+                  </div>
+
+                  <script>
+                    const events = __EVENTS_JSON__;
+                    const monthLabel = document.getElementById('monthLabel');
+                    const grid = document.getElementById('calendarGrid');
+                    const prevBtn = document.getElementById('prevBtn');
+                    const nextBtn = document.getElementById('nextBtn');
+                    const weekdays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+                    const locale = 'fr-FR';
+                    const current = new Date();
+                    current.setDate(1);
+
+                    function toDate(value) {
+                      return new Date(value);
+                    }
+
+                    function sameDay(left, right) {
+                      return left.getFullYear() === right.getFullYear()
+                        && left.getMonth() === right.getMonth()
+                        && left.getDate() === right.getDate();
+                    }
+
+                    function formatRange(startRaw, endRaw) {
+                      const start = toDate(startRaw);
+                      const end = toDate(endRaw);
+                      const pad = (n) => String(n).padStart(2, '0');
+                      return pad(start.getHours()) + ':' + pad(start.getMinutes()) + ' - ' + pad(end.getHours()) + ':' + pad(end.getMinutes());
+                    }
+
+                    function render() {
+                      grid.innerHTML = '';
+                      const monthName = current.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+                      monthLabel.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+                      weekdays.forEach((day) => {
+                        const el = document.createElement('div');
+                        el.className = 'weekday';
+                        el.textContent = day;
+                        grid.appendChild(el);
+                      });
+
+                      const firstDay = new Date(current.getFullYear(), current.getMonth(), 1);
+                      const daysInMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
+                      const startOffset = (firstDay.getDay() + 6) % 7;
+                      const prevMonthDays = new Date(current.getFullYear(), current.getMonth(), 0).getDate();
+
+                      const cells = 42;
+                      for (let i = 0; i < cells; i++) {
+                        const dayEl = document.createElement('div');
+                        dayEl.className = 'day';
+                        const numEl = document.createElement('div');
+                        numEl.className = 'day-number';
+                        const slotsEl = document.createElement('div');
+                        slotsEl.className = 'slots';
+
+                        let date;
+                        if (i < startOffset) {
+                          const d = prevMonthDays - startOffset + i + 1;
+                          date = new Date(current.getFullYear(), current.getMonth() - 1, d);
+                          dayEl.classList.add('muted');
+                          numEl.textContent = d;
+                        } else if (i >= startOffset + daysInMonth) {
+                          const d = i - (startOffset + daysInMonth) + 1;
+                          date = new Date(current.getFullYear(), current.getMonth() + 1, d);
+                          dayEl.classList.add('muted');
+                          numEl.textContent = d;
+                        } else {
+                          const d = i - startOffset + 1;
+                          date = new Date(current.getFullYear(), current.getMonth(), d);
+                          numEl.textContent = d;
+                        }
+
+                        const dayEvents = events
+                          .filter((event) => sameDay(toDate(event.start), date))
+                          .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+                        if (dayEvents.length === 0) {
+                          const hint = document.createElement('div');
+                          hint.className = 'empty-hint';
+                          hint.textContent = '';
+                          slotsEl.appendChild(hint);
+                        } else {
+                          dayEvents.forEach((event) => {
+                            const chip = document.createElement('div');
+                            chip.className = 'slot ' + (event.booked ? 'booked' : 'available');
+                            const range = formatRange(event.start, event.end);
+                            chip.title = range + ' | ' + event.title + ' | Lieu: ' + (event.locationLabel || '-');
+                            chip.textContent = range + ' ' + event.title;
+                            slotsEl.appendChild(chip);
+                          });
+                        }
+
+                        dayEl.appendChild(numEl);
+                        dayEl.appendChild(slotsEl);
+                        grid.appendChild(dayEl);
+                      }
+                    }
+
+                    prevBtn.addEventListener('click', () => {
+                      current.setMonth(current.getMonth() - 1);
+                      render();
+                    });
+                    nextBtn.addEventListener('click', () => {
+                      current.setMonth(current.getMonth() + 1);
+                      render();
+                    });
+
+                    render();
+                  </script>
+                </body>
+                </html>
+                """;
+        return html.replace("__EVENTS_JSON__", eventsJson);
     }
 
     @FXML
@@ -220,6 +720,7 @@ public class AvailabilitySlotController {
         }
         return String.valueOf(slot.getId()).toLowerCase().contains(q)
                 || String.valueOf(slot.getProfessorId()).toLowerCase().contains(q)
+                || resolveProfessorDisplayName(slot.getProfessorId()).toLowerCase(Locale.ROOT).contains(q)
                 || defaultValue(slot.getLocationLabel()).toLowerCase().contains(q)
                 || defaultValue(formatDateTime(slot.getStartAt())).toLowerCase().contains(q)
                 || defaultValue(formatDateTime(slot.getEndAt())).toLowerCase().contains(q)
@@ -228,6 +729,8 @@ public class AvailabilitySlotController {
 
     private void renderCards(List<AvailabilitySlot> slots) {
         cardsContainer.getChildren().clear();
+        cardsContainer.setMinHeight(Region.USE_PREF_SIZE);
+        cardsContainer.setPrefHeight(Region.USE_COMPUTED_SIZE);
         if (slots.isEmpty()) {
             Label empty = new Label("Aucun créneau trouvé avec les filtres actuels.");
             empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 15px;");
@@ -236,14 +739,36 @@ public class AvailabilitySlotController {
             return;
         }
 
+        double cardWidth = computeCardWidth();
         int index = 0;
         for (AvailabilitySlot slot : slots) {
-            VBox card = buildSlotCard(slot);
+            VBox card = buildSlotCard(slot, cardWidth);
             int row = index / CARDS_PER_ROW;
             int col = index % CARDS_PER_ROW;
             cardsContainer.add(card, col, row);
             index++;
         }
+    }
+
+    private double computeCardWidth() {
+        double fallback = 330;
+        if (cardsScrollPane == null) {
+            return fallback;
+        }
+
+        double viewportWidth = cardsScrollPane.getViewportBounds().getWidth();
+        if (viewportWidth <= 0) {
+            return fallback;
+        }
+
+        Insets padding = cardsContainer.getPadding();
+        double horizontalPadding = padding == null ? 0 : padding.getLeft() + padding.getRight();
+        double available = viewportWidth - horizontalPadding - cardsContainer.getHgap() * (CARDS_PER_ROW - 1);
+        if (available <= 0) {
+            return fallback;
+        }
+
+        return Math.max(280, Math.floor(available / CARDS_PER_ROW));
     }
 
     private void updatePagination() {
@@ -285,6 +810,10 @@ public class AvailabilitySlotController {
 
     @FXML
     private void goToSlots(ActionEvent event) {
+        if (calendarWebView != null) {
+            switchScene(event, "/tn/esprit/views/availability-slot/slot-calendar.fxml", "SkillOra - Slots Calendar");
+            return;
+        }
         switchScene(event, "/tn/esprit/views/availability-slot/availability-slot-list.fxml", "SkillOra - Availability Slots");
     }
 
@@ -305,30 +834,30 @@ public class AvailabilitySlotController {
         }
     }
 
-    private VBox buildSlotCard(AvailabilitySlot slot) {
+    private VBox buildSlotCard(AvailabilitySlot slot, double cardWidth) {
         boolean booked = Boolean.TRUE.equals(slot.getIsBooked());
         boolean selected = selectedSlot != null && selectedSlot.getId() != null && selectedSlot.getId().equals(slot.getId());
 
         VBox card = new VBox(0);
         String border = selected ? "#3b82f6" : "#163062";
         card.setStyle("-fx-background-color: #081a42; -fx-border-color: " + border + "; -fx-border-width: 1.2; -fx-border-radius: 16; -fx-background-radius: 16;");
-        card.setPrefWidth(360);
-        card.setMinWidth(360);
-        card.setMaxWidth(360);
+        card.setPrefWidth(cardWidth);
+        card.setMinWidth(cardWidth);
+        card.setMaxWidth(cardWidth);
 
         StackPane banner = new StackPane();
-        banner.setMinHeight(150);
-        banner.setPrefHeight(150);
+        banner.setMinHeight(128);
+        banner.setPrefHeight(128);
         banner.setStyle("-fx-background-color: #e5e7eb; -fx-background-radius: 16 16 0 0;");
         Label stamp = new Label(booked ? "UNAVAILABLE" : "AVAILABLE");
-        stamp.setRotate(-14);
+        stamp.setRotate(-12);
         stamp.setStyle(booked
-                ? "-fx-text-fill: #dc2626; -fx-border-color: #dc2626; -fx-border-width: 4; -fx-font-size: 42px; -fx-font-weight: 900; -fx-padding: 6 20;"
-                : "-fx-text-fill: #16a34a; -fx-border-color: #16a34a; -fx-border-width: 4; -fx-font-size: 42px; -fx-font-weight: 900; -fx-padding: 6 20;");
+                ? "-fx-text-fill: #dc2626; -fx-border-color: #dc2626; -fx-border-width: 3; -fx-font-size: 28px; -fx-font-weight: 900; -fx-padding: 5 14;"
+                : "-fx-text-fill: #16a34a; -fx-border-color: #16a34a; -fx-border-width: 3; -fx-font-size: 28px; -fx-font-weight: 900; -fx-padding: 5 14;");
         banner.getChildren().add(stamp);
 
         VBox body = new VBox(7);
-        body.setStyle("-fx-padding: 12 14 14 14;");
+        body.setStyle("-fx-padding: 10 12 12 12;");
 
         HBox topRow = new HBox(8);
         Label statusBadge = new Label(booked ? "Réservé" : "Disponible");
@@ -342,32 +871,38 @@ public class AvailabilitySlotController {
         topRow.getChildren().addAll(statusBadge, spacer, month);
 
         Label dateLabel = new Label(slot.getStartAt() == null ? "-" : capitalize(slot.getStartAt().format(CARD_DATE_FORMATTER)));
-        dateLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 20px; -fx-font-weight: 800;");
+        dateLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 16px; -fx-font-weight: 800;");
         dateLabel.setWrapText(true);
 
-        Label professorLabel = new Label("Prof: " + defaultValue(slot.getProfessorId()));
-        professorLabel.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 14px; -fx-font-weight: 700;");
+        Label professorLabel = new Label("Prof: " + resolveProfessorDisplayName(slot.getProfessorId()));
+        professorLabel.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 13px; -fx-font-weight: 700;");
 
         Label locationLabel = new Label("Lieu: " + defaultValue(slot.getLocationLabel()));
-        locationLabel.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 13px;");
+        locationLabel.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 12px;");
         locationLabel.setWrapText(true);
 
         Label timeLabel = new Label(formatTimeRange(slot.getStartAt(), slot.getEndAt()));
-        timeLabel.setStyle("-fx-text-fill: #60a5fa; -fx-font-size: 13px; -fx-font-weight: 700;");
+        timeLabel.setStyle("-fx-text-fill: #60a5fa; -fx-font-size: 12px; -fx-font-weight: 700;");
 
         HBox actions = new HBox(8);
         Region actionSpacer = new Region();
         HBox.setHgrow(actionSpacer, Priority.ALWAYS);
-        Button editBtn = new Button("Modifier");
-        editBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 10;");
-        editBtn.setOnAction(event -> {
-            selectedSlot = slot;
-            handleEdit();
-        });
-        Button deleteBtn = new Button("Supprimer");
-        deleteBtn.setStyle("-fx-background-color: #1f2f57; -fx-text-fill: #fca5a5; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 10;");
-        deleteBtn.setOnAction(event -> deleteSlot(slot));
-        actions.getChildren().addAll(actionSpacer, editBtn, deleteBtn);
+        actions.getChildren().add(actionSpacer);
+        if (canManageSlots()) {
+            if (canEditSlot(slot)) {
+                Button editBtn = new Button("Modifier");
+                editBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 10;");
+                editBtn.setOnAction(event -> {
+                    selectedSlot = slot;
+                    handleEdit();
+                });
+                actions.getChildren().add(editBtn);
+            }
+            Button deleteBtn = new Button("Supprimer");
+            deleteBtn.setStyle("-fx-background-color: #1f2f57; -fx-text-fill: #fca5a5; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 10;");
+            deleteBtn.setOnAction(event -> deleteSlot(slot));
+            actions.getChildren().add(deleteBtn);
+        }
 
         body.getChildren().addAll(topRow, dateLabel, professorLabel, locationLabel, timeLabel, actions);
         card.getChildren().addAll(banner, body);
@@ -381,6 +916,10 @@ public class AvailabilitySlotController {
 
     @FXML
     private void handleCreate() {
+        if (!canManageSlots()) {
+            showWarning("Action not allowed", "Only professors can create slots.");
+            return;
+        }
         Optional<AvailabilitySlot> input = showSlotDialog(null);
         if (input.isEmpty()) {
             return;
@@ -397,8 +936,26 @@ public class AvailabilitySlotController {
 
     @FXML
     private void handleEdit() {
+        if (!canManageSlots()) {
+            showWarning("Action not allowed", "Only professors can edit slots.");
+            return;
+        }
         if (selectedSlot == null) {
             showWarning("Selection required", "Select a slot card before trying to edit.");
+            return;
+        }
+        try {
+            if (isSlotLockedByConfirmedRendezVous(selectedSlot.getId())) {
+                refreshSlots();
+                showWarning("Action not allowed", "Confirmed slots cannot be modified. You can only delete this slot.");
+                return;
+            }
+        } catch (SQLException exception) {
+            showError("Unable to validate slot status", exception);
+            return;
+        }
+        if (!canEditSlot(selectedSlot)) {
+            showWarning("Action not allowed", "Confirmed slots cannot be modified. You can only delete this slot.");
             return;
         }
 
@@ -424,6 +981,10 @@ public class AvailabilitySlotController {
 
     @FXML
     private void handleDelete() {
+        if (!canManageSlots()) {
+            showWarning("Action not allowed", "Only professors can delete slots.");
+            return;
+        }
         if (selectedSlot == null) {
             showWarning("Selection required", "Select a slot card before trying to delete.");
             return;
@@ -432,9 +993,30 @@ public class AvailabilitySlotController {
     }
 
     private void deleteSlot(AvailabilitySlot slot) {
+        if (!canManageSlots()) {
+            showWarning("Action not allowed", "Only professors can delete slots.");
+            return;
+        }
+        if (slot == null || slot.getId() == null) {
+            showWarning("Selection required", "Select a slot first.");
+            return;
+        }
+
+        List<RendezVous> linkedRendezVous;
+        try {
+            linkedRendezVous = rendezVousService.findBySlotId(slot.getId());
+        } catch (SQLException exception) {
+            showError("Unable to load linked rendez-vous", exception);
+            return;
+        }
+
+        String message = "Delete slot #" + slot.getId() + "?";
+        if (!linkedRendezVous.isEmpty()) {
+            message += "\nThis will also delete " + linkedRendezVous.size() + " linked rendez-vous.";
+        }
         Alert confirmation = new Alert(
                 Alert.AlertType.CONFIRMATION,
-                "Delete slot #" + slot.getId() + "?",
+                message,
                 ButtonType.YES,
                 ButtonType.CANCEL
         );
@@ -446,12 +1028,23 @@ public class AvailabilitySlotController {
         }
 
         try {
+            int deletedRdvCount = 0;
+            for (RendezVous rendezVous : linkedRendezVous) {
+                if (rendezVous == null || rendezVous.getId() == null) {
+                    continue;
+                }
+                boolean deletedRendezVous = rendezVousService.delete(rendezVous.getId());
+                if (deletedRendezVous) {
+                    deletedRdvCount++;
+                    notifyStudentSlotDeletion(rendezVous, slot.getId());
+                }
+            }
             boolean deleted = availabilitySlotService.delete(slot.getId());
             if (deleted) {
                 Integer deletedId = slot.getId();
                 selectedSlot = null;
                 refreshSlots();
-                statusLabel.setText("Créneau #" + deletedId + " supprimé");
+                statusLabel.setText("Créneau #" + deletedId + " supprimé" + (deletedRdvCount > 0 ? " + " + deletedRdvCount + " rendez-vous annulé(s)" : ""));
             } else {
                 showWarning("Delete failed", "The selected slot could not be deleted.");
             }
@@ -461,6 +1054,25 @@ public class AvailabilitySlotController {
     }
 
     private Optional<AvailabilitySlot> showSlotDialog(AvailabilitySlot source) {
+        if (!canManageSlots()) {
+            showWarning("Action not allowed", "Only professors can manage slot form.");
+            return Optional.empty();
+        }
+        if (source != null) {
+            try {
+                if (isSlotLockedByConfirmedRendezVous(source.getId())) {
+                    showWarning("Action not allowed", "Confirmed slots cannot be modified. You can only delete this slot.");
+                    return Optional.empty();
+                }
+            } catch (SQLException exception) {
+                showError("Unable to validate slot status", exception);
+                return Optional.empty();
+            }
+            if (!canEditSlot(source)) {
+                showWarning("Action not allowed", "Confirmed slots cannot be modified. You can only delete this slot.");
+                return Optional.empty();
+            }
+        }
         boolean editMode = source != null;
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle(editMode ? "Modifier un créneau" : "Ajouter un créneau");
@@ -478,13 +1090,6 @@ public class AvailabilitySlotController {
         AtomicBoolean submitted = new AtomicBoolean(false);
         LocationSuggestion[] selectedLocation = new LocationSuggestion[1];
 
-        String professorIdValue = editMode && source.getProfessorId() != null
-                ? source.getProfessorId().toString()
-                : String.valueOf(CURRENT_USER_ID);
-        TextField professorIdField = buildDialogTextField("ID professeur", professorIdValue);
-        professorIdField.setEditable(false);
-        professorIdField.setMouseTransparent(true);
-        professorIdField.setFocusTraversable(false);
         DatePicker startDatePicker = buildDatePicker(editMode && source.getStartAt() != null ? source.getStartAt().toLocalDate() : LocalDate.now());
         ComboBox<String> startTimeCombo = buildTimeCombo(editMode && source.getStartAt() != null ? source.getStartAt().format(TIME_FORMATTER) : null);
         DatePicker endDatePicker = buildDatePicker(editMode && source.getEndAt() != null ? source.getEndAt().toLocalDate() : LocalDate.now());
@@ -588,7 +1193,6 @@ public class AvailabilitySlotController {
         VBox form = new VBox(9);
         form.setStyle("-fx-background-color: #08142d; -fx-padding: 18;");
         form.getChildren().addAll(
-                formSectionLabel("Professeur (auto)"), professorIdField,
                 formSectionLabel("Date de début"), startDatePicker,
                 formSectionLabel("Heure de début"), startTimeCombo,
                 formSectionLabel("Date de fin"), endDatePicker,
@@ -682,6 +1286,64 @@ public class AvailabilitySlotController {
             return Optional.empty();
         }
         return Optional.of(builtSlot[0]);
+    }
+
+    private Set<Integer> fetchLockedSlotIds() throws SQLException {
+        List<RendezVous> allRendezVous = rendezVousService.getAll();
+        Set<Integer> locked = new HashSet<>();
+        for (RendezVous rendezVous : allRendezVous) {
+            if (rendezVous == null || rendezVous.getSlotId() == null) {
+                continue;
+            }
+            if (isConfirmedRendezVousStatus(rendezVous.getStatut())) {
+                locked.add(rendezVous.getSlotId());
+            }
+        }
+        return locked;
+    }
+
+    private boolean canEditSlot(AvailabilitySlot slot) {
+        if (!canManageSlots() || slot == null || slot.getId() == null) {
+            return false;
+        }
+        return !lockedSlotIds.contains(slot.getId());
+    }
+
+    private boolean isConfirmedRendezVousStatus(String rawStatus) {
+        String value = rawStatus == null ? "" : rawStatus.trim().toLowerCase(Locale.ROOT);
+        return value.contains("confirm");
+    }
+
+    private boolean isSlotLockedByConfirmedRendezVous(Integer slotId) throws SQLException {
+        if (slotId == null) {
+            return false;
+        }
+        List<RendezVous> linked = rendezVousService.findBySlotId(slotId);
+        for (RendezVous rendezVous : linked) {
+            if (rendezVous != null && isConfirmedRendezVousStatus(rendezVous.getStatut())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void notifyStudentSlotDeletion(RendezVous rendezVous, Integer slotId) {
+        if (rendezVous == null || rendezVous.getStudentId() == null || rendezVous.getId() == null) {
+            return;
+        }
+        Notification notification = new Notification();
+        notification.setUserId(rendezVous.getStudentId());
+        notification.setTitle("Rendez-vous annulé");
+        notification.setMessage("Le professeur a supprimé le créneau #" + defaultValue(slotId)
+                + ". Votre rendez-vous #" + rendezVous.getId() + " a été supprimé.");
+        notification.setLink("/rendezvous");
+        notification.setIsRead(false);
+        notification.setCreatedAt(LocalDateTime.now());
+        try {
+            notificationService.add(notification);
+        } catch (SQLException exception) {
+            showWarning("Notification", "Slot deleted, but student notification could not be saved: " + exception.getMessage());
+        }
     }
 
     private void launchLocationSearch(String query, ListView<LocationSuggestion> suggestionList, Button searchButton) {
@@ -949,6 +1611,203 @@ public class AvailabilitySlotController {
         return value == null ? "-" : String.valueOf(value);
     }
 
+    private String resolveProfessorDisplayName(Integer professorId) {
+        if (professorId == null) {
+            return "-";
+        }
+        String cached = professorNameCache.get(professorId);
+        if (cached != null) {
+            return cached;
+        }
+        String resolved = loadProfessorDisplayName(professorId);
+        professorNameCache.put(professorId, resolved);
+        return resolved;
+    }
+
+    private String loadProfessorDisplayName(Integer professorId) {
+        if (professorId == null) {
+            return "-";
+        }
+        String fallback = "Prof #" + professorId;
+        try {
+            Connection connection = MyConnection.getInstance().getConnection();
+            String userTable = findExistingTable(connection, "user", "users");
+            if (userTable == null) {
+                return fallback;
+            }
+
+            String firstNameColumn = findExistingColumn(connection, userTable, "first_name", "firstname");
+            String lastNameColumn = findExistingColumn(connection, userTable, "last_name", "lastname");
+            String usernameColumn = findExistingColumn(connection, userTable, "username", "user_name", "login");
+            String emailColumn = findExistingColumn(connection, userTable, "email", "mail");
+            if (firstNameColumn == null && lastNameColumn == null && usernameColumn == null && emailColumn == null) {
+                return fallback;
+            }
+
+            List<String> projections = new ArrayList<>();
+            if (firstNameColumn != null) {
+                projections.add("`" + firstNameColumn + "` AS first_name");
+            }
+            if (lastNameColumn != null) {
+                projections.add("`" + lastNameColumn + "` AS last_name");
+            }
+            if (usernameColumn != null) {
+                projections.add("`" + usernameColumn + "` AS username");
+            }
+            if (emailColumn != null) {
+                projections.add("`" + emailColumn + "` AS email");
+            }
+            if (projections.isEmpty()) {
+                return fallback;
+            }
+
+            String sql = "SELECT " + String.join(", ", projections) + " FROM `" + userTable + "` WHERE `id` = ? LIMIT 1";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setInt(1, professorId);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (!resultSet.next()) {
+                        return fallback;
+                    }
+
+                    String firstName = toNull(firstNameColumn == null ? null : resultSet.getString("first_name"));
+                    String lastName = toNull(lastNameColumn == null ? null : resultSet.getString("last_name"));
+                    String username = toNull(usernameColumn == null ? null : resultSet.getString("username"));
+                    String email = toNull(emailColumn == null ? null : resultSet.getString("email"));
+
+                    String fullName = ((firstName == null ? "" : firstName) + " " + (lastName == null ? "" : lastName)).trim();
+                    if (!fullName.isEmpty()) {
+                        return fullName;
+                    }
+                    if (username != null) {
+                        return username;
+                    }
+                    if (email != null) {
+                        return email;
+                    }
+                }
+            }
+        } catch (SQLException ignored) {
+            return fallback;
+        }
+        return fallback;
+    }
+
+    private String findExistingTable(Connection connection, String... candidates) throws SQLException {
+        String catalog = connection.getCatalog();
+        for (String candidate : candidates) {
+            if (tableExists(connection, catalog, candidate)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private boolean tableExists(Connection connection, String catalog, String tableName) throws SQLException {
+        try (ResultSet resultSet = connection.getMetaData().getTables(catalog, null, tableName, new String[]{"TABLE"})) {
+            if (resultSet.next()) {
+                return true;
+            }
+        }
+        try (ResultSet resultSet = connection.getMetaData().getTables(catalog, null, tableName.toUpperCase(Locale.ROOT), new String[]{"TABLE"})) {
+            return resultSet.next();
+        }
+    }
+
+    private String findExistingColumn(Connection connection, String tableName, String... candidates) throws SQLException {
+        String catalog = connection.getCatalog();
+        for (String candidate : candidates) {
+            if (columnExists(connection, catalog, tableName, candidate)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private boolean columnExists(Connection connection, String catalog, String tableName, String columnName) throws SQLException {
+        try (ResultSet resultSet = connection.getMetaData().getColumns(catalog, null, tableName, columnName)) {
+            if (resultSet.next()) {
+                return true;
+            }
+        }
+        try (ResultSet resultSet = connection.getMetaData().getColumns(catalog, null, tableName.toUpperCase(Locale.ROOT), columnName.toUpperCase(Locale.ROOT))) {
+            return resultSet.next();
+        }
+    }
+
+    private boolean canManageSlots() {
+        return isAdminMode() || isProfessorMode();
+    }
+
+    private boolean isAdminMode() {
+        return CURRENT_USER_ROLE.contains("admin");
+    }
+
+    private boolean isProfessorMode() {
+        return !isAdminMode() && (CURRENT_USER_ROLE.contains("prof") || CURRENT_USER_ROLE.contains("teacher"));
+    }
+
+    private static String resolveConfigValue(String envName, String propertyName, String fallback) {
+        String fromProperty = sanitizeConfigValue(System.getProperty(propertyName));
+        if (fromProperty != null) {
+            return fromProperty;
+        }
+
+        String fromEnv = sanitizeConfigValue(System.getenv(envName));
+        if (fromEnv != null) {
+            return fromEnv;
+        }
+
+        String fromDotEnv = readDotEnvValue(envName);
+        if (fromDotEnv != null) {
+            return fromDotEnv;
+        }
+
+        return sanitizeConfigValue(fallback);
+    }
+
+    private static String readDotEnvValue(String key) {
+        Path envPath = Path.of(".env");
+        if (!Files.exists(envPath)) {
+            return null;
+        }
+        try {
+            List<String> lines = Files.readAllLines(envPath, StandardCharsets.UTF_8);
+            for (String line : lines) {
+                String value = sanitizeConfigValue(line);
+                if (value == null || value.startsWith("#")) {
+                    continue;
+                }
+                int eqIndex = value.indexOf('=');
+                if (eqIndex <= 0) {
+                    continue;
+                }
+                String name = sanitizeConfigValue(value.substring(0, eqIndex));
+                if (!key.equals(name)) {
+                    continue;
+                }
+                String raw = sanitizeConfigValue(value.substring(eqIndex + 1));
+                if (raw == null) {
+                    return null;
+                }
+                if (raw.startsWith("\"") && raw.endsWith("\"") && raw.length() >= 2) {
+                    raw = raw.substring(1, raw.length() - 1);
+                }
+                return sanitizeConfigValue(raw);
+            }
+        } catch (IOException ignored) {
+            return null;
+        }
+        return null;
+    }
+
+    private static String sanitizeConfigValue(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String trimmed = raw.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
     private static int parseCurrentUserId() {
         String raw = System.getProperty("skillora.userId", "20");
         try {
@@ -956,6 +1815,14 @@ public class AvailabilitySlotController {
         } catch (NumberFormatException ignored) {
             return 20;
         }
+    }
+
+    private static String normalizeRole(String raw) {
+        if (raw == null) {
+            return "student";
+        }
+        String normalized = raw.trim().toLowerCase(Locale.ROOT);
+        return normalized.isEmpty() ? "student" : normalized;
     }
 
     private void showWarning(String title, String message) {
