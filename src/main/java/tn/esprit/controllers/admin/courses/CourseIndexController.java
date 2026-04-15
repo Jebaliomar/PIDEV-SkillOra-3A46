@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -30,6 +31,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 public class CourseIndexController implements AdminShellAware {
 
@@ -158,7 +160,7 @@ public class CourseIndexController implements AdminShellAware {
         actionsColumn.setCellFactory(column -> new TableCell<>() {
             private final Button manageButton = createActionButton("Manage", "manage-action-button");
             private final Button editButton = createActionButton("✎", "icon-action-button");
-            private final Button deleteButton = createActionButton("🗑", "icon-action-button");
+            private final Button deleteButton = createActionButton("🗑", "icon-action-button", "danger-icon-action-button");
             private final HBox actionsBox = new HBox(12, manageButton, editButton, deleteButton);
 
             {
@@ -191,6 +193,9 @@ public class CourseIndexController implements AdminShellAware {
             private void deleteCourseFromRow() {
                 Course course = getTableRow() == null ? null : (Course) getTableRow().getItem();
                 if (course == null) {
+                    return;
+                }
+                if (!confirmDelete(course)) {
                     return;
                 }
                 try {
@@ -284,10 +289,22 @@ public class CourseIndexController implements AdminShellAware {
         return courseService;
     }
 
-    private Button createActionButton(String text, String styleClass) {
+    private Button createActionButton(String text, String... styleClasses) {
         Button button = new Button(text);
-        button.getStyleClass().add(styleClass);
+        button.getStyleClass().addAll(styleClasses);
         return button;
+    }
+
+    private boolean confirmDelete(Course course) {
+        Alert alert = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Delete \"" + safe(course.getTitle()) + "\" and all its sections, lessons, enrollments, and lesson completions?",
+                ButtonType.YES,
+                ButtonType.CANCEL
+        );
+        alert.setHeaderText("Confirm course deletion");
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.YES;
     }
 
     private String firstLetter(String value) {

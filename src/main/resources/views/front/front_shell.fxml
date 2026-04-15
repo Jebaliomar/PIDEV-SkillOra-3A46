@@ -25,6 +25,11 @@
                         <Label styleClass="front-brand-subtitle" text="Learning Desktop"/>
                     </VBox>
 
+                    <VBox spacing="4.0" styleClass="front-session-card">
+                        <Label fx:id="userSummaryLabel" styleClass="front-session-title" text="Connected User"/>
+                        <Label fx:id="sessionSummaryLabel" styleClass="front-session-subtitle" text="Course workspace" wrapText="true"/>
+                    </VBox>
+
                     <VBox spacing="6.0" styleClass="sidebar-nav-group">
                         <Button fx:id="homeNavButton" mnemonicParsing="false" onAction="#handleHome" styleClass="sidebar-item-selected" text="Home"/>
                         <Button fx:id="browseCoursesNavButton" mnemonicParsing="false" onAction="#handleBrowseCourses" styleClass="sidebar-item" text="Browse Courses"/>
@@ -34,10 +39,11 @@
                         <Button fx:id="rendezVousNavButton" mnemonicParsing="false" onAction="#handleRendezVous" styleClass="sidebar-item" text="Rendez-vous"/>
                     </VBox>
 
-                    <VBox spacing="10.0" styleClass="front-spotlight-card">
-                        <Label styleClass="front-spotlight-title" text="Ready to manage?" />
-                        <Label styleClass="front-spotlight-body" text="Jump back to the admin dashboard any time from here." wrapText="true"/>
-                        <Button fx:id="dashboardButton" mnemonicParsing="false" onAction="#handleDashboard" styleClass="secondary-button" text="Dashboard"/>
+                    <VBox fx:id="dashboardCard" spacing="10.0" styleClass="front-spotlight-card">
+                        <Label styleClass="front-spotlight-title" text="Cross Navigation" />
+                        <Label styleClass="front-spotlight-body" text="Move back to the student users front or, when allowed, jump into the admin dashboard from the same sidebar block." wrapText="true"/>
+                        <Button fx:id="userFrontButton" mnemonicParsing="false" onAction="#handleUserFront" styleClass="secondary-button sidebar-utility-button" text="Users Front"/>
+                        <Button fx:id="dashboardButton" mnemonicParsing="false" onAction="#handleDashboard" styleClass="secondary-button sidebar-utility-button" text="Dashboard"/>
                     </VBox>
                 </VBox>
             </StackPane>

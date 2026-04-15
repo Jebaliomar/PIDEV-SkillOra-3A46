@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
@@ -36,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Base64;
+import java.util.Optional;
 
 public class LessonShowController implements AdminShellAware {
 
@@ -131,6 +133,9 @@ public class LessonShowController implements AdminShellAware {
     @FXML
     private void handleDelete() {
         if (lesson == null) {
+            return;
+        }
+        if (!confirmDelete()) {
             return;
         }
         try {
@@ -533,5 +538,17 @@ public class LessonShowController implements AdminShellAware {
         alert.setHeaderText(message);
         alert.setContentText(exception.getMessage());
         alert.showAndWait();
+    }
+
+    private boolean confirmDelete() {
+        Alert alert = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Delete lesson \"" + (lesson == null || lesson.getTitle() == null ? "Untitled lesson" : lesson.getTitle()) + "\" and its completion history?",
+                ButtonType.YES,
+                ButtonType.CANCEL
+        );
+        alert.setHeaderText("Confirm lesson deletion");
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.YES;
     }
 }

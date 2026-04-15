@@ -24,7 +24,7 @@
             <StackPane HBox.hgrow="ALWAYS"/>
             <Button mnemonicParsing="false" onAction="#handleManageSections" styleClass="secondary-button" text="Manage Sections"/>
             <Button mnemonicParsing="false" onAction="#handleEdit" styleClass="secondary-button" text="Edit"/>
-            <Button mnemonicParsing="false" onAction="#handleDelete" styleClass="danger-button" text="Delete"/>
+            <Button mnemonicParsing="false" onAction="#handleDelete" styleClass="danger-button" text="🗑 Delete"/>
         </HBox>
     </top>
     <center>

@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class EnrollmentService {
@@ -60,6 +61,42 @@ public class EnrollmentService {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, id);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapResultSetToEnrollment(resultSet);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public List<Enrollment> getByUserId(int userId) throws SQLException {
+        String sql = "SELECT * FROM `enrollment` WHERE `user_id` = ?";
+        List<Enrollment> enrollments = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    enrollments.add(mapResultSetToEnrollment(resultSet));
+                }
+            }
+        }
+
+        enrollments.sort(Comparator.comparing(Enrollment::getEnrolledAt, Comparator.nullsLast(java.time.LocalDateTime::compareTo)).reversed()
+                .thenComparing(Enrollment::getId, Comparator.nullsLast(Integer::compareTo)));
+        return enrollments;
+    }
+
+    public Enrollment getByUserAndCourse(int userId, int courseId) throws SQLException {
+        String sql = "SELECT * FROM `enrollment` WHERE `user_id` = ? AND `course_id` = ? ORDER BY `id` DESC LIMIT 1";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, courseId);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {

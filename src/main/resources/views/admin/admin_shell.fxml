@@ -35,9 +35,10 @@
                     </VBox>
 
                     <VBox spacing="8.0" VBox.vgrow="ALWAYS">
-                        <Label styleClass="sidebar-section-label" text="Current Focus"/>
-                        <Label styleClass="sidebar-helper" text="Courses are the first module fully adapted to the desktop workflow." wrapText="true"/>
-                        <Button fx:id="frontHomeButton" mnemonicParsing="false" onAction="#handleFrontHome" styleClass="secondary-button" text="Go to Home"/>
+                        <Label styleClass="sidebar-section-label" text="Cross Navigation"/>
+                        <Label styleClass="sidebar-helper" text="Switch between the desktop course admin, the legacy user admin, and the front workspace from one consistent sidebar block." wrapText="true"/>
+                        <Button fx:id="usersAdminButton" mnemonicParsing="false" onAction="#handleUsersAdmin" styleClass="secondary-button sidebar-utility-button" text="Users Admin"/>
+                        <Button fx:id="frontHomeButton" mnemonicParsing="false" onAction="#handleFrontHome" styleClass="secondary-button sidebar-utility-button" text="Users Front"/>
                     </VBox>
                 </VBox>
             </StackPane>

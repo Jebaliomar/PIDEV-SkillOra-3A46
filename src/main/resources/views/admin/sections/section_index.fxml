@@ -29,7 +29,7 @@
                 <TextField fx:id="searchField" promptText="Search sections by title" HBox.hgrow="ALWAYS"/>
                 <Button fx:id="manageLessonsButton" mnemonicParsing="false" onAction="#handleManageLessons" styleClass="secondary-button" text="Manage Lessons"/>
                 <Button fx:id="editButton" mnemonicParsing="false" onAction="#handleEditSection" styleClass="secondary-button" text="Edit"/>
-                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDeleteSection" styleClass="danger-button" text="Delete"/>
+                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDeleteSection" styleClass="danger-button" text="🗑 Delete"/>
             </HBox>
         </VBox>
     </top>

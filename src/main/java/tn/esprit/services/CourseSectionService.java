@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class CourseSectionService {
@@ -70,6 +71,25 @@ public class CourseSectionService {
         return null;
     }
 
+    public List<CourseSection> getByCourseId(int courseId) throws SQLException {
+        String sql = "SELECT * FROM `course_section` WHERE `course_id` = ?";
+        List<CourseSection> courseSections = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, courseId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    courseSections.add(mapResultSetToCourseSection(resultSet));
+                }
+            }
+        }
+
+        courseSections.sort(Comparator.comparing(CourseSection::getPosition, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(CourseSection::getId, Comparator.nullsLast(Integer::compareTo)));
+        return courseSections;
+    }
+
     public boolean update(CourseSection courseSection) throws SQLException {
         String sql = "UPDATE `course_section` SET `title` = ?, `position` = ?, `created_at` = ?, `updated_at` = ?, "
                 + "`course_id` = ? WHERE `id` = ?";
@@ -86,11 +106,29 @@ public class CourseSectionService {
     }
 
     public boolean delete(int id) throws SQLException {
-        String sql = "DELETE FROM `course_section` WHERE `id` = ?";
+        boolean originalAutoCommit = connection.getAutoCommit();
+        try {
+            connection.setAutoCommit(false);
+            executeDelete(
+                    "DELETE FROM `lesson_completion` WHERE `lesson_id` IN (SELECT `id` FROM `lesson` WHERE `section_id` = ?)",
+                    id
+            );
+            executeDelete("DELETE FROM `lesson` WHERE `section_id` = ?", id);
+            boolean deleted = executeDelete("DELETE FROM `course_section` WHERE `id` = ?", id) > 0;
+            connection.commit();
+            return deleted;
+        } catch (SQLException exception) {
+            connection.rollback();
+            throw exception;
+        } finally {
+            connection.setAutoCommit(originalAutoCommit);
+        }
+    }
 
+    private int executeDelete(String sql, int id) throws SQLException {
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
+            return preparedStatement.executeUpdate();
         }
     }
 

@@ -70,6 +70,11 @@
     -fx-border-radius: 18;
 }
 
+.sidebar-utility-button {
+    -fx-max-width: 1.7976931348623157E308;
+    -fx-alignment: CENTER_LEFT;
+}
+
 .sidebar-item,
 .sidebar-item-selected {
     -fx-background-radius: 18;
@@ -344,6 +349,16 @@
     -fx-background-color: rgba(239, 68, 68, 0.18);
 }
 
+.danger-icon-action-button {
+    -fx-background-color: rgba(239, 68, 68, 0.14);
+    -fx-text-fill: #b91c1c;
+    -fx-border-color: rgba(248, 113, 113, 0.18);
+}
+
+.danger-icon-action-button:hover {
+    -fx-background-color: rgba(239, 68, 68, 0.22);
+}
+
 .hero-button {
     -fx-background-color: linear-gradient(to bottom, #4c77ee, #2f5fdf);
     -fx-text-fill: white;
@@ -384,6 +399,25 @@
     -fx-border-radius: 22;
     -fx-padding: 16;
     -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 18, 0.12, 0, 8);
+}
+
+.front-session-card {
+    -fx-background-color: linear-gradient(to bottom right, rgba(244,247,255,0.96), rgba(255,255,255,0.94));
+    -fx-background-radius: 22;
+    -fx-border-color: rgba(226,232,240,0.88);
+    -fx-border-radius: 22;
+    -fx-padding: 14;
+}
+
+.front-session-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #102a43;
+}
+
+.front-session-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #60758d;
 }
 
 .front-spotlight-title {
@@ -431,6 +465,15 @@
     -fx-border-radius: 28;
     -fx-padding: 20;
     -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.07), 22, 0.14, 0, 10);
+}
+
+.front-course-progress-pill {
+    -fx-background-color: rgba(219,234,254,0.92);
+    -fx-background-radius: 999;
+    -fx-padding: 7 12 7 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1d4ed8;
 }
 
 .front-course-card-clickable:hover {
@@ -519,6 +562,17 @@
     -fx-font-size: 14px;
     -fx-text-fill: rgba(226,232,240,0.96);
     -fx-line-spacing: 3px;
+}
+
+.front-course-stat-pill {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(255,255,255,0.10);
+    -fx-border-radius: 999;
+    -fx-padding: 8 14 8 14;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #eff6ff;
 }
 
 .front-course-hero-thumb-shell {
@@ -624,6 +678,12 @@
     -fx-font-size: 28px;
     -fx-font-weight: 700;
     -fx-text-fill: #18223b;
+}
+
+.front-consume-meta {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #5f7289;
 }
 
 .front-consume-lesson-title {

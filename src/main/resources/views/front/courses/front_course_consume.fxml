@@ -20,6 +20,7 @@
             <VBox spacing="4.0">
                 <Label fx:id="courseTitleLabel" styleClass="section-title" text="Course"/>
                 <Label fx:id="lessonTitleLabel" styleClass="front-consume-title" text="Lesson"/>
+                <Label fx:id="lessonMetaLabel" styleClass="front-consume-meta" text="Section  •  Lesson 1 of 1"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="lessonTypeLabel" styleClass="status-pill" text="TEXT"/>

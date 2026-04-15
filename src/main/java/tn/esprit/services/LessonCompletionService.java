@@ -67,6 +67,40 @@ public class LessonCompletionService {
         return null;
     }
 
+    public List<LessonCompletion> getByEnrollmentId(int enrollmentId) throws SQLException {
+        String sql = "SELECT * FROM `lesson_completion` WHERE `enrollment_id` = ?";
+        List<LessonCompletion> lessonCompletions = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, enrollmentId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    lessonCompletions.add(mapResultSetToLessonCompletion(resultSet));
+                }
+            }
+        }
+
+        return lessonCompletions;
+    }
+
+    public LessonCompletion getByEnrollmentAndLesson(int enrollmentId, int lessonId) throws SQLException {
+        String sql = "SELECT * FROM `lesson_completion` WHERE `enrollment_id` = ? AND `lesson_id` = ? ORDER BY `id` DESC LIMIT 1";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, enrollmentId);
+            preparedStatement.setInt(2, lessonId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapResultSetToLessonCompletion(resultSet);
+                }
+            }
+        }
+
+        return null;
+    }
+
     public boolean update(LessonCompletion lessonCompletion) throws SQLException {
         String sql = "UPDATE `lesson_completion` SET `completed_at` = ?, `enrollment_id` = ?, `lesson_id` = ? WHERE `id` = ?";
 

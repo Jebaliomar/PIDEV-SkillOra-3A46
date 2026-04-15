@@ -3,6 +3,7 @@ package tn.esprit.controllers.admin.courses;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -19,6 +20,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 public class CourseShowController implements AdminShellAware {
 
@@ -114,6 +116,9 @@ public class CourseShowController implements AdminShellAware {
             showWarning("No course is loaded.");
             return;
         }
+        if (!confirmDelete()) {
+            return;
+        }
 
         try {
             if (getCourseService().delete(course.getId())) {
@@ -200,6 +205,18 @@ public class CourseShowController implements AdminShellAware {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private boolean confirmDelete() {
+        Alert alert = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Delete this course and all its sections, lessons, enrollments, and lesson completions?",
+                ButtonType.YES,
+                ButtonType.CANCEL
+        );
+        alert.setHeaderText("Confirm course deletion");
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.YES;
     }
 
     private void showError(String message, Exception exception) {

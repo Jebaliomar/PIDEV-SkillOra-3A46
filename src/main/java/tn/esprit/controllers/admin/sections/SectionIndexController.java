@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -23,6 +24,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 public class SectionIndexController implements AdminShellAware {
 
@@ -126,6 +128,9 @@ public class SectionIndexController implements AdminShellAware {
         if (section == null) {
             return;
         }
+        if (!confirmDelete(section)) {
+            return;
+        }
         try {
             if (getCourseSectionService().delete(section.getId())) {
                 sections.remove(section);
@@ -192,6 +197,18 @@ public class SectionIndexController implements AdminShellAware {
 
     private String formatDateTime(LocalDateTime value) {
         return value == null ? "--" : DATE_TIME_FORMATTER.format(value);
+    }
+
+    private boolean confirmDelete(CourseSection section) {
+        Alert alert = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Delete section \"" + (section.getTitle() == null ? "Untitled section" : section.getTitle()) + "\" and all its lessons and lesson completions?",
+                ButtonType.YES,
+                ButtonType.CANCEL
+        );
+        alert.setHeaderText("Confirm section deletion");
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.YES;
     }
 
     private void showError(String message, Exception exception) {
