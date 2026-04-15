@@ -25,8 +25,10 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import tn.esprit.entities.Event;
 import tn.esprit.entities.Reservation;
 import tn.esprit.entities.Salle;
+import tn.esprit.services.EventService;
 import tn.esprit.services.ReservationService;
 import tn.esprit.services.SalleService;
 import tn.esprit.tools.LocationMapHelper;
@@ -82,8 +84,6 @@ public class SalleDashboardController {
     @FXML
     private Label durationErrorLabel;
     @FXML
-    private Label eventIdErrorLabel;
-    @FXML
     private TextField nameField;
     @FXML
     private TextField locationField;
@@ -99,10 +99,9 @@ public class SalleDashboardController {
     private TextArea equipmentField;
     @FXML
     private TextField image3dField;
-    @FXML
-    private TextField eventIdField;
 
     private final SalleService salleService = new SalleService();
+    private final EventService eventService = new EventService();
     private final ReservationService reservationService = new ReservationService();
     private final java.util.Map<String, Label> validationLabels = new java.util.HashMap<>();
     private LocationMapHelper locationMapHelper;
@@ -222,7 +221,6 @@ public class SalleDashboardController {
             payload.setDuration(parsePositiveInt(durationField.getText(), "Duree", durationField, "duration"));
             payload.setEquipment(optionalText(equipmentField.getText()));
             payload.setImage3d(optionalText(image3dField.getText()));
-            payload.setEventId(parseOptionalInteger(eventIdField.getText()));
 
             if (editingSalle == null) {
                 salleService.add(payload);
@@ -413,7 +411,7 @@ public class SalleDashboardController {
 
         Button detailsButton = new Button("Voir details");
         detailsButton.getStyleClass().addAll("btn-row", "btn-chip-action");
-        detailsButton.setOnAction(event -> showDetails(salle, salleReservations));
+        detailsButton.setOnAction(event -> openSalleDetail(salle));
 
         if (isModelAsset(mediaSource)) {
             Button preview3dButton = new Button("Voir 3D");
@@ -567,17 +565,40 @@ public class SalleDashboardController {
         return salle.getEventId() == null ? 0 : 62;
     }
 
-    private void showDetails(Salle salle, List<Reservation> reservations) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Salle Details");
-        alert.setHeaderText(safe(salle.getName()));
-        alert.setContentText("Location: " + safe(salle.getLocation()) + "\n"
-                + "Max participants: " + safeNumber(salle.getMaxParticipants()) + "\n"
-                + "Duree: " + safeNumber(salle.getDuration()) + " min\n"
-                + "Equipement: " + safe(salle.getEquipment()) + "\n"
-                + "Reservations: " + reservations.size() + "\n"
-                + "3D Model: " + (isModelAsset(safeInput(salle.getImage3d())) ? "Disponible" : "Aucun"));
-        alert.showAndWait();
+    private void openSalleDetail(Salle salle) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewsadmin/event/SiteSalleDetailView.fxml"));
+            Parent root = loader.load();
+            SiteSalleDetailController controller = loader.getController();
+            controller.setData(resolveLinkedEvent(salle), salle);
+
+            Scene scene = new Scene(root, 1440, 900);
+            scene.getStylesheets().add(getClass().getResource("/styles/site-events.css").toExternalForm());
+            ThemeManager.applyTheme(scene);
+
+            Stage stage = (Stage) listPane.getScene().getWindow();
+            stage.setTitle("Skillora Salle Details");
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            showError("Navigation failed", e.getMessage());
+        }
+    }
+
+    private Event resolveLinkedEvent(Salle salle) throws SQLException {
+        if (salle == null) {
+            return null;
+        }
+        if (salle.getEventId() != null) {
+            Event byId = eventService.getById(salle.getEventId());
+            if (byId != null) {
+                return byId;
+            }
+        }
+        return eventService.getAll().stream()
+                .filter(event -> event.getSalleId() != null && event.getSalleId().equals(salle.getId()))
+                .findFirst()
+                .orElse(null);
     }
 
     private void previewSalleModel(Salle salle) {
@@ -668,7 +689,6 @@ public class SalleDashboardController {
         durationField.setText(salle.getDuration() == null ? "" : String.valueOf(salle.getDuration()));
         equipmentField.setText(safeInput(salle.getEquipment()));
         image3dField.setText(safeInput(salle.getImage3d()));
-        eventIdField.setText(salle.getEventId() == null ? "" : String.valueOf(salle.getEventId()));
     }
 
     private void showListPane() {
@@ -706,22 +726,6 @@ public class SalleDashboardController {
         durationField.clear();
         equipmentField.clear();
         image3dField.clear();
-        eventIdField.clear();
-    }
-
-    private Integer parseOptionalInteger(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            clearValidationMessage("eventId", eventIdField);
-            return null;
-        }
-        try {
-            clearValidationMessage("eventId", eventIdField);
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            markFieldInvalid(eventIdField);
-            showValidationError("eventId", "Event ID must be numeric.");
-            return null;
-        }
     }
 
     private int parsePositiveInt(String value, String label, javafx.scene.Node fieldNode, String validationKey) {
@@ -802,13 +806,11 @@ public class SalleDashboardController {
         validationLabels.put("location", locationErrorLabel);
         validationLabels.put("maxParticipants", maxParticipantsErrorLabel);
         validationLabels.put("duration", durationErrorLabel);
-        validationLabels.put("eventId", eventIdErrorLabel);
 
         bindValidationReset(nameField, "name");
         bindValidationReset(locationField, "location");
         bindValidationReset(maxParticipantsField, "maxParticipants");
         bindValidationReset(durationField, "duration");
-        bindValidationReset(eventIdField, "eventId");
     }
 
     private void bindValidationReset(TextField field, String key) {
@@ -827,7 +829,6 @@ public class SalleDashboardController {
         clearFieldInvalid(locationField);
         clearFieldInvalid(maxParticipantsField);
         clearFieldInvalid(durationField);
-        clearFieldInvalid(eventIdField);
     }
 
     private void clearValidationMessage(String key, javafx.scene.Node fieldNode) {

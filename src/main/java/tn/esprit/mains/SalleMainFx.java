@@ -10,10 +10,10 @@ import tn.esprit.tools.ThemeManager;
 public class SalleMainFx extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/event/SalleDashboard.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewsadmin/event/SalleDashboard.fxml"));
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 1280, 780);
+        Scene scene = new Scene(root, 1440, 900);
         scene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
         scene.getStylesheets().add(getClass().getResource("/styles/salle.css").toExternalForm());
         ThemeManager.applyTheme(scene);

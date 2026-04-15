@@ -2,6 +2,7 @@ package tn.esprit.controlles;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -10,7 +11,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -45,6 +45,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 
 public class EventDashboardController {
@@ -72,6 +73,8 @@ public class EventDashboardController {
     @FXML
     private Label resultCountLabel;
     @FXML
+    private Label deleteFlashLabel;
+    @FXML
     private Label formTitleLabel;
     @FXML
     private Label formSubtitleLabel;
@@ -79,6 +82,28 @@ public class EventDashboardController {
     private Label eventIdValueLabel;
     @FXML
     private Label formStatusLabel;
+    @FXML
+    private Label titleErrorLabel;
+    @FXML
+    private Label descriptionErrorLabel;
+    @FXML
+    private Label startDateErrorLabel;
+    @FXML
+    private Label endDateErrorLabel;
+    @FXML
+    private Label eventTypeErrorLabel;
+    @FXML
+    private Label priceTypeErrorLabel;
+    @FXML
+    private Label priceAmountErrorLabel;
+    @FXML
+    private Label salleNameErrorLabel;
+    @FXML
+    private Label salleLocationErrorLabel;
+    @FXML
+    private Label salleMaxParticipantsErrorLabel;
+    @FXML
+    private Label salleDurationErrorLabel;
     @FXML
     private TextField titleField;
     @FXML
@@ -131,6 +156,8 @@ public class EventDashboardController {
     private final EventService eventService = new EventService();
     private final SalleService salleService = new SalleService();
     private final Map<Integer, Salle> salleMap = new HashMap<>();
+    private final Map<String, Label> validationLabels = new HashMap<>();
+    private final PauseTransition deleteFlashTimer = new PauseTransition(Duration.seconds(2.8));
     private LocationMapHelper salleLocationMapHelper;
     private Event editingEvent;
 
@@ -157,6 +184,7 @@ public class EventDashboardController {
         priceTypeField.valueProperty().addListener((obs, oldValue, newValue) -> syncPriceAmountVisibility());
         salleLocationMapHelper = new LocationMapHelper(salleLocationMapHost, salleLocationMapStatusLabel, salleLocationField);
         salleLocationMapHelper.initialize();
+        initializeValidation();
 
         refreshAll();
         prepareCreateMode();
@@ -253,19 +281,20 @@ public class EventDashboardController {
     @FXML
     private void onSaveEvent() {
         try {
+            clearValidationState();
             Event eventToPersist = editingEvent == null ? new Event() : editingEvent;
 
-            String eventTypeValue = requiredComboValue(eventTypeField, "Event type");
+            String eventTypeValue = requiredComboValue(eventTypeField, "Event type", "eventType");
             String priceTypeValue = buildStoredPriceType();
-            LocalDateTime start = parseDateTime(startDatePicker, startTimeField, "Start date");
-            LocalDateTime end = parseDateTime(endDatePicker, endTimeField, "End date");
+            LocalDateTime start = parseDateTime(startDatePicker, startTimeField, "Start date", "startDate");
+            LocalDateTime end = parseDateTime(endDatePicker, endTimeField, "End date", "endDate");
 
             if (end.isBefore(start)) {
-                throw new IllegalArgumentException("End date must be after start date.");
+                showValidationError("endDate", "End date must be after start date.");
             }
 
-            eventToPersist.setTitle(required(titleField.getText(), "Title"));
-            eventToPersist.setDescription(optionalText(descriptionField.getText()));
+            eventToPersist.setTitle(required(titleField.getText(), "Title", titleField, "title"));
+            eventToPersist.setDescription(required(descriptionField.getText(), "Description", descriptionField, "description"));
             eventToPersist.setStartDate(start);
             eventToPersist.setEndDate(end);
             eventToPersist.setEventType(eventTypeValue);
@@ -280,6 +309,7 @@ public class EventDashboardController {
                     eventService.update(eventToPersist);
                 }
                 formStatusLabel.setText("Event created");
+                showDeleteFlash("Event created successfully.");
             } else if (!eventService.update(eventToPersist)) {
                 throw new IllegalArgumentException("Update was not applied.");
             } else {
@@ -289,11 +319,14 @@ public class EventDashboardController {
                     throw new IllegalArgumentException("Salle link update was not applied.");
                 }
                 formStatusLabel.setText("Event updated");
+                showDeleteFlash("Event updated successfully.");
             }
 
             refreshAll();
             prepareCreateMode();
             showListPane();
+        } catch (ValidationException e) {
+            formStatusLabel.setText("Please complete the required fields");
         } catch (IllegalArgumentException | SQLException e) {
             showError("Save failed", e.getMessage());
         }
@@ -302,14 +335,49 @@ public class EventDashboardController {
     @FXML
     private void onOpenSalles() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/event/SalleDashboard.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewsadmin/event/SalleDashboard.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root, 1280, 780);
+            Scene scene = new Scene(root, 1440, 900);
             scene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
             scene.getStylesheets().add(getClass().getResource("/styles/salle.css").toExternalForm());
             ThemeManager.applyTheme(scene);
             Stage stage = (Stage) searchField.getScene().getWindow();
             stage.setTitle("Skillora Salles");
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            showError("Navigation impossible", e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onBackToSite() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewsadmin/event/SiteEventsView.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1440, 900);
+            scene.getStylesheets().add(getClass().getResource("/styles/site-events.css").toExternalForm());
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            stage.setTitle("SkillHarbor Events");
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            showError("Navigation impossible", e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onOpenReservations() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewsadmin/event/ReservationDashboard.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1440, 900);
+            scene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/styles/salle.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/styles/reservations.css").toExternalForm());
+            ThemeManager.applyTheme(scene);
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            stage.setTitle("Skillora Reservations");
             stage.setScene(scene);
             stage.show();
         } catch (Exception e) {
@@ -467,7 +535,7 @@ public class EventDashboardController {
 
         Button detailsButton = new Button("View");
         detailsButton.getStyleClass().add("btn-row-view");
-        detailsButton.setOnAction(evt -> showDetails(event));
+        detailsButton.setOnAction(evt -> openSkillHarborEvents());
 
         Button editButton = new Button("Edit");
         editButton.getStyleClass().add("btn-row-edit");
@@ -493,6 +561,7 @@ public class EventDashboardController {
         formSubtitleLabel.setText("Create a new event with the same full-page design as Salles.");
         eventIdValueLabel.setText("New");
         formStatusLabel.setText("Creation mode");
+        clearValidationState();
 
         titleField.clear();
         descriptionField.clear();
@@ -519,6 +588,7 @@ public class EventDashboardController {
         formSubtitleLabel.setText("Update the selected event in the same full-page layout as Salles.");
         eventIdValueLabel.setText(event.getId() == null ? "New" : String.valueOf(event.getId()));
         formStatusLabel.setText("Edit mode");
+        clearValidationState();
 
         titleField.setText(safeInput(event.getTitle()));
         descriptionField.setText(safeInput(event.getDescription()));
@@ -651,26 +721,38 @@ public class EventDashboardController {
         stage.showAndWait();
     }
 
-    private void deleteEvent(Event event) {
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle("Confirmation");
-        confirmation.setHeaderText("Supprimer cet event ?");
-        confirmation.setContentText("Cette action est irreversible.");
+    private void openSkillHarborEvents() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewsadmin/event/SiteEventsView.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1440, 900);
+            scene.getStylesheets().add(getClass().getResource("/styles/site-events.css").toExternalForm());
+            ThemeManager.applyTheme(scene);
+            Stage stage = (Stage) searchField.getScene().getWindow();
+            stage.setTitle("SkillHarbor Events");
+            stage.setScene(scene);
+            stage.show();
+        } catch (Exception e) {
+            showError("Navigation impossible", e.getMessage());
+        }
+    }
 
-        confirmation.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                try {
-                    eventService.delete(event.getId());
-                    refreshAll();
-                    if (editingEvent != null && event.getId() != null && event.getId().equals(editingEvent.getId())) {
-                        prepareCreateMode();
-                        showListPane();
-                    }
-                } catch (SQLException e) {
-                    showError("Suppression impossible", e.getMessage());
-                }
+    private void deleteEvent(Event event) {
+        try {
+            boolean deleted = eventService.delete(event.getId());
+            if (!deleted) {
+                showError("Suppression impossible", "No event was deleted.");
+                return;
             }
-        });
+            refreshAll();
+            if (editingEvent != null && event.getId() != null && event.getId().equals(editingEvent.getId())) {
+                prepareCreateMode();
+                showListPane();
+            }
+            showDeleteFlash("Event deleted successfully.");
+        } catch (SQLException e) {
+            showError("Suppression impossible", e.getMessage());
+        }
     }
 
     private String buildSalleDetails(Salle salle) {
@@ -698,13 +780,13 @@ public class EventDashboardController {
             return null;
         }
 
-        int maxParticipants = parsePositiveInt(salleMaxParticipantsField.getText(), "Max participants");
-        int duration = parsePositiveInt(salleDurationField.getText(), "Duree");
+        int maxParticipants = parsePositiveInt(salleMaxParticipantsField.getText(), "Max participants", salleMaxParticipantsField, "salleMaxParticipants");
+        int duration = parsePositiveInt(salleDurationField.getText(), "Duree", salleDurationField, "salleDuration");
 
         if (option == null || option.id() == null) {
             Salle newSalle = new Salle();
-            newSalle.setName(required(salleNameField.getText(), "Nom salle"));
-            newSalle.setLocation(required(salleLocationField.getText(), "Location salle"));
+            newSalle.setName(required(salleNameField.getText(), "Nom salle", salleNameField, "salleName"));
+            newSalle.setLocation(required(salleLocationField.getText(), "Location salle", salleLocationField, "salleLocation"));
             newSalle.setMaxParticipants(maxParticipants);
             newSalle.setDuration(duration);
             newSalle.setEquipment(salleEquipment);
@@ -719,8 +801,8 @@ public class EventDashboardController {
             return option.id();
         }
 
-        existingSalle.setName(required(salleNameField.getText(), "Nom salle"));
-        existingSalle.setLocation(required(salleLocationField.getText(), "Location salle"));
+        existingSalle.setName(required(salleNameField.getText(), "Nom salle", salleNameField, "salleName"));
+        existingSalle.setLocation(required(salleLocationField.getText(), "Location salle", salleLocationField, "salleLocation"));
         existingSalle.setMaxParticipants(maxParticipants);
         existingSalle.setDuration(duration);
         existingSalle.setEquipment(salleEquipment);
@@ -831,17 +913,17 @@ public class EventDashboardController {
     }
 
     private String buildStoredPriceType() {
-        String selected = requiredComboValue(priceTypeField, "Price type");
+        String selected = requiredComboValue(priceTypeField, "Price type", "priceType");
         if (!"payant".equalsIgnoreCase(selected)) {
             return selected;
         }
 
-        String amount = required(priceAmountField.getText(), "Prix");
+        String amount = required(priceAmountField.getText(), "Prix", priceAmountField, "priceAmount");
         String normalizedAmount = amount.replace(',', '.').trim();
         try {
             Double.parseDouble(normalizedAmount.replaceAll("[^0-9.]", ""));
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Prix must be numeric, for example 25 or 25 DT.");
+            showValidationError("priceAmount", "Prix must be numeric, for example 25 or 25 DT.");
         }
 
         if (!normalizedAmount.toLowerCase().contains("dt")) {
@@ -875,17 +957,19 @@ public class EventDashboardController {
         syncPriceAmountVisibility();
     }
 
-    private LocalDateTime parseDateTime(DatePicker datePicker, TextField timeField, String label) {
+    private LocalDateTime parseDateTime(DatePicker datePicker, TextField timeField, String label, String validationKey) {
         LocalDate date = datePicker.getValue();
         if (date == null) {
-            throw new IllegalArgumentException(label + " is required.");
+            markFieldInvalid(timeField);
+            showValidationError(validationKey, label + " is required.");
         }
 
-        String timeText = required(timeField.getText(), label + " time");
+        String timeText = required(timeField.getText(), label + " time", timeField, validationKey);
         try {
             return LocalDateTime.of(date, LocalTime.parse(timeText));
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid time format. Use HH:mm.");
+            showValidationError(validationKey, "Invalid time format. Use HH:mm.");
+            return LocalDateTime.now();
         }
     }
 
@@ -937,30 +1021,38 @@ public class EventDashboardController {
         return value == null ? "-" : value.format(DATE_FORMATTER);
     }
 
-    private String required(String value, String label) {
+    private String required(String value, String label, javafx.scene.Node fieldNode, String validationKey) {
         if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(label + " is required.");
+            markFieldInvalid(fieldNode);
+            showValidationError(validationKey, label + " is required.");
         }
+        clearFieldInvalid(fieldNode);
         return value.trim();
     }
 
-    private int parsePositiveInt(String value, String label) {
+    private int parsePositiveInt(String value, String label, javafx.scene.Node fieldNode, String validationKey) {
         try {
-            int parsed = Integer.parseInt(required(value, label));
+            int parsed = Integer.parseInt(required(value, label, fieldNode, validationKey));
             if (parsed <= 0) {
-                throw new IllegalArgumentException(label + " must be greater than 0.");
+                markFieldInvalid(fieldNode);
+                showValidationError(validationKey, label + " must be greater than 0.");
             }
+            clearFieldInvalid(fieldNode);
             return parsed;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(label + " must be numeric.");
+            markFieldInvalid(fieldNode);
+            showValidationError(validationKey, label + " must be numeric.");
+            return 0;
         }
     }
 
-    private String requiredComboValue(ComboBox<String> comboBox, String label) {
+    private String requiredComboValue(ComboBox<String> comboBox, String label, String validationKey) {
         String value = comboBox.getValue();
         if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(label + " is required.");
+            markFieldInvalid(comboBox);
+            showValidationError(validationKey, label + " is required.");
         }
+        clearFieldInvalid(comboBox);
         return value.trim();
     }
 
@@ -988,6 +1080,93 @@ public class EventDashboardController {
         return false;
     }
 
+    private void initializeValidation() {
+        validationLabels.put("title", titleErrorLabel);
+        validationLabels.put("description", descriptionErrorLabel);
+        validationLabels.put("startDate", startDateErrorLabel);
+        validationLabels.put("endDate", endDateErrorLabel);
+        validationLabels.put("eventType", eventTypeErrorLabel);
+        validationLabels.put("priceType", priceTypeErrorLabel);
+        validationLabels.put("priceAmount", priceAmountErrorLabel);
+        validationLabels.put("salleName", salleNameErrorLabel);
+        validationLabels.put("salleLocation", salleLocationErrorLabel);
+        validationLabels.put("salleMaxParticipants", salleMaxParticipantsErrorLabel);
+        validationLabels.put("salleDuration", salleDurationErrorLabel);
+
+        bindValidationReset(titleField, "title");
+        bindValidationReset(descriptionField, "description");
+        bindValidationReset(startTimeField, "startDate");
+        bindValidationReset(endTimeField, "endDate");
+        bindValidationReset(priceAmountField, "priceAmount");
+        bindValidationReset(salleNameField, "salleName");
+        bindValidationReset(salleLocationField, "salleLocation");
+        bindValidationReset(salleMaxParticipantsField, "salleMaxParticipants");
+        bindValidationReset(salleDurationField, "salleDuration");
+        eventTypeField.valueProperty().addListener((obs, o, n) -> clearValidationMessage("eventType", eventTypeField));
+        priceTypeField.valueProperty().addListener((obs, o, n) -> clearValidationMessage("priceType", priceTypeField));
+        startDatePicker.valueProperty().addListener((obs, o, n) -> clearValidationMessage("startDate", startTimeField));
+        endDatePicker.valueProperty().addListener((obs, o, n) -> clearValidationMessage("endDate", endTimeField));
+    }
+
+    private void bindValidationReset(TextField field, String key) {
+        field.textProperty().addListener((obs, o, n) -> clearValidationMessage(key, field));
+    }
+
+    private void bindValidationReset(TextArea field, String key) {
+        field.textProperty().addListener((obs, o, n) -> clearValidationMessage(key, field));
+    }
+
+    private void clearValidationState() {
+        validationLabels.forEach((key, label) -> {
+            if (label != null) {
+                label.setText("");
+                label.setVisible(false);
+                label.setManaged(false);
+            }
+        });
+        clearFieldInvalid(titleField);
+        clearFieldInvalid(descriptionField);
+        clearFieldInvalid(startTimeField);
+        clearFieldInvalid(endTimeField);
+        clearFieldInvalid(eventTypeField);
+        clearFieldInvalid(priceTypeField);
+        clearFieldInvalid(priceAmountField);
+        clearFieldInvalid(salleNameField);
+        clearFieldInvalid(salleLocationField);
+        clearFieldInvalid(salleMaxParticipantsField);
+        clearFieldInvalid(salleDurationField);
+    }
+
+    private void clearValidationMessage(String key, javafx.scene.Node fieldNode) {
+        Label label = validationLabels.get(key);
+        if (label != null) {
+            label.setText("");
+            label.setVisible(false);
+            label.setManaged(false);
+        }
+        clearFieldInvalid(fieldNode);
+    }
+
+    private void showValidationError(String key, String message) {
+        Label label = validationLabels.get(key);
+        if (label != null) {
+            label.setText(message);
+            label.setVisible(true);
+            label.setManaged(true);
+        }
+        throw new ValidationException();
+    }
+
+    private void markFieldInvalid(javafx.scene.Node node) {
+        if (!node.getStyleClass().contains("field-invalid")) {
+            node.getStyleClass().add("field-invalid");
+        }
+    }
+
+    private void clearFieldInvalid(javafx.scene.Node node) {
+        node.getStyleClass().remove("field-invalid");
+    }
+
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Erreur");
@@ -996,10 +1175,28 @@ public class EventDashboardController {
         alert.showAndWait();
     }
 
+    private void showDeleteFlash(String message) {
+        if (deleteFlashLabel == null) {
+            return;
+        }
+        deleteFlashTimer.stop();
+        deleteFlashLabel.setText("✓  " + message);
+        deleteFlashLabel.setVisible(true);
+        deleteFlashLabel.setManaged(true);
+        deleteFlashTimer.setOnFinished(evt -> {
+            deleteFlashLabel.setVisible(false);
+            deleteFlashLabel.setManaged(false);
+        });
+        deleteFlashTimer.playFromStart();
+    }
+
     private record SalleOption(Integer id, String label) {
         @Override
         public String toString() {
             return label;
         }
+    }
+
+    private static final class ValidationException extends RuntimeException {
     }
 }

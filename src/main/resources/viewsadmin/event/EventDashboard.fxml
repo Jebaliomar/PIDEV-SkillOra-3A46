@@ -21,7 +21,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controlles.EventDashboardController"
-            prefWidth="1320" prefHeight="820" styleClass="root-bg">
+            prefWidth="1440" prefHeight="900" styleClass="root-bg">
 
     <top>
         <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="top-bar">
@@ -30,7 +30,7 @@
             </padding>
             <Region HBox.hgrow="ALWAYS"/>
             <Button fx:id="themeToggleButton" text="☀" onAction="#onToggleTheme" styleClass="theme-icon-button"/>
-            <Button text="← Back to Site" styleClass="topbar-link-button"/>
+            <Button text="← Back to Site" onAction="#onBackToSite" styleClass="topbar-link-button"/>
             <StackPane prefWidth="40" prefHeight="40" styleClass="avatar-chip">
                 <Label text="A" styleClass="avatar-text"/>
             </StackPane>
@@ -59,7 +59,7 @@
             <VBox spacing="6" styleClass="sidebar-nav-group">
                 <Button fx:id="eventsNavButton" maxWidth="1.7976931348623157E308" text="Events" styleClass="sidebar-nav-item sidebar-nav-item-active" onAction="#onShowEventList"/>
                 <Button maxWidth="1.7976931348623157E308" text="Salles" styleClass="sidebar-nav-item" onAction="#onOpenSalles"/>
-                <Button maxWidth="1.7976931348623157E308" text="Reservations" styleClass="sidebar-nav-item"/>
+                <Button maxWidth="1.7976931348623157E308" text="Reservations" styleClass="sidebar-nav-item" onAction="#onOpenReservations"/>
             </VBox>
         </VBox>
     </left>
@@ -79,6 +79,8 @@
                     <Region HBox.hgrow="ALWAYS"/>
                     <Button text="New Event" onAction="#onCreateEvent" styleClass="btn-primary"/>
                 </HBox>
+
+                <Label fx:id="deleteFlashLabel" managed="false" visible="false" text="" styleClass="delete-success-flash" maxWidth="1.7976931348623157E308"/>
 
                 <VBox spacing="14" styleClass="list-card" VBox.vgrow="ALWAYS">
                     <padding>
@@ -140,36 +142,41 @@
 
                                 <Label text="Title" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                                 <TextField fx:id="titleField" styleClass="form-input" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+                                <Label fx:id="titleErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
 
-                                <Label text="Description" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                                <TextArea fx:id="descriptionField" prefRowCount="4" styleClass="form-input form-area" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="2"/>
+                                <Label text="Description" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                <TextArea fx:id="descriptionField" prefRowCount="4" styleClass="form-input form-area" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
+                                <Label fx:id="descriptionErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="2"/>
 
-                                <Label text="Start Date" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                                <HBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="5" styleClass="date-time-shell">
+                                <Label text="Start Date" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                                <HBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="7" styleClass="date-time-shell">
                                     <DatePicker fx:id="startDatePicker" promptText="jj/mm/aaaa" styleClass="shell-date-picker" HBox.hgrow="ALWAYS"/>
                                     <TextField fx:id="startTimeField" promptText="20:41" styleClass="shell-time-input shell-time-input-start"/>
                                     <Button text="📅" onAction="#onShowStartCalendar" styleClass="calendar-icon-button"/>
                                 </HBox>
-                                <Label text="Defaults to the current time, but you can edit it." styleClass="field-hint" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                                <Label text="Defaults to the current time, but you can edit it." styleClass="field-hint" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+                                <Label fx:id="startDateErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
 
-                                <Label text="End Date" styleClass="form-label" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                                <HBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="5" styleClass="date-time-shell">
+                                <Label text="End Date" styleClass="form-label" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                                <HBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="7" styleClass="date-time-shell">
                                     <DatePicker fx:id="endDatePicker" promptText="jj/mm/aaaa" styleClass="shell-date-picker" HBox.hgrow="ALWAYS"/>
                                     <TextField fx:id="endTimeField" promptText="--:--" styleClass="shell-time-input"/>
                                     <Button text="📅" onAction="#onShowEndCalendar" styleClass="calendar-icon-button"/>
                                 </HBox>
+                                <Label fx:id="endDateErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
 
-                                <Label text="Event Type" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-                                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="8">
+                                <Label text="Event Type" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="10"/>
+                                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="11">
                                     <ComboBox fx:id="eventTypeField" promptText="Choose event type" styleClass="type-combo"/>
                                     <HBox spacing="8">
                                         <TextField fx:id="newTypeField" promptText="Add new type" styleClass="form-input" HBox.hgrow="ALWAYS"/>
                                         <Button text="Add" onAction="#onAddEventType" styleClass="light-inline-button"/>
                                     </HBox>
                                 </VBox>
+                                <Label fx:id="eventTypeErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="0" GridPane.rowIndex="12"/>
 
-                                <Label text="Prix" styleClass="form-label" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-                                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                <Label text="Prix" styleClass="form-label" GridPane.columnIndex="1" GridPane.rowIndex="10"/>
+                                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="11">
                                     <ComboBox fx:id="priceTypeField" styleClass="type-combo"/>
                                     <VBox fx:id="priceAmountBox" spacing="6" managed="false" visible="false" styleClass="price-box">
                                         <Label fx:id="priceAmountLabel" text="Price amount" styleClass="form-label"/>
@@ -177,16 +184,18 @@
                                         <Label fx:id="priceAmountHintLabel" text="Ce champ apparait seulement pour un event payant." styleClass="field-hint"/>
                                     </VBox>
                                 </VBox>
+                                <Label fx:id="priceTypeErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="1" GridPane.rowIndex="12"/>
+                                <Label fx:id="priceAmountErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="1" GridPane.rowIndex="13"/>
 
-                                <Label text="Image or Video Upload" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
-                                <HBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="10" GridPane.columnSpan="2">
+                                <Label text="Image or Video Upload" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="14"/>
+                                <HBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="15" GridPane.columnSpan="2">
                                     <TextField fx:id="imageField" promptText="Image URL or local path" styleClass="form-input" HBox.hgrow="ALWAYS"/>
                                     <Button text="Import image" onAction="#onImportImage" styleClass="light-inline-button"/>
                                 </HBox>
-                                <Label text="Upload an image or video file for the event." styleClass="field-hint" GridPane.columnIndex="0" GridPane.rowIndex="11" GridPane.columnSpan="2"/>
+                                <Label text="Upload an image or video file for the event." styleClass="field-hint" GridPane.columnIndex="0" GridPane.rowIndex="16" GridPane.columnSpan="2"/>
 
-                                <Label text="Preview" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="12"/>
-                                <ImageView fx:id="imagePreview" fitWidth="260" fitHeight="150" preserveRatio="true" managed="false" visible="false" GridPane.columnIndex="0" GridPane.rowIndex="13" GridPane.columnSpan="2"/>
+                                <Label text="Preview" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="17"/>
+                                <ImageView fx:id="imagePreview" fitWidth="260" fitHeight="150" preserveRatio="true" managed="false" visible="false" GridPane.columnIndex="0" GridPane.rowIndex="18" GridPane.columnSpan="2"/>
                             </GridPane>
                         </VBox>
 
@@ -207,31 +216,35 @@
 
                                 <Label text="Salle Name" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
                                 <TextField fx:id="salleNameField" styleClass="form-input" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="2"/>
+                                <Label fx:id="salleNameErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
 
-                                <Label text="Location" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                                <TextField fx:id="salleLocationField" styleClass="form-input" GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="2"/>
+                                <Label text="Location" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                                <TextField fx:id="salleLocationField" styleClass="form-input" GridPane.columnIndex="0" GridPane.rowIndex="6" GridPane.columnSpan="2"/>
+                                <Label fx:id="salleLocationErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2"/>
 
-                                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="6" GridPane.columnSpan="2" styleClass="map-placeholder-box">
+                                <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="8" GridPane.columnSpan="2" styleClass="map-placeholder-box">
                                     <VBox fx:id="salleLocationMapHost" spacing="0"/>
                                     <Label fx:id="salleLocationMapStatusLabel" text="Loading map..." styleClass="field-caption"/>
                                 </VBox>
 
-                                <Label text="Max Participants" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
-                                <TextField fx:id="salleMaxParticipantsField" styleClass="form-input" GridPane.columnIndex="0" GridPane.rowIndex="8"/>
+                                <Label text="Max Participants" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
+                                <TextField fx:id="salleMaxParticipantsField" styleClass="form-input" GridPane.columnIndex="0" GridPane.rowIndex="10"/>
+                                <Label fx:id="salleMaxParticipantsErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="0" GridPane.rowIndex="11"/>
 
-                                <Label text="Duration (minutes)" styleClass="form-label" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
-                                <TextField fx:id="salleDurationField" styleClass="form-input" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+                                <Label text="Duration (minutes)" styleClass="form-label" GridPane.columnIndex="1" GridPane.rowIndex="9"/>
+                                <TextField fx:id="salleDurationField" styleClass="form-input" GridPane.columnIndex="1" GridPane.rowIndex="10"/>
+                                <Label fx:id="salleDurationErrorLabel" text="" managed="false" visible="false" styleClass="field-error" GridPane.columnIndex="1" GridPane.rowIndex="11"/>
 
-                                <Label text="3D Model (.glb/.gltf)" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="9"/>
-                                <HBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="10" GridPane.columnSpan="2">
+                                <Label text="3D Model (.glb/.gltf)" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="12"/>
+                                <HBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="13" GridPane.columnSpan="2">
                                     <TextField fx:id="salleImage3dField" promptText="Chemin local ou URL du modele 3D" styleClass="form-input" HBox.hgrow="ALWAYS"/>
                                     <Button text="Import model" onAction="#onImportSalleModel3d" styleClass="light-inline-button"/>
                                     <Button text="Preview model" onAction="#onPreviewSalleModel3d" styleClass="btn-secondary"/>
                                 </HBox>
-                                <Label text="Upload a 3D model file. The path will be stored in the database." styleClass="field-hint" GridPane.columnIndex="0" GridPane.rowIndex="11" GridPane.columnSpan="2"/>
+                                <Label text="Upload a 3D model file. The path will be stored in the database." styleClass="field-hint" GridPane.columnIndex="0" GridPane.rowIndex="14" GridPane.columnSpan="2"/>
 
-                                <Label text="Equipment" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="12"/>
-                                <TextArea fx:id="salleEquipmentField" prefRowCount="4" styleClass="form-input form-area" GridPane.columnIndex="0" GridPane.rowIndex="13" GridPane.columnSpan="2"/>
+                                <Label text="Equipment" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="15"/>
+                                <TextArea fx:id="salleEquipmentField" prefRowCount="4" styleClass="form-input form-area" GridPane.columnIndex="0" GridPane.rowIndex="16" GridPane.columnSpan="2"/>
                             </GridPane>
                         </VBox>
 

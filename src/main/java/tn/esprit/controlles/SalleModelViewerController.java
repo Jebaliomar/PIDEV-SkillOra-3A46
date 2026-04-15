@@ -32,12 +32,12 @@ public class SalleModelViewerController {
     private String pendingModelPath;
 
     public static void openViewerWindow(String modelPath) throws IOException {
-        FXMLLoader loader = new FXMLLoader(SalleModelViewerController.class.getResource("/views/event/SalleModelViewer.fxml"));
+        FXMLLoader loader = new FXMLLoader(SalleModelViewerController.class.getResource("/viewsadmin/event/SalleModelViewer.fxml"));
         Parent root = loader.load();
         SalleModelViewerController controller = loader.getController();
         controller.setModelPath(modelPath);
 
-        Scene scene = new Scene(root, 980, 720);
+        Scene scene = new Scene(root, 1440, 900);
         URL eventCss = SalleModelViewerController.class.getResource("/styles/event.css");
         URL salleCss = SalleModelViewerController.class.getResource("/styles/salle.css");
         if (eventCss != null) {
@@ -51,8 +51,8 @@ public class SalleModelViewerController {
         Stage stage = new Stage();
         stage.initModality(Modality.NONE);
         stage.setTitle("Salle 3D Viewer");
-        stage.setMinWidth(860);
-        stage.setMinHeight(620);
+        stage.setMinWidth(1440);
+        stage.setMinHeight(900);
         stage.setScene(scene);
         stage.show();
     }
@@ -67,7 +67,7 @@ public class SalleModelViewerController {
             }
         });
 
-        URL viewerHtml = getClass().getResource("/views/event/salle-model-viewer.html");
+        URL viewerHtml = getClass().getResource("/viewsadmin/event/salle-model-viewer.html");
         if (viewerHtml == null) {
             showLoadError("Le fichier salle-model-viewer.html est introuvable.");
             return;
