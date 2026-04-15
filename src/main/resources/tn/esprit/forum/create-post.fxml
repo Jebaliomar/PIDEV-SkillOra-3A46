@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.forum.CreatePostController"
+            stylesheets="@forum.css"
+            styleClass="root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="header">
+            <padding>
+                <Insets top="18" right="28" bottom="18" left="28"/>
+            </padding>
+            <Button text="← Back to Posts" onAction="#handleBack" styleClass="btn-secondary"/>
+            <VBox spacing="3">
+                <Label fx:id="screenTitleLabel" text="Create Post" styleClass="label-title-large"/>
+                <Label fx:id="screenSubtitleLabel" text="Share your thoughts with the community." styleClass="label-subtitle"/>
+                <Label fx:id="currentUserLabel" styleClass="label-user-alt"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <content>
+                <VBox spacing="0" alignment="TOP_CENTER">
+                    <padding>
+                        <Insets top="32" right="40" bottom="40" left="40"/>
+                    </padding>
+                    <VBox spacing="20" maxWidth="680" styleClass="card">
+                        <padding>
+                            <Insets top="28" right="28" bottom="28" left="28"/>
+                        </padding>
+
+                        <!-- Type Field -->
+                        <VBox spacing="7">
+                            <Label text="Post Type" styleClass="label-field"/>
+                            <TextField fx:id="typeField" promptText="e.g. Discussion, Question, Announcement" styleClass="input-field"/>
+                        </VBox>
+
+                        <!-- Title Field -->
+                        <VBox spacing="7">
+                            <Label text="Title" styleClass="label-field"/>
+                            <TextField fx:id="titleField" promptText="Give your post a clear, descriptive title" styleClass="input-field"/>
+                        </VBox>
+
+                        <!-- Topic Field -->
+                        <VBox spacing="7">
+                            <Label text="Topic" styleClass="label-field"/>
+                            <TextField fx:id="topicField" promptText="Tag a topic area (e.g. Technology, Health)" styleClass="input-field"/>
+                        </VBox>
+
+                        <!-- Content Field -->
+                        <VBox spacing="7">
+                            <Label text="Content" styleClass="label-field"/>
+                            <TextArea fx:id="contentArea" promptText="Write your post content here..." prefRowCount="8" styleClass="text-area"/>
+                        </VBox>
+
+                        <Label fx:id="postErrorLabel" managed="false" visible="false" wrapText="true" styleClass="label-error"/>
+
+                        <!-- Divider -->
+                        <Region styleClass="divider"/>
+
+                        <!-- Action row -->
+                        <HBox alignment="CENTER_RIGHT">
+                            <Button fx:id="savePostButton" text="Publish Post" onAction="#handleSavePost" styleClass="btn-primary"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

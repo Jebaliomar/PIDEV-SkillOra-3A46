@@ -32,6 +32,7 @@ public class AdminPanelController implements Initializable {
     @FXML private Button navEvents;
     @FXML private Button navSalles;
     @FXML private Button navReservations;
+    @FXML private Button navForum;
     @FXML private Button navCourses;
     @FXML private Button navStats;
     @FXML private Button themeToggleBtn;
@@ -116,6 +117,17 @@ public class AdminPanelController implements Initializable {
                 "/styles/salle.css",
                 "/styles/reservations.css"
         );
+    }
+
+    @FXML
+    public void showAdminForum() {
+        // Open the forum admin view which lists all posts for administrators
+        switchAdminScene(
+                "/tn/esprit/forum/admin-post-management.fxml",
+                "Admin Forum",
+                "/tn/esprit/forum/forum.css"
+        );
+        setActiveNav(navForum);
     }
 
     @FXML

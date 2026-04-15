@@ -69,6 +69,21 @@ public class UserService {
 
     // ==================== READ ====================
 
+    public String getUsernameById(Integer userId) throws SQLException {
+        if (userId == null) return "Unknown user";
+        String sql = "SELECT username FROM users WHERE id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            String username = rs.getString("username");
+            if (username != null && !username.isBlank()) {
+                return username;
+            }
+        }
+        return "User #" + userId;
+    }
+
     public User authenticate(String email, String rawPassword) throws SQLException {
         String sql = "SELECT * FROM users WHERE email = ?";
         PreparedStatement ps = connection.prepareStatement(sql);
@@ -121,6 +136,29 @@ public class UserService {
             return mapResultSetToUser(rs);
         }
         return null;
+    }
+
+    public boolean hasRole(Integer userId, String... roleNames) throws SQLException {
+        if (userId == null || roleNames == null || roleNames.length == 0) {
+            return false;
+        }
+
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM user_roles WHERE user_id = ? AND UPPER(role) IN (");
+        for (int index = 0; index < roleNames.length; index++) {
+            if (index > 0) sql.append(", ");
+            sql.append("?");
+        }
+        sql.append(")");
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
+            preparedStatement.setInt(1, userId);
+            for (int i = 0; i < roleNames.length; i++) {
+                preparedStatement.setString(i + 2, roleNames[i] == null ? "" : roleNames[i].trim().toUpperCase());
+            }
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
     }
 
     public List<User> getAll() throws SQLException {

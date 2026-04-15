@@ -18,6 +18,8 @@
                     <Label styleClass="page-title" text="Home"/>
                     <Label styleClass="page-subtitle" text="Discover the newest additions to your learning workspace."/>
                 </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button mnemonicParsing="false" onAction="#handleOpenForum" styleClass="secondary-button" text="Forum"/>
             </HBox>
 
             <VBox spacing="22.0" styleClass="front-section-card">
