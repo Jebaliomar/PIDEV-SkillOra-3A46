@@ -13,54 +13,32 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.forum.AdminPostManagementController"
-            style="-fx-background-color: #f0f4f9;">
+            stylesheets="@forum.css"
+            styleClass="root-alt">
     <top>
         <HBox alignment="CENTER_LEFT" spacing="16"
-              style="-fx-background-color: white;
-                     -fx-border-color: transparent transparent #e2e8f0 transparent;
-                     -fx-border-width: 0 0 1 0;">
+              styleClass="toolbar-card">
             <padding>
                 <Insets top="18" right="28" bottom="18" left="28"/>
             </padding>
             <Button text="Back to Posts" onAction="#handleBack"
-                    style="-fx-background-color: #f1f5f9;
-                           -fx-text-fill: #475569;
-                           -fx-font-size: 13px;
-                           -fx-font-weight: 600;
-                           -fx-background-radius: 8;
-                           -fx-border-radius: 8;
-                           -fx-cursor: hand;
-                           -fx-padding: 8 16 8 16;
-                           -fx-border-color: #e2e8f0;
-                           -fx-border-width: 1;"/>
+                    styleClass="secondary-button"/>
             <VBox spacing="3">
                 <Label text="Admin Post Management"
-                       style="-fx-text-fill: #0f172a; -fx-font-weight: 700;">
-                    <font>
-                        <Font size="24"/>
-                    </font>
-                </Label>
+                       styleClass="page-title"/>
                 <Label text="Review all forum posts and remove any post when needed."
-                       style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+                       styleClass="page-subtitle"/>
                 <Label fx:id="currentUserLabel"
-                       style="-fx-text-fill: #1d4ed8; -fx-font-weight: 700; -fx-font-size: 12px;"/>
+                       styleClass="section-title"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
             <Button text="Refresh" onAction="#handleRefresh"
-                    style="-fx-background-color: #1d4ed8;
-                           -fx-text-fill: white;
-                           -fx-font-size: 13px;
-                           -fx-font-weight: 700;
-                           -fx-background-radius: 8;
-                           -fx-border-radius: 8;
-                           -fx-cursor: hand;
-                           -fx-padding: 8 16 8 16;"/>
+                    styleClass="primary-button"/>
         </HBox>
     </top>
     <center>
         <ScrollPane fitToWidth="true"
-                    style="-fx-background-color: transparent; -fx-background: transparent;
-                           -fx-border-color: transparent;">
+                    styleClass="front-scroll-pane">
             <content>
                 <VBox fx:id="postsContainer" spacing="16" alignment="TOP_CENTER">
                     <padding>

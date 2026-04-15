@@ -14,7 +14,8 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.forum.PostOverviewController"
-            style="-fx-background-color: #f8faff;">
+            stylesheets="@forum.css"
+            styleClass="root-alt">
 
     <top>
         <VBox spacing="0">
@@ -25,48 +26,25 @@
 
             <!-- Header row -->
             <HBox alignment="CENTER_LEFT" spacing="20"
-                  style="-fx-background-color: white;
-                         -fx-border-color: transparent transparent #e8edf5 transparent;
-                         -fx-border-width: 0 0 1 0;">
+                  styleClass="header-alt">
                 <padding>
                     <Insets top="20" right="32" bottom="20" left="32"/>
                 </padding>
 
                 <VBox spacing="3">
                     <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Label text="●" style="-fx-text-fill: #6366f1; -fx-font-size: 10px;"/>
-                        <Label text="Community Forum"
-                               style="-fx-text-fill: #0f172a; -fx-font-weight: 700; -fx-font-size: 24px;"/>
+                        <Label text="●" styleClass="label-user-alt2"/>
+                        <Label text="Community Forum" styleClass="label-title-large"/>
                     </HBox>
-                    <Label text="Browse discussions and share your thoughts with the community."
-                           style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
-                    <Label fx:id="currentUserLabel"
-                           style="-fx-text-fill: #6366f1; -fx-font-weight: 700; -fx-font-size: 12px;"/>
+                    <Label text="Browse discussions and share your thoughts with the community." styleClass="label-subtitle"/>
+                    <Label fx:id="currentUserLabel" styleClass="label-user-alt2"/>
                 </VBox>
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <Button fx:id="adminPostsButton" text="Admin Posts" onAction="#handleOpenAdminPosts" managed="false" visible="false"
-                        style="-fx-background-color: white;
-                               -fx-text-fill: #1d4ed8;
-                               -fx-font-weight: 700;
-                               -fx-font-size: 14px;
-                               -fx-background-radius: 10;
-                               -fx-border-radius: 10;
-                               -fx-border-color: #bfdbfe;
-                               -fx-border-width: 1.5;
-                               -fx-cursor: hand;
-                               -fx-padding: 11 18 11 18;"/>
+                <Button fx:id="adminPostsButton" text="Admin Posts" onAction="#handleOpenAdminPosts" managed="false" visible="false" styleClass="btn-admin"/>
 
-                <Button text="+ New Post" onAction="#handleCreatePost"
-                        style="-fx-background-color: #6366f1;
-                               -fx-text-fill: white;
-                               -fx-font-weight: 700;
-                               -fx-font-size: 14px;
-                               -fx-background-radius: 10;
-                               -fx-border-radius: 10;
-                               -fx-cursor: hand;
-                               -fx-padding: 11 22 11 22;"/>
+                <Button text="+ New Post" onAction="#handleCreatePost" styleClass="btn-primary-alt"/>
             </HBox>
 
             <!-- Search and Filter bar -->
@@ -78,68 +56,22 @@
                     <Insets top="14" right="32" bottom="14" left="32"/>
                 </padding>
 
-                <TextField fx:id="searchField"
-                           promptText="Search by title, topic, or content..."
-                           onAction="#handleSearch"
-                           style="-fx-background-color: white;
-                                  -fx-border-color: #e2e8f0;
-                                  -fx-border-radius: 9;
-                                  -fx-background-radius: 9;
-                                  -fx-border-width: 1.5;
-                                  -fx-padding: 9 14 9 14;
-                                  -fx-font-size: 13px;
-                                  -fx-text-fill: #1e293b;
-                                  -fx-prompt-text-fill: #94a3b8;"
-                           HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="searchField" promptText="Search by title, topic, or content..." onAction="#handleSearch" styleClass="search-field" HBox.hgrow="ALWAYS"/>
 
-                <ComboBox fx:id="typeFilterComboBox" onAction="#handleSearch"
-                          style="-fx-background-color: white;
-                                 -fx-border-color: #e2e8f0;
-                                 -fx-border-radius: 9;
-                                 -fx-background-radius: 9;
-                                 -fx-border-width: 1.5;
-                                 -fx-font-size: 13px;"
-                          prefWidth="150"/>
+                <ComboBox fx:id="typeFilterComboBox" onAction="#handleSearch" styleClass="combo-box" prefWidth="150"/>
 
-                <ComboBox fx:id="topicFilterComboBox" onAction="#handleSearch"
-                          style="-fx-background-color: white;
-                                 -fx-border-color: #e2e8f0;
-                                 -fx-border-radius: 9;
-                                 -fx-background-radius: 9;
-                                 -fx-border-width: 1.5;
-                                 -fx-font-size: 13px;"
-                          prefWidth="150"/>
+                <ComboBox fx:id="topicFilterComboBox" onAction="#handleSearch" styleClass="combo-box" prefWidth="150"/>
 
-                <Button text="Search" onAction="#handleSearch"
-                        style="-fx-background-color: #6366f1;
-                               -fx-text-fill: white;
-                               -fx-font-weight: 700;
-                               -fx-font-size: 13px;
-                               -fx-background-radius: 9;
-                               -fx-border-radius: 9;
-                               -fx-cursor: hand;
-                               -fx-padding: 9 20 9 20;"/>
+                <Button text="Search" onAction="#handleSearch" styleClass="btn-search"/>
 
-                <Button text="Reset" onAction="#handleResetFilters"
-                        style="-fx-background-color: white;
-                               -fx-text-fill: #64748b;
-                               -fx-font-weight: 600;
-                               -fx-font-size: 13px;
-                               -fx-background-radius: 9;
-                               -fx-border-radius: 9;
-                               -fx-border-color: #e2e8f0;
-                               -fx-border-width: 1.5;
-                               -fx-cursor: hand;
-                               -fx-padding: 9 18 9 18;"/>
+                <Button text="Reset" onAction="#handleResetFilters" styleClass="btn-reset"/>
             </HBox>
 
         </VBox>
     </top>
 
     <center>
-        <ScrollPane fitToWidth="true"
-                    style="-fx-background-color: transparent; -fx-background: transparent;
-                           -fx-border-color: transparent;">
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
             <content>
                 <VBox fx:id="postsContainer" spacing="16" alignment="TOP_CENTER">
                     <padding>
