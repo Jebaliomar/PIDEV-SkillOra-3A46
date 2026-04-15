@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Salle 3D Viewer</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background:
+                radial-gradient(circle at top, rgba(59,130,246,0.14), transparent 28%),
+                linear-gradient(180deg, #101827 0%, #111c31 100%);
+        }
+
+        #viewerShell {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 14px;
+        }
+
+        #viewerFrame {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            background:
+                radial-gradient(circle at top, rgba(96, 165, 250, 0.14), transparent 26%),
+                linear-gradient(180deg, #13203a 0%, #0f172a 100%);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            --poster-color: transparent;
+        }
+
+        #emptyState {
+            position: absolute;
+            inset: 18px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            border-radius: 20px;
+            border: 1px dashed rgba(148, 163, 184, 0.35);
+            color: #c8d7f0;
+            background: rgba(11, 19, 35, 0.62);
+            text-align: center;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .empty-title {
+            font-size: 30px;
+            font-weight: 800;
+            color: #f8fbff;
+        }
+
+        .empty-copy {
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 520px;
+        }
+    </style>
+</head>
+<body>
+<div id="viewerShell">
+    <div id="viewerFrame">
+        <model-viewer id="viewer"
+                      alt="Salle 3D model"
+                      camera-controls
+                      auto-rotate
+                      shadow-intensity="1"
+                      exposure="1"
+                      interaction-prompt="auto"
+                      ar>
+        </model-viewer>
+        <div id="emptyState">
+            <div class="empty-title">No 3D model available</div>
+            <div id="emptyCopy" class="empty-copy">This salle does not have a valid .glb or .gltf model yet.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const viewer = document.getElementById('viewer');
+    const emptyState = document.getElementById('emptyState');
+    const emptyCopy = document.getElementById('emptyCopy');
+
+    function showEmpty(message) {
+        viewer.removeAttribute('src');
+        emptyState.style.display = 'flex';
+        emptyCopy.textContent = message || 'This salle does not have a valid .glb or .gltf model yet.';
+    }
+
+    function showViewer() {
+        emptyState.style.display = 'none';
+    }
+
+    window.setModelSource = function(source, fileName) {
+        if (!source) {
+            showEmpty('No 3D model is linked to this salle.');
+            return;
+        }
+
+        showViewer();
+        viewer.src = source;
+        viewer.alt = fileName ? ('3D model ' + fileName) : 'Salle 3D model';
+    };
+
+    viewer.addEventListener('error', function() {
+        showEmpty('Unable to render this 3D model inside JavaFX. Verify the .glb/.gltf file.');
+    });
+
+    viewer.addEventListener('load', function() {
+        showViewer();
+    });
+
+    window.showEmpty = showEmpty;
+</script>
+</body>
+</html>
