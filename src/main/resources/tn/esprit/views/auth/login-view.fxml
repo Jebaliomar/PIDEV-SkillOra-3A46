@@ -12,45 +12,47 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.auth.LoginController"
-            style="-fx-background-color: linear-gradient(to bottom right, #020718, #0f1b38);">
+            stylesheets="@../theme/skillora-pro.css"
+            styleClass="app-root">
 
     <top>
-        <HBox style="-fx-background-color: #0b1734; -fx-border-color: #182b54; -fx-border-width: 0 0 1 0; -fx-padding: 14 18;">
-            <Label text="⚓ SkillHarbor" style="-fx-text-fill: #e2e8f0; -fx-font-size: 28px; -fx-font-weight: 800;" />
+        <HBox styleClass="top-shell">
+            <Label text="SkillHarbor" styleClass="brand-label" />
         </HBox>
     </top>
 
     <center>
-        <VBox spacing="20" style="-fx-alignment: center;">
-            <VBox spacing="16" style="-fx-background-color: #081a42; -fx-border-color: #173467; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 28; -fx-max-width: 520;">
-                <Label text="Connexion" style="-fx-text-fill: #e2e8f0; -fx-font-size: 34px; -fx-font-weight: 800;" />
+        <VBox spacing="20" styleClass="auth-shell">
+            <VBox spacing="16" styleClass="auth-card">
+                <Label text="Connexion" styleClass="auth-title" />
                 <Label text="Connectez-vous pour accéder à votre espace professeur ou étudiant."
-                       style="-fx-text-fill: #93c5fd; -fx-font-size: 14px; -fx-wrap-text: true;" />
+                       styleClass="auth-subtitle"
+                       wrapText="true" />
 
                 <VBox spacing="8">
-                    <Label text="Email ou Username" style="-fx-text-fill: #cbd5e1; -fx-font-size: 13px; -fx-font-weight: 700;" />
+                    <Label text="Email ou Username" styleClass="field-label" />
                     <TextField fx:id="identifierField"
                                promptText="ex: professeur@skillora.com"
                                onAction="#handleLogin"
-                               style="-fx-background-color: #101f40; -fx-border-color: #2754a3; -fx-border-radius: 10; -fx-background-radius: 10; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #94a3b8; -fx-font-size: 14px;" />
+                               styleClass="text-field input-field" />
                 </VBox>
 
                 <VBox spacing="8">
-                    <Label text="Mot de passe" style="-fx-text-fill: #cbd5e1; -fx-font-size: 13px; -fx-font-weight: 700;" />
+                    <Label text="Mot de passe" styleClass="field-label" />
                     <PasswordField fx:id="passwordField"
                                    promptText="********"
                                    onAction="#handleLogin"
-                                   style="-fx-background-color: #101f40; -fx-border-color: #2754a3; -fx-border-radius: 10; -fx-background-radius: 10; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #94a3b8; -fx-font-size: 14px;" />
+                                   styleClass="password-field input-field" />
                 </VBox>
 
-                <Label fx:id="errorLabel" style="-fx-text-fill: #fca5a5; -fx-font-size: 13px;" />
+                <Label fx:id="errorLabel" styleClass="error-text" />
 
                 <HBox spacing="10">
                     <Region HBox.hgrow="ALWAYS" />
                     <Button text="Effacer" onAction="#handleClear"
-                            style="-fx-background-color: #1f2f57; -fx-text-fill: #cbd5e1; -fx-font-size: 13px; -fx-font-weight: 700; -fx-background-radius: 10;" />
+                            styleClass="btn-secondary" />
                     <Button text="Se connecter" onAction="#handleLogin"
-                            style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 700; -fx-background-radius: 10;" />
+                            styleClass="btn-primary" />
                 </HBox>
             </VBox>
             <padding>

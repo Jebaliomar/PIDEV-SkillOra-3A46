@@ -13,7 +13,8 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.rendezvous.RendezVousController"
-            style="-fx-background-color: linear-gradient(to bottom, #010a24, #020f38);">
+            stylesheets="@../theme/skillora-pro.css"
+            styleClass="app-root">
 
     <top>
         <VBox spacing="14.0" BorderPane.alignment="CENTER">
@@ -21,44 +22,44 @@
                 <Insets top="16.0" right="18.0" bottom="10.0" left="18.0" />
             </padding>
 
-            <HBox spacing="14.0" style="-fx-background-color: #0d1732; -fx-border-color: #1b2a4d; -fx-border-width: 0 0 1 0; -fx-padding: 10 14;">
-                <Label text="⚓ SkillHarbor" style="-fx-text-fill: #e2e8f0; -fx-font-size: 28px; -fx-font-weight: 800;" />
+            <HBox spacing="14.0" styleClass="top-shell">
+                <Label text="SkillHarbor" styleClass="brand-label" />
                 <Button mnemonicParsing="false" onAction="#goToEvents" text="Events"
-                        style="-fx-background-color: transparent; -fx-text-fill: #cbd5e1; -fx-font-size: 15px; -fx-font-weight: 700;" />
+                        styleClass="nav-btn" />
                 <Button mnemonicParsing="false" onAction="#goToRendezVous" text="Rendez-vous"
-                        style="-fx-background-color: #1f3b70; -fx-background-radius: 12; -fx-text-fill: #60a5fa; -fx-font-size: 15px; -fx-font-weight: 700;" />
+                        styleClass="nav-btn nav-btn-active" />
                 <Button mnemonicParsing="false" onAction="#goToSlots" text="Slots"
-                        style="-fx-background-color: transparent; -fx-text-fill: #cbd5e1; -fx-font-size: 15px; -fx-font-weight: 700;" />
+                        styleClass="nav-btn" />
                 <Region HBox.hgrow="ALWAYS" />
                 <TextField fx:id="searchField" promptText="Search courses..."
                            prefWidth="340.0"
-                           style="-fx-background-color: #1e2d4d; -fx-background-radius: 18; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #94a3b8;" />
+                           styleClass="text-field app-search" />
                 <Button fx:id="notificationButton" mnemonicParsing="false" onAction="#showUnreadNotifications" text="🔔 0"
-                        style="-fx-background-color: #1f2f57; -fx-text-fill: #e2e8f0; -fx-background-radius: 16; -fx-font-weight: 700;" />
+                        styleClass="badge-btn" />
             </HBox>
 
-            <VBox spacing="8.0" style="-fx-background-color: linear-gradient(to right, #172554, #0b2f8a); -fx-background-radius: 18; -fx-padding: 26;">
+            <VBox spacing="8.0" styleClass="hero-panel">
                 <Label text="Mes Rendez-vous"
-                       style="-fx-font-size: 42px; -fx-font-weight: 800; -fx-text-fill: #e2e8f0;" />
+                       styleClass="hero-title" />
                 <Label text="Consultez, modifiez et gérez vos rendez-vous."
-                       style="-fx-font-size: 15px; -fx-text-fill: #bfdbfe;" />
+                       styleClass="hero-subtitle" />
             </VBox>
 
-            <HBox spacing="10.0" style="-fx-background-color: #071533; -fx-border-color: #1f325f; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;">
-                <Label text="Filtrer:" style="-fx-text-fill: #94a3b8; -fx-font-size: 16px; -fx-font-weight: 700;" />
+            <HBox spacing="10.0" styleClass="filter-bar">
+                <Label text="Filtrer:" styleClass="label-soft" />
                 <Button fx:id="filterAllBtn" onAction="#setFilterAll" text="Tous (0)"
-                        style="-fx-font-size: 15px; -fx-font-weight: 700; -fx-background-radius: 16;" />
+                        styleClass="btn-secondary" />
                 <Button fx:id="filterPendingBtn" onAction="#setFilterPending" text="En attente (0)"
-                        style="-fx-font-size: 15px; -fx-font-weight: 700; -fx-background-radius: 16;" />
+                        styleClass="btn-secondary" />
                 <Button fx:id="filterConfirmedBtn" onAction="#setFilterConfirmed" text="Confirmés (0)"
-                        style="-fx-font-size: 15px; -fx-font-weight: 700; -fx-background-radius: 16;" />
+                        styleClass="btn-secondary" />
                 <Button fx:id="filterRefusedBtn" onAction="#setFilterRefused" text="Refusés (0)"
-                        style="-fx-font-size: 15px; -fx-font-weight: 700; -fx-background-radius: 16;" />
+                        styleClass="btn-secondary" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Button mnemonicParsing="false" onAction="#goToSlots" text="Voir les créneaux"
-                        style="-fx-background-color: #111f3d; -fx-text-fill: #e2e8f0; -fx-border-color: #324a7d; -fx-border-radius: 16; -fx-background-radius: 16; -fx-font-weight: 700;" />
+                        styleClass="btn-ghost" />
                 <Button fx:id="createTopBtn" mnemonicParsing="false" onAction="#handleCreate" text="Nouveau rendez-vous"
-                        style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 16; -fx-font-weight: 700;" />
+                        styleClass="btn-primary" />
             </HBox>
         </VBox>
     </top>
@@ -68,27 +69,19 @@
             <padding>
                 <Insets top="8.0" right="18.0" bottom="12.0" left="18.0" />
             </padding>
-            <Label text="Cards des Rendez-vous" style="-fx-text-fill: #e2e8f0; -fx-font-size: 18px; -fx-font-weight: bold;" />
-            <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+            <Label text="Cards des Rendez-vous" styleClass="section-title" />
+            <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" styleClass="cards-scroll">
                 <content>
-                    <FlowPane fx:id="cardsContainer" hgap="12.0" vgap="12.0" prefWrapLength="1110.0" style="-fx-padding: 8;" />
+                    <FlowPane fx:id="cardsContainer" hgap="12.0" vgap="12.0" prefWrapLength="1110.0" styleClass="cards-container" />
                 </content>
             </ScrollPane>
         </VBox>
     </center>
 
     <bottom>
-        <HBox spacing="10.0" style="-fx-padding: 12 18 16 18;">
-            <Button mnemonicParsing="false" onAction="#refreshRendezVous" text="Refresh"
-                    style="-fx-background-color: #1e293b; -fx-text-fill: #e2e8f0; -fx-font-weight: bold;" />
-            <Button fx:id="createBottomBtn" mnemonicParsing="false" onAction="#handleCreate" text="Ajouter"
-                    style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold;" />
-            <Button mnemonicParsing="false" onAction="#handleEdit" text="Modifier"
-                    style="-fx-background-color: #16a34a; -fx-text-fill: white; -fx-font-weight: bold;" />
-            <Button mnemonicParsing="false" onAction="#handleDelete" text="Supp"
-                    style="-fx-background-color: #dc2626; -fx-text-fill: white; -fx-font-weight: bold;" />
+        <HBox spacing="10.0" styleClass="footer-shell">
             <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: #93c5fd; -fx-font-size: 13px;" />
+            <Label fx:id="statusLabel" text="Ready" styleClass="status-text" />
         </HBox>
     </bottom>
 </BorderPane>

@@ -63,8 +63,8 @@ public class RendezVousController {
             .parseCaseInsensitive()
             .appendPattern("dd MMM yyyy")
             .toFormatter();
-    private static final String BTN_ACTIVE = "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: 700; -fx-background-radius: 12; -fx-padding: 12;";
-    private static final String BTN_INACTIVE = "-fx-background-color: #0f1b38; -fx-text-fill: #cbd5e1; -fx-font-size: 16px; -fx-font-weight: 700; -fx-background-radius: 12; -fx-padding: 12;";
+    private static final String BTN_ACTIVE = "-fx-background-color: linear-gradient(to bottom, #2f6fed, #285fd0); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: 800; -fx-background-radius: 12; -fx-padding: 9 14;";
+    private static final String BTN_INACTIVE = "-fx-background-color: #23395f; -fx-text-fill: #dbeafe; -fx-font-size: 14px; -fx-font-weight: 800; -fx-background-radius: 12; -fx-padding: 9 14;";
     private static final double DETAILS_KEY_WIDTH = 170;
     private static final int CURRENT_USER_ID = parseCurrentUserId();
     private static final String CURRENT_USER_ROLE = normalizeRole(System.getProperty("skillora.role", "student"));
@@ -285,15 +285,15 @@ public class RendezVousController {
                 && selectedRendezVous.getId().equals(rdv.getId());
 
         VBox card = new VBox(10);
-        String borderColor = selected ? "#38bdf8" : "#1f3b70";
-        card.setStyle("-fx-background-color: #020f2d; -fx-border-color: " + borderColor + "; -fx-border-width: 1.2; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 16;");
+        String borderColor = selected ? "#4f85f8" : "#264477";
+        card.setStyle("-fx-background-color: #0f1f3f; -fx-border-color: " + borderColor + "; -fx-border-width: 1.2; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 16;");
         card.setPrefWidth(cardWidth);
         card.setMinWidth(cardWidth);
         card.setMaxWidth(cardWidth);
 
         HBox header = new HBox(8);
         Label idLabel = new Label("Rendez-vous " + safeNumber(rdv.getId()));
-        idLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 30px; -fx-font-weight: 800;");
+        idLabel.setStyle("-fx-text-fill: #f3f7ff; -fx-font-size: 36px; -fx-font-weight: 900;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
@@ -303,36 +303,36 @@ public class RendezVousController {
         header.getChildren().addAll(idLabel, spacer, statusBadge);
 
         HBox dateRow = new HBox(12);
-        dateRow.setStyle("-fx-border-color: #dbeafe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10 12;");
+        dateRow.setStyle("-fx-border-color: #2f4f86; -fx-border-radius: 12; -fx-background-radius: 12; -fx-background-color: #10284f; -fx-padding: 10 12;");
         Label dateLabel = new Label(formatCardDate(rdv.getCreatedAt()) + "  —  " + meetingTypeDisplay(rdv.getMeetingType()));
-        dateLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14px; -fx-font-weight: 700;");
+        dateLabel.setStyle("-fx-text-fill: #edf3ff; -fx-font-size: 14px; -fx-font-weight: 700;");
         Region dateSpacer = new Region();
         HBox.setHgrow(dateSpacer, javafx.scene.layout.Priority.ALWAYS);
         Label durationLabel = new Label("(60 min)");
-        durationLabel.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 13px; -fx-font-weight: 700;");
+        durationLabel.setStyle("-fx-text-fill: #9cc3ff; -fx-font-size: 13px; -fx-font-weight: 700;");
         dateRow.getChildren().addAll(dateLabel, dateSpacer, durationLabel);
 
         Label line1 = new Label("Professeur :  " + resolveProfessorName(rdv.getProfessorId()));
-        line1.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 15px;");
+        line1.setStyle("-fx-text-fill: #cfdbef; -fx-font-size: 15px;");
         Label line2 = new Label("Etudiant  :  " + resolveStudentName(rdv.getStudentId()));
-        line2.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 15px;");
+        line2.setStyle("-fx-text-fill: #cfdbef; -fx-font-size: 15px;");
         Label line3 = new Label("Cours     :  " + resolveCourseName(rdv.getCourseId()));
-        line3.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 15px;");
+        line3.setStyle("-fx-text-fill: #cfdbef; -fx-font-size: 15px;");
 
         HBox linkRow = new HBox();
-        linkRow.setStyle("-fx-border-color: #dbeafe; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10 12;");
+        linkRow.setStyle("-fx-border-color: #2f4f86; -fx-border-radius: 12; -fx-background-radius: 12; -fx-background-color: #10284f; -fx-padding: 10 12;");
         String linkText = normalizeDefault(rdv.getMeetingLink(), normalizeDefault(rdv.getLocationLabel(), normalizeDefault(rdv.getLocation(), "-")));
         Label linkLabel = new Label("Lien / Lieu : " + linkText);
         linkLabel.setWrapText(true);
-        linkLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14px; -fx-font-weight: 700;");
+        linkLabel.setStyle("-fx-text-fill: #edf3ff; -fx-font-size: 14px; -fx-font-weight: 700;");
         linkRow.getChildren().add(linkLabel);
 
         HBox actions = new HBox(10);
         Button detailsBtn = new Button("Voir détails");
-        detailsBtn.setStyle("-fx-background-color: #0b1a3a; -fx-border-color: #dbeafe; -fx-border-radius: 18; -fx-background-radius: 18; -fx-text-fill: #e2e8f0; -fx-font-weight: 700;");
+        detailsBtn.setStyle("-fx-background-color: #142e58; -fx-border-color: #3a5e95; -fx-border-radius: 14; -fx-background-radius: 14; -fx-text-fill: #eef3ff; -fx-font-weight: 800;");
         detailsBtn.setOnAction(event -> showRendezVousDetailsDialog(rdv));
         Button editBtn = new Button("Modifier");
-        editBtn.setStyle("-fx-background-color: #2563eb; -fx-background-radius: 18; -fx-text-fill: white; -fx-font-weight: 700;");
+        editBtn.setStyle("-fx-background-color: linear-gradient(to bottom, #2f6fed, #285fd0); -fx-background-radius: 14; -fx-text-fill: white; -fx-font-weight: 800;");
         editBtn.setOnAction(event -> {
             selectedRendezVous = rdv;
             editSelectedRendezVous();
@@ -342,7 +342,7 @@ public class RendezVousController {
         if (isProfessorMode()) {
             boolean pending = isPendingStatus(rdv.getStatut());
             Label meetingLinkLabel = new Label("Lien de réunion");
-            meetingLinkLabel.setStyle("-fx-text-fill: #93c5fd; -fx-font-size: 13px; -fx-font-weight: 700;");
+            meetingLinkLabel.setStyle("-fx-text-fill: #a9c7f5; -fx-font-size: 13px; -fx-font-weight: 700;");
             TextField meetingLinkField = new TextField(normalizeDefault(rdv.getMeetingLink(), ""));
             meetingLinkField.setPromptText("https://...");
             meetingLinkField.setDisable(!pending);
@@ -350,12 +350,12 @@ public class RendezVousController {
             HBox.setHgrow(meetingLinkField, javafx.scene.layout.Priority.ALWAYS);
 
             Button acceptBtn = new Button("Accepter");
-            acceptBtn.setStyle("-fx-background-color: #16a34a; -fx-background-radius: 18; -fx-text-fill: white; -fx-font-weight: 700;");
+            acceptBtn.setStyle("-fx-background-color: #15803d; -fx-background-radius: 14; -fx-text-fill: white; -fx-font-weight: 800;");
             acceptBtn.setDisable(!pending);
             acceptBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "confirme", meetingLinkField.getText()));
 
             Button refuseBtn = new Button("Refuser");
-            refuseBtn.setStyle("-fx-background-color: #dc2626; -fx-background-radius: 18; -fx-text-fill: white; -fx-font-weight: 700;");
+            refuseBtn.setStyle("-fx-background-color: #b91c1c; -fx-background-radius: 14; -fx-text-fill: white; -fx-font-weight: 800;");
             refuseBtn.setDisable(!pending);
             refuseBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "refuse"));
 
@@ -381,15 +381,15 @@ public class RendezVousController {
     private String statusStyle(String rawStatus) {
         String status = normalizeDefault(rawStatus, "").toLowerCase();
         if (status.contains("attente")) {
-            return "-fx-background-color: #78350f; -fx-text-fill: #fcd34d; -fx-font-weight: 700; -fx-padding: 6 14; -fx-background-radius: 16;";
+            return "-fx-background-color: #7c3d10; -fx-text-fill: #fde68a; -fx-font-weight: 800; -fx-padding: 6 14; -fx-background-radius: 14;";
         }
         if (status.contains("confirm")) {
-            return "-fx-background-color: #a7f3d0; -fx-text-fill: #065f46; -fx-font-weight: 700; -fx-padding: 6 14; -fx-background-radius: 16;";
+            return "-fx-background-color: #bbf7d0; -fx-text-fill: #065f46; -fx-font-weight: 800; -fx-padding: 6 14; -fx-background-radius: 14;";
         }
         if (status.contains("refus") || status.contains("rejet")) {
-            return "-fx-background-color: #7f1d1d; -fx-text-fill: #fecaca; -fx-font-weight: 700; -fx-padding: 6 14; -fx-background-radius: 16;";
+            return "-fx-background-color: #7f1d1d; -fx-text-fill: #fecaca; -fx-font-weight: 800; -fx-padding: 6 14; -fx-background-radius: 14;";
         }
-        return "-fx-background-color: #1e293b; -fx-text-fill: #cbd5e1; -fx-font-weight: 700; -fx-padding: 6 14; -fx-background-radius: 16;";
+        return "-fx-background-color: #2b3f61; -fx-text-fill: #dbeafe; -fx-font-weight: 800; -fx-padding: 6 14; -fx-background-radius: 14;";
     }
 
     @FXML
@@ -509,10 +509,6 @@ public class RendezVousController {
 
     @FXML
     private void goToSlots(ActionEvent event) {
-        if (isStudentMode()) {
-            switchScene(event, "/tn/esprit/views/availability-slot/slot-calendar.fxml", "SkillOra - Slots Calendar");
-            return;
-        }
         switchScene(event, "/tn/esprit/views/availability-slot/availability-slot-list.fxml", "SkillOra - Availability Slots");
     }
 
@@ -577,7 +573,7 @@ public class RendezVousController {
         detailsScroll.setPrefViewportHeight(560);
 
         VBox content = new VBox(14, header, detailsScroll);
-        content.setStyle("-fx-background-color: #0b1736; -fx-padding: 18; -fx-border-color: #27406d; -fx-border-radius: 14; -fx-background-radius: 14;");
+        content.setStyle("-fx-background-color: #0f1f3f; -fx-padding: 18; -fx-border-color: #2c4c7f; -fx-border-radius: 14; -fx-background-radius: 14;");
         content.setPrefWidth(920);
         content.setPrefHeight(650);
 
@@ -587,7 +583,7 @@ public class RendezVousController {
 
         Button closeBtn = (Button) pane.lookupButton(closeType);
         if (closeBtn != null) {
-            closeBtn.setStyle("-fx-background-color: #162546; -fx-text-fill: #e2e8f0; -fx-font-weight: 700; -fx-background-radius: 12; -fx-border-color: #2e4677; -fx-border-radius: 12;");
+            closeBtn.setStyle("-fx-background-color: #23395f; -fx-text-fill: #e2e8f0; -fx-font-weight: 800; -fx-background-radius: 12; -fx-border-color: #3a5e95; -fx-border-radius: 12;");
         }
 
         dialog.showAndWait();
@@ -604,13 +600,13 @@ public class RendezVousController {
         HBox.setHgrow(value, javafx.scene.layout.Priority.ALWAYS);
 
         HBox row = new HBox(12, label, value);
-        row.setStyle("-fx-background-color: #102146; -fx-padding: 10 12; -fx-background-radius: 10; -fx-border-color: #1f3b70; -fx-border-radius: 10;");
+        row.setStyle("-fx-background-color: #112547; -fx-padding: 10 12; -fx-background-radius: 10; -fx-border-color: #2b4e85; -fx-border-radius: 10;");
         return row;
     }
 
     private Button buildCoursePdfButton(RendezVous rdv) {
         Button button = new Button();
-        button.setStyle("-fx-background-color: #1e293b; -fx-background-radius: 18; -fx-text-fill: #e2e8f0; -fx-font-weight: 700;");
+        button.setStyle("-fx-background-color: #223a63; -fx-background-radius: 14; -fx-text-fill: #e2e8f0; -fx-font-weight: 800;");
 
         boolean canEditPdf = canManageCoursePdf(rdv);
         String existingPdf = toNull(rdv == null ? null : rdv.getCoursePdfName());
@@ -868,7 +864,7 @@ public class RendezVousController {
         });
 
         VBox content = new VBox(10);
-        content.setStyle("-fx-background-color: #101b36; -fx-padding: 18; -fx-border-color: #2b3f67; -fx-border-radius: 14; -fx-background-radius: 14;");
+        content.setStyle("-fx-background-color: #0f1f3f; -fx-padding: 18; -fx-border-color: #2c4c7f; -fx-border-radius: 14; -fx-background-radius: 14;");
 
         Label slotLabel = sectionLabel("Créneau");
         Label courseLabel = sectionLabel("Cours existant");
@@ -883,7 +879,7 @@ public class RendezVousController {
         locationPreview.setWrapText(true);
         locationPreview.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 13px;");
         VBox locationPreviewBox = new VBox(6, locationTitle, locationPreview);
-        locationPreviewBox.setStyle("-fx-background-color: #0d224c; -fx-padding: 10 12; -fx-border-color: #2754a3; -fx-border-radius: 10; -fx-background-radius: 10;");
+        locationPreviewBox.setStyle("-fx-background-color: #112a53; -fx-padding: 10 12; -fx-border-color: #3a5e95; -fx-border-radius: 10; -fx-background-radius: 10;");
 
         HBox typeBox = new HBox(16, onlineRadio, inPersonRadio);
         HBox pdfBox = new HBox(10, fileBtn, pdfNameLabel);
@@ -1021,7 +1017,7 @@ public class RendezVousController {
         HBox pdfBox = new HBox(10, fileBtn, pdfNameLabel);
 
         VBox content = new VBox(10);
-        content.setStyle("-fx-background-color: #101b36; -fx-padding: 18; -fx-border-color: #2b3f67; -fx-border-radius: 14; -fx-background-radius: 14;");
+        content.setStyle("-fx-background-color: #0f1f3f; -fx-padding: 18; -fx-border-color: #2c4c7f; -fx-border-radius: 14; -fx-background-radius: 14;");
         content.getChildren().addAll(
                 currentSlotLabel,
                 sectionLabel("Nouveau créneau"),
@@ -1404,35 +1400,35 @@ public class RendezVousController {
     }
 
     private void styleDialog(DialogPane pane) {
-        pane.setStyle("-fx-background-color: #0f1b38; -fx-border-color: #2f4675; -fx-border-width: 1; -fx-border-radius: 14; -fx-background-radius: 14;");
+        pane.setStyle("-fx-background-color: #0f1f3f; -fx-border-color: #2c4c7f; -fx-border-width: 1; -fx-border-radius: 14; -fx-background-radius: 14;");
     }
 
     private void styleDialogButtons(DialogPane pane, ButtonType primary, ButtonType secondary) {
         Button primaryBtn = (Button) pane.lookupButton(primary);
         Button secondaryBtn = (Button) pane.lookupButton(secondary);
         if (primaryBtn != null) {
-            primaryBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 12;");
+            primaryBtn.setStyle("-fx-background-color: linear-gradient(to bottom, #2f6fed, #285fd0); -fx-text-fill: white; -fx-font-weight: 800; -fx-background-radius: 12;");
         }
         if (secondaryBtn != null) {
-            secondaryBtn.setStyle("-fx-background-color: #162546; -fx-text-fill: #e2e8f0; -fx-font-weight: 700; -fx-background-radius: 12; -fx-border-color: #2e4677; -fx-border-radius: 12;");
+            secondaryBtn.setStyle("-fx-background-color: #23395f; -fx-text-fill: #e2e8f0; -fx-font-weight: 800; -fx-background-radius: 12; -fx-border-color: #3a5e95; -fx-border-radius: 12;");
         }
     }
 
     private void styleCombo(ComboBox<?> comboBox) {
-        comboBox.setStyle("-fx-background-color: #101f40; -fx-border-color: #2754a3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-text-fill: #e2e8f0; -fx-font-size: 14px; -fx-font-weight: 700;");
+        comboBox.setStyle("-fx-background-color: #112547; -fx-border-color: #2b4e85; -fx-border-radius: 12; -fx-background-radius: 12; -fx-text-fill: #e2e8f0; -fx-font-size: 14px; -fx-font-weight: 700;");
     }
 
     private void styleTextField(TextField field) {
-        field.setStyle("-fx-control-inner-background: #101f40; -fx-background-color: #101f40; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #94a3b8; -fx-border-color: #2b436f; -fx-border-radius: 12; -fx-background-radius: 12;");
+        field.setStyle("-fx-control-inner-background: #112547; -fx-background-color: #112547; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #8ea3c7; -fx-border-color: #2b4e85; -fx-border-radius: 12; -fx-background-radius: 12;");
     }
 
     private void styleTextArea(TextArea area) {
-        area.setStyle("-fx-control-inner-background: #101f40; -fx-background-color: #101f40; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #94a3b8; -fx-border-color: #2b436f; -fx-border-radius: 12; -fx-background-radius: 12;");
+        area.setStyle("-fx-control-inner-background: #112547; -fx-background-color: #112547; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #8ea3c7; -fx-border-color: #2b4e85; -fx-border-radius: 12; -fx-background-radius: 12;");
     }
 
     private Label sectionLabel(String text) {
         Label label = new Label(text);
-        label.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14px; -fx-font-weight: 700;");
+        label.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 14px; -fx-font-weight: 800;");
         return label;
     }
 

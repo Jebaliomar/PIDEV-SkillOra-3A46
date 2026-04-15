@@ -810,10 +810,6 @@ public class AvailabilitySlotController {
 
     @FXML
     private void goToSlots(ActionEvent event) {
-        if (calendarWebView != null) {
-            switchScene(event, "/tn/esprit/views/availability-slot/slot-calendar.fxml", "SkillOra - Slots Calendar");
-            return;
-        }
         switchScene(event, "/tn/esprit/views/availability-slot/availability-slot-list.fxml", "SkillOra - Availability Slots");
     }
 

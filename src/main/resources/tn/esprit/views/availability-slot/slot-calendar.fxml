@@ -11,7 +11,8 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.availabilityslot.AvailabilitySlotController"
-            style="-fx-background-color: linear-gradient(to bottom, #010a24, #020f38);">
+            stylesheets="@../theme/skillora-pro.css"
+            styleClass="app-root">
 
     <top>
         <VBox spacing="12.0" BorderPane.alignment="CENTER">
@@ -19,27 +20,27 @@
                 <Insets top="14.0" right="16.0" bottom="8.0" left="16.0" />
             </padding>
 
-            <HBox spacing="12.0" style="-fx-background-color: #0d1732; -fx-border-color: #1b2a4d; -fx-border-width: 0 0 1 0; -fx-padding: 10 14;">
-                <Label text="⚓ SkillHarbor" style="-fx-text-fill: #e2e8f0; -fx-font-size: 28px; -fx-font-weight: 800;" />
+            <HBox spacing="12.0" styleClass="top-shell">
+                <Label text="SkillHarbor" styleClass="brand-label" />
                 <Button mnemonicParsing="false" onAction="#goToEvents" text="Events"
-                        style="-fx-background-color: transparent; -fx-text-fill: #cbd5e1; -fx-font-size: 15px; -fx-font-weight: 700;" />
+                        styleClass="nav-btn" />
                 <Button mnemonicParsing="false" onAction="#goToRendezVous" text="Rendez-vous"
-                        style="-fx-background-color: transparent; -fx-text-fill: #cbd5e1; -fx-font-size: 15px; -fx-font-weight: 700;" />
+                        styleClass="nav-btn" />
                 <Button mnemonicParsing="false" onAction="#goToSlots" text="Slots"
-                        style="-fx-background-color: #1f3b70; -fx-background-radius: 12; -fx-text-fill: #60a5fa; -fx-font-size: 15px; -fx-font-weight: 700;" />
+                        styleClass="nav-btn nav-btn-active" />
             </HBox>
 
-            <VBox spacing="8.0" style="-fx-background-color: linear-gradient(to right, #172554, #0b2f8a); -fx-background-radius: 18; -fx-padding: 24;">
+            <VBox spacing="8.0" styleClass="hero-panel">
                 <Label text="Calendrier des créneaux"
-                       style="-fx-font-size: 36px; -fx-font-weight: 800; -fx-text-fill: #e2e8f0;" />
+                       styleClass="hero-title" />
                 <Label text="Affichage mensuel des créneaux disponibles (vert) et réservés (rouge)."
-                       style="-fx-font-size: 14px; -fx-text-fill: #bfdbfe;" />
+                       styleClass="hero-subtitle" />
             </VBox>
         </VBox>
     </top>
 
     <center>
-        <VBox spacing="10.0">
+        <VBox spacing="10.0" styleClass="calendar-wrap">
             <padding>
                 <Insets top="8.0" right="16.0" bottom="10.0" left="16.0" />
             </padding>
@@ -48,11 +49,11 @@
     </center>
 
     <bottom>
-        <HBox spacing="10.0" style="-fx-padding: 10 16 14 16;">
+        <HBox spacing="10.0" styleClass="footer-shell">
             <Button mnemonicParsing="false" onAction="#refreshCalendar" text="Refresh"
-                    style="-fx-background-color: #1e293b; -fx-text-fill: #e2e8f0; -fx-font-weight: 700; -fx-background-radius: 10;" />
+                    styleClass="btn-secondary" />
             <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: #93c5fd; -fx-font-size: 13px;" />
+            <Label fx:id="statusLabel" text="Ready" styleClass="status-text" />
         </HBox>
     </bottom>
 </BorderPane>
