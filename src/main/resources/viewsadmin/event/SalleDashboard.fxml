@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:controller="tn.esprit.controlles.SalleDashboardController" prefHeight="900.0" prefWidth="1440.0" styleClass="root-bg" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <top>
+        <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="top-bar">
+            <padding>
+                <Insets bottom="14.0" left="24.0" right="24.0" top="14.0" />
+            </padding>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="themeToggleButton" onAction="#onToggleTheme" styleClass="theme-icon-button" text="☀" />
+            <Button onAction="#onBackToSite" styleClass="topbar-link-button" text="← Back to Site" />
+            <StackPane prefHeight="40.0" prefWidth="40.0" styleClass="avatar-chip">
+                <Label styleClass="avatar-text" text="A" />
+            </StackPane>
+        </HBox>
+    </top>
+    <left>
+        <VBox prefWidth="270.0" spacing="16.0" styleClass="admin-sidebar">
+            <padding>
+                <Insets bottom="20.0" left="14.0" right="14.0" top="20.0" />
+            </padding>
+            <HBox spacing="12.0" styleClass="brand-box">
+                <VBox alignment="CENTER" prefHeight="42.0" prefWidth="42.0" styleClass="brand-icon-wrap">
+                    <Label styleClass="brand-icon" text="S" />
+                </VBox>
+                <VBox spacing="2.0">
+                    <Label styleClass="brand-title" text="SkillHarbor" />
+                    <Label styleClass="brand-subtitle" text="Admin Panel" />
+                </VBox>
+            </HBox>
+            <Separator />
+            <VBox spacing="6.0" styleClass="sidebar-nav-group">
+                <Button fx:id="dashboardNavButton" maxWidth="1.7976931348623157E308" onAction="#onOpenDashboard" styleClass="sidebar-nav-item" text="Dashboard" />
+                <Button fx:id="usersNavButton" maxWidth="1.7976931348623157E308" onAction="#onOpenUsers" styleClass="sidebar-nav-item" text="User Management" />
+                <Button fx:id="eventsNavButton" maxWidth="1.7976931348623157E308" onAction="#onBackToEvents" styleClass="sidebar-nav-item" text="Events" />
+                <Button fx:id="sallesNavButton" maxWidth="1.7976931348623157E308" onAction="#onShowList" styleClass="sidebar-nav-item sidebar-nav-item-active" text="Salles" />
+                <Button fx:id="reservationsNavButton" maxWidth="1.7976931348623157E308" onAction="#onReservationsPlaceholder" styleClass="sidebar-nav-item" text="Reservations" />
+                <Button fx:id="coursesNavButton" maxWidth="1.7976931348623157E308" onAction="#onOpenCourses" styleClass="sidebar-nav-item" text="Courses Admin" />
+                <Button fx:id="statisticsNavButton" maxWidth="1.7976931348623157E308" onAction="#onOpenStatistics" styleClass="sidebar-nav-item" text="Statistics" />
+            </VBox>
+            <Region VBox.vgrow="ALWAYS" />
+        </VBox>
+    </left>
+    <center>
+        <StackPane>
+            <ScrollPane fx:id="listPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
+                <content>
+                    <VBox spacing="22.0" styleClass="main-content-wrap">
+                        <padding>
+                            <Insets bottom="24.0" left="28.0" right="28.0" top="24.0" />
+                        </padding>
+
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="page-title" text="Salles" />
+                                <Label styleClass="page-subtitle" text="Affichage identique au frontend website pour les salles et reservations." />
+                            </VBox>
+                            <Button onAction="#onCreateSalle" styleClass="btn-primary" text="New Salle" />
+                        </HBox>
+
+                        <Label fx:id="deleteFlashLabel" managed="false" maxWidth="1.7976931348623157E308" styleClass="delete-success-flash" text="" visible="false" />
+
+                        <HBox alignment="CENTER_LEFT" spacing="18.0" styleClass="filter-shell">
+                            <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="filter-title" text="Filter &amp; Sort" />
+                                <Label styleClass="filter-copy" text="Search by name or equipment and sort by max participants." />
+                            </VBox>
+                            <VBox spacing="6.0">
+                                <Label styleClass="field-caption" text="Search" />
+                                <TextField fx:id="searchField" prefWidth="240.0" promptText="Search by name or equipment" styleClass="form-input search-input" />
+                            </VBox>
+                            <VBox spacing="6.0">
+                                <Label styleClass="field-caption" text="Sort by" />
+                                <ComboBox fx:id="sortCombo" prefWidth="260.0" styleClass="type-combo" />
+                            </VBox>
+                        </HBox>
+
+                        <VBox fx:id="cardsContainer" spacing="18.0" />
+                    </VBox>
+                </content>
+            </ScrollPane>
+
+            <ScrollPane fx:id="formPane" fitToWidth="true" hbarPolicy="NEVER" managed="false" visible="false" styleClass="page-scroll">
+                <content>
+                    <VBox spacing="18.0" styleClass="main-content-wrap">
+                        <padding>
+                            <Insets bottom="24.0" left="28.0" right="28.0" top="24.0" />
+                        </padding>
+                        <VBox spacing="6.0">
+                            <Label fx:id="formTitleLabel" styleClass="form-page-title" text="Create Salle" />
+                            <Label fx:id="formSubtitleLabel" styleClass="form-page-subtitle" text="Fill in salle information with the same polished layout as Events." />
+                            <Label fx:id="idValueLabel" managed="false" visible="false" styleClass="result-count" text="New" />
+                        </VBox>
+
+                        <VBox spacing="18.0" styleClass="section-card">
+                            <padding>
+                                <Insets bottom="18.0" left="18.0" right="18.0" top="18.0" />
+                            </padding>
+                            <Label styleClass="section-title" text="Salle Details" />
+
+                            <GridPane hgap="16.0" vgap="14.0">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="50.0" />
+                                    <ColumnConstraints percentWidth="50.0" />
+                                </columnConstraints>
+                                <Label styleClass="form-label" text="Nom salle" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <TextField fx:id="nameField" styleClass="form-input" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="2" />
+                                <Label fx:id="nameErrorLabel" managed="false" visible="false" styleClass="field-error" text="" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2" />
+
+                                <Label styleClass="form-label" text="Location salle" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                <TextField fx:id="locationField" styleClass="form-input" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2" />
+                                <Label fx:id="locationErrorLabel" managed="false" visible="false" styleClass="field-error" text="" GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="2" />
+
+                                <Label styleClass="form-label" text="Map" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                <VBox spacing="6.0" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2" styleClass="map-placeholder-box">
+                                    <VBox fx:id="locationMapHost" spacing="0.0" />
+                                    <Label fx:id="locationMapStatusLabel" styleClass="field-caption" text="Loading map..." />
+                                </VBox>
+
+                                <Label styleClass="form-label" text="Max participants" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                                <TextField fx:id="maxParticipantsField" styleClass="form-input" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                                <Label fx:id="maxParticipantsErrorLabel" managed="false" visible="false" styleClass="field-error" text="" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+
+                                <Label styleClass="form-label" text="Duree" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                <TextField fx:id="durationField" styleClass="form-input" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                                <Label fx:id="durationErrorLabel" managed="false" visible="false" styleClass="field-error" text="" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+
+                                <Label styleClass="form-label" text="Equipement" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+                                <TextArea fx:id="equipmentField" prefRowCount="4" styleClass="form-input form-area" GridPane.columnIndex="0" GridPane.rowIndex="12" GridPane.columnSpan="2" />
+
+                                <Label styleClass="form-label" text="Image 3D" GridPane.columnIndex="0" GridPane.rowIndex="13" />
+                                <HBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="14" GridPane.columnSpan="2">
+                                    <TextField fx:id="image3dField" promptText="Chemin local ou URL du modele 3D" styleClass="form-input" HBox.hgrow="ALWAYS" />
+                                    <Button onAction="#onImportModel3d" styleClass="light-inline-button" text="Import model" />
+                                    <Button onAction="#onPreviewModel3d" styleClass="btn-secondary" text="Preview model" />
+                                </HBox>
+                                <Label styleClass="field-hint" text="Importe un fichier .glb ou .gltf pour la salle." GridPane.columnIndex="0" GridPane.rowIndex="15" GridPane.columnSpan="2" />
+
+                            </GridPane>
+
+                            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                <Button onAction="#onSaveSalle" styleClass="btn-primary" text="Save Salle" />
+                                <Button onAction="#onCancel" styleClass="light-inline-button" text="Cancel" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="formStatusLabel" styleClass="status-badge" text="Creation mode" />
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                </content>
+            </ScrollPane>
+        </StackPane>
+    </center>
+</BorderPane>

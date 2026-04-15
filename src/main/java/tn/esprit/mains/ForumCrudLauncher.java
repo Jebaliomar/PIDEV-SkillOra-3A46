@@ -48,7 +48,38 @@ public class ForumCrudLauncher extends Application {
             this.postService = new PostService();
             this.replyService = new ReplyService();
             this.userService = new UserService();
-            this.currentUser = createStaticUser();
+
+            // Try to load a real user from the database (preferred). Fall back to a static user if DB is empty or an error occurs.
+            try {
+                User dbUser = null;
+                try {
+                    dbUser = userService.getById(STATIC_USER_ID);
+                } catch (SQLException ignored) {
+                    // ignore, we'll try other methods
+                }
+
+                if (dbUser == null) {
+                    // if no user with STATIC_USER_ID, attempt to pick the first existing user
+                    try {
+                        java.util.List<User> users = userService.getAll();
+                        if (users != null && !users.isEmpty()) {
+                            dbUser = users.get(0);
+                        }
+                    } catch (SQLException ignored) {
+                        // ignore and fallback
+                    }
+                }
+
+                if (dbUser != null) {
+                    this.currentUser = dbUser;
+                    usernameCache.put(dbUser.getId(), dbUser.getUsername());
+                } else {
+                    this.currentUser = createStaticUser();
+                }
+            } catch (RuntimeException e) {
+                // If anything unexpected happens, ensure we still have a usable currentUser
+                this.currentUser = createStaticUser();
+            }
         } catch (RuntimeException exception) {
             showError("Database connection failed", exception.getMessage());
             throw exception;
