@@ -25,6 +25,7 @@ public class StudentLayoutController implements Initializable {
     @FXML private Button themeToggleBtn;
     @FXML private Button navHome;
     @FXML private Button navCourses;
+    @FXML private Button navEvents;
     @FXML private MenuButton userMenu;
     @FXML private MenuItem menuProfile;
     @FXML private MenuItem menuSettings;
@@ -72,6 +73,12 @@ public class StudentLayoutController implements Initializable {
     }
 
     @FXML
+    public void showEvents() {
+        AppNavigator.showFrontEvents(navEvents != null ? navEvents : navHome);
+        setActiveNav(navEvents);
+    }
+
+    @FXML
     public void showProfile() {
         loadContent("/fxml/ProfileContent.fxml");
         setActiveNav(null);
@@ -98,7 +105,7 @@ public class StudentLayoutController implements Initializable {
     }
 
     private void setActiveNav(Button active) {
-        for (Button b : new Button[]{navHome, navCourses}) {
+        for (Button b : new Button[]{navHome, navCourses, navEvents}) {
             if (b != null) {
                 b.getStyleClass().remove("student-nav-btn-active");
             }

@@ -97,6 +97,10 @@ public class LoginController implements Initializable {
                 Parent dashRoot = dashLoader.load();
                 Scene dashScene = new Scene(dashRoot);
                 dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+                if (!isStudent) {
+                    dashScene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
+                    dashScene.getStylesheets().add(getClass().getResource("/styles/salle.css").toExternalForm());
+                }
                 ThemeManager.applyTheme(dashScene);
 
                 Stage stage = (Stage) emailField.getScene().getWindow();
@@ -161,6 +165,10 @@ public class LoginController implements Initializable {
             Parent dashRoot = dashLoader.load();
             Scene dashScene = new Scene(dashRoot);
             dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+            if (!isStudent) {
+                dashScene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
+                dashScene.getStylesheets().add(getClass().getResource("/styles/salle.css").toExternalForm());
+            }
             ThemeManager.applyTheme(dashScene);
             Stage stage = (Stage) emailField.getScene().getWindow();
             stage.setScene(dashScene);

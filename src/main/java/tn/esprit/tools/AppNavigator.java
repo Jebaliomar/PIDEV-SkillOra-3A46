@@ -47,8 +47,39 @@ public final class AppNavigator {
         }
     }
 
+    public static void showFrontEvents(Node sourceNode) {
+        if (sourceNode == null || sourceNode.getScene() == null || sourceNode.getScene().getWindow() == null) {
+            throw new IllegalStateException("No active window is available for navigation.");
+        }
+
+        Stage stage = (Stage) sourceNode.getScene().getWindow();
+        try {
+            FXMLLoader loader = new FXMLLoader(AppNavigator.class.getResource("/views/event/SiteEventsView.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, Math.max(stage.getWidth(), 1440), Math.max(stage.getHeight(), 900));
+            scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/styles/site-events.css")).toExternalForm());
+            scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/styles/macos-theme.css")).toExternalForm());
+            ThemeManager.applyTheme(scene);
+            stage.setTitle("SkillHarbor Events");
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to load events view.", e);
+        }
+    }
+
     public static void showUserAdmin(Node sourceNode) {
         AdminPanelController.setInitialView(AdminPanelController.InitialView.USERS);
+        switchLegacyScene(sourceNode, "/fxml/AdminPanel.fxml", "/styles/style.css");
+    }
+
+    public static void showDashboardAdmin(Node sourceNode) {
+        AdminPanelController.setInitialView(AdminPanelController.InitialView.DASHBOARD);
+        switchLegacyScene(sourceNode, "/fxml/AdminPanel.fxml", "/styles/style.css");
+    }
+
+    public static void showStatisticsAdmin(Node sourceNode) {
+        AdminPanelController.setInitialView(AdminPanelController.InitialView.STATISTICS);
         switchLegacyScene(sourceNode, "/fxml/AdminPanel.fxml", "/styles/style.css");
     }
 
@@ -86,6 +117,10 @@ public final class AppNavigator {
             Parent root = loader.load();
             Scene scene = new Scene(root, Math.max(stage.getWidth(), 1240), Math.max(stage.getHeight(), 760));
             scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource(stylesheetPath)).toExternalForm());
+            if ("/fxml/AdminPanel.fxml".equals(resourcePath)) {
+                scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/styles/event.css")).toExternalForm());
+                scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/styles/salle.css")).toExternalForm());
+            }
             ThemeManager.applyTheme(scene);
             stage.setScene(scene);
             stage.show();

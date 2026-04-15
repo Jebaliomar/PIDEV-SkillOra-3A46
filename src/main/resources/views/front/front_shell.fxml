@@ -35,7 +35,7 @@
                         <Button fx:id="browseCoursesNavButton" mnemonicParsing="false" onAction="#handleBrowseCourses" styleClass="sidebar-item" text="Browse Courses"/>
                         <Button fx:id="myLearningNavButton" mnemonicParsing="false" onAction="#handleMyLearning" styleClass="sidebar-item" text="My Learning"/>
                         <Button fx:id="communityNavButton" mnemonicParsing="false" onAction="#handleCommunity" styleClass="sidebar-item" text="Community"/>
-                        <Button fx:id="eventsNavButton" mnemonicParsing="false" onAction="#handleEvents" styleClass="sidebar-item" text="Events"/>
+                        <Button fx:id="eventsNavButton" mnemonicParsing="false" onAction="#handleEvents" styleClass="sidebar-item" text="Event"/>
                         <Button fx:id="rendezVousNavButton" mnemonicParsing="false" onAction="#handleRendezVous" styleClass="sidebar-item" text="Rendez-vous"/>
                     </VBox>
 

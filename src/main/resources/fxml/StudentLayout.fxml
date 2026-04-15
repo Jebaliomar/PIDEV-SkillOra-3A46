@@ -19,6 +19,7 @@
 
             <Button text="HOME" onAction="#showHome" fx:id="navHome" styleClass="student-nav-btn"/>
             <Button text="COURSES" onAction="#showCourses" fx:id="navCourses" styleClass="student-nav-btn"/>
+            <Button text="EVENT" onAction="#showEvents" fx:id="navEvents" styleClass="student-nav-btn"/>
 
             <Region prefWidth="14"/>
             <Region styleClass="nav-vrule" prefWidth="1" maxWidth="1" prefHeight="22" maxHeight="22"/>

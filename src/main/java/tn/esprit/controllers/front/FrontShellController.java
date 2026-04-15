@@ -93,7 +93,7 @@ public class FrontShellController {
     @FXML
     private void handleEvents() {
         setActiveModule(eventsNavButton);
-        showPlaceholder("Events", "Upcoming events will appear here.");
+        AppNavigator.showFrontEvents(eventsNavButton);
     }
 
     @FXML
