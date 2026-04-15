@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.StudentLayoutController"
+            styleClass="admin-root" prefWidth="1280" prefHeight="820">
+
+    <top>
+        <HBox styleClass="student-header" alignment="CENTER_LEFT" spacing="22">
+            <padding><Insets top="22" right="48" bottom="22" left="48"/></padding>
+
+            <Label text="SkillORA" styleClass="logo-text"/>
+            <Region styleClass="nav-vrule" prefWidth="1" maxWidth="1" prefHeight="24" maxHeight="24"/>
+            <Label text="STUDENT · N° 001" styleClass="pf-eyebrow"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button text="HOME" onAction="#showHome" fx:id="navHome" styleClass="student-nav-btn"/>
+
+            <Region prefWidth="14"/>
+            <Region styleClass="nav-vrule" prefWidth="1" maxWidth="1" prefHeight="22" maxHeight="22"/>
+            <Region prefWidth="14"/>
+
+            <Button fx:id="themeToggleBtn" onAction="#toggleTheme" styleClass="theme-toggle"/>
+            <MenuButton fx:id="userMenu" styleClass="header-username">
+                <items>
+                    <MenuItem fx:id="menuProfile" text="Profile" onAction="#showProfile"/>
+                    <MenuItem fx:id="menuSettings" text="Settings" onAction="#showSettings"/>
+                </items>
+            </MenuButton>
+            <Button text="SIGN OUT" onAction="#handleLogout" styleClass="nav-signout"/>
+        </HBox>
+    </top>
+
+    <center>
+        <StackPane fx:id="contentArea" styleClass="content-area"/>
+    </center>
+</BorderPane>

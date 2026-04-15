@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.AdminPanelController"
+            prefWidth="1200" prefHeight="750" styleClass="admin-root">
+
+    <!-- Sidebar -->
+    <left>
+        <VBox prefWidth="240" styleClass="sidebar" spacing="0">
+            <padding><Insets top="20" bottom="20" left="16" right="16"/></padding>
+
+            <!-- Logo -->
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <StackPane styleClass="logo-box">
+                    <Label text="S" styleClass="logo-icon"/>
+                </StackPane>
+                <VBox spacing="0">
+                    <Label text="SkillORA" styleClass="sidebar-brand"/>
+                    <Label text="Admin Panel" styleClass="sidebar-subtitle"/>
+                </VBox>
+            </HBox>
+
+            <Region prefHeight="30"/>
+
+            <!-- Nav Items -->
+            <VBox spacing="4" fx:id="navContainer">
+                <Button fx:id="navDashboard" text="   Dashboard" onAction="#showDashboard"
+                        styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
+                <Button fx:id="navUsers" text="   User Management" onAction="#showUserManagement"
+                        styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
+                <Button fx:id="navStats" text="   Statistics" onAction="#showStatistics"
+                        styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <!-- Theme Toggle -->
+            <Button fx:id="themeToggleBtn" onAction="#toggleTheme"
+                    styleClass="nav-item" alignment="CENTER" prefHeight="40" prefWidth="40"/>
+
+            <Region prefHeight="8"/>
+
+            <!-- Logout -->
+            <Button text="   Sign Out" onAction="#handleLogout"
+                    styleClass="nav-item-danger" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
+        </VBox>
+    </left>
+
+    <!-- Main Content Area -->
+    <center>
+        <StackPane fx:id="contentArea" styleClass="content-area">
+            <padding><Insets top="0" bottom="0" left="0" right="0"/></padding>
+        </StackPane>
+    </center>
+
+</BorderPane>
