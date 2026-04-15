@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefWidth="1400.0" prefHeight="820.0"
+            stylesheets="@style.css"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.QuizQuestionController">
+
+    <children>
+
+        <ScrollPane fitToWidth="true"
+                    prefWidth="1400.0"
+                    prefHeight="820.0"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    style="-fx-background: transparent; -fx-background-color: transparent;">
+
+            <content>
+                <VBox prefWidth="1400.0"
+                      spacing="24.0"
+                      alignment="TOP_LEFT">
+
+                    <padding>
+                        <Insets top="18.0" right="24.0" bottom="24.0" left="24.0"/>
+                    </padding>
+
+                    <Label fx:id="pageTitleLabel"
+                           text="Ajouter Question Quiz"
+                           styleClass="page-big-title"/>
+
+                    <AnchorPane prefWidth="1320.0"
+                                prefHeight="900.0"
+                                styleClass="create-card">
+
+                        <children>
+                            <TextField fx:id="idField" visible="false" managed="false"/>
+                            <TextField fx:id="evaluationIdField" visible="false" managed="false"/>
+
+                            <VBox layoutX="28.0"
+                                  layoutY="26.0"
+                                  prefWidth="1260.0"
+                                  spacing="18.0">
+
+                                <children>
+
+                                    <Label fx:id="evaluationInfoLabel"
+                                           text="Quiz"
+                                           styleClass="label-subtitle"/>
+
+                                    <VBox spacing="8.0">
+                                        <children>
+                                            <Label text="Question" styleClass="form-label"/>
+                                            <TextArea fx:id="contentField"
+                                                      prefWidth="1240.0"
+                                                      prefHeight="90.0"
+                                                      wrapText="true"
+                                                      styleClass="form-textarea"/>
+                                            <Label fx:id="contentErrorLabel" styleClass="error-label"/>
+                                        </children>
+                                    </VBox>
+
+                                    <VBox spacing="8.0">
+                                        <children>
+                                            <Label text="Explication" styleClass="form-label"/>
+                                            <TextArea fx:id="explanationField"
+                                                      prefWidth="1240.0"
+                                                      prefHeight="80.0"
+                                                      wrapText="true"
+                                                      styleClass="form-textarea"/>
+                                            <Label fx:id="explanationErrorLabel" styleClass="error-label"/>
+                                        </children>
+                                    </VBox>
+
+                                    <HBox spacing="24.0">
+                                        <children>
+
+                                            <VBox spacing="8.0" prefWidth="608.0">
+                                                <children>
+                                                    <Label text="Type" styleClass="form-label"/>
+                                                    <ComboBox fx:id="typeComboBox"
+                                                              prefWidth="608.0"
+                                                              prefHeight="46.0"
+                                                              promptText="Choisir type"
+                                                              styleClass="form-combo"/>
+                                                    <Label fx:id="typeErrorLabel" styleClass="error-label"/>
+                                                </children>
+                                            </VBox>
+
+                                            <VBox spacing="8.0" prefWidth="608.0">
+                                                <children>
+                                                    <Label text="Score" styleClass="form-label"/>
+                                                    <TextField fx:id="scoreField"
+                                                               prefWidth="608.0"
+                                                               prefHeight="46.0"
+                                                               styleClass="form-input"/>
+                                                    <Label fx:id="scoreErrorLabel" styleClass="error-label"/>
+                                                </children>
+                                            </VBox>
+
+                                        </children>
+                                    </HBox>
+
+                                    <HBox spacing="24.0">
+                                        <children>
+                                            <VBox spacing="8.0" prefWidth="608.0">
+                                                <children>
+                                                    <Label text="Option A" styleClass="form-label"/>
+                                                    <TextField fx:id="optionAField"
+                                                               prefWidth="608.0"
+                                                               prefHeight="46.0"
+                                                               styleClass="form-input"/>
+                                                </children>
+                                            </VBox>
+
+                                            <VBox spacing="8.0" prefWidth="608.0">
+                                                <children>
+                                                    <Label text="Option B" styleClass="form-label"/>
+                                                    <TextField fx:id="optionBField"
+                                                               prefWidth="608.0"
+                                                               prefHeight="46.0"
+                                                               styleClass="form-input"/>
+                                                </children>
+                                            </VBox>
+                                        </children>
+                                    </HBox>
+
+                                    <HBox spacing="24.0">
+                                        <children>
+                                            <VBox spacing="8.0" prefWidth="608.0">
+                                                <children>
+                                                    <Label text="Option C" styleClass="form-label"/>
+                                                    <TextField fx:id="optionCField"
+                                                               prefWidth="608.0"
+                                                               prefHeight="46.0"
+                                                               styleClass="form-input"/>
+                                                </children>
+                                            </VBox>
+
+                                            <VBox spacing="8.0" prefWidth="608.0">
+                                                <children>
+                                                    <Label text="Option D" styleClass="form-label"/>
+                                                    <TextField fx:id="optionDField"
+                                                               prefWidth="608.0"
+                                                               prefHeight="46.0"
+                                                               styleClass="form-input"/>
+                                                </children>
+                                            </VBox>
+                                        </children>
+                                    </HBox>
+
+                                    <HBox spacing="24.0">
+                                        <children>
+                                            <VBox spacing="8.0" prefWidth="300.0">
+                                                <children>
+                                                    <Label text="Bonne réponse" styleClass="form-label"/>
+                                                    <ComboBox fx:id="correctAnswerCombo"
+                                                              prefWidth="300.0"
+                                                              prefHeight="46.0"
+                                                              promptText="A / B / C / D"
+                                                              styleClass="form-combo"/>
+                                                </children>
+                                            </VBox>
+                                        </children>
+                                    </HBox>
+
+                                    <Label fx:id="optionErrorLabel" styleClass="error-label"/>
+
+                                    <HBox spacing="14.0">
+                                        <children>
+                                            <Button fx:id="btnAjouter"
+                                                    text="Save"
+                                                    prefWidth="118.0"
+                                                    prefHeight="46.0"
+                                                    onAction="#ajouterQuestion"
+                                                    styleClass="button-save"/>
+
+                                            <Button fx:id="btnModifier"
+                                                    text="Update"
+                                                    prefWidth="118.0"
+                                                    prefHeight="46.0"
+                                                    onAction="#modifierQuestion"
+                                                    styleClass="button-save"
+                                                    visible="false"
+                                                    managed="false"/>
+
+                                            <Button text="Cancel"
+                                                    prefWidth="118.0"
+                                                    prefHeight="46.0"
+                                                    onAction="#viderChamps"
+                                                    styleClass="button-cancel"/>
+
+                                            <Button text="Retour Liste"
+                                                    prefWidth="150.0"
+                                                    prefHeight="46.0"
+                                                    onAction="#retourListeQuestions"
+                                                    styleClass="button-secondary"/>
+                                        </children>
+                                    </HBox>
+
+                                </children>
+                            </VBox>
+                        </children>
+                    </AnchorPane>
+                </VBox>
+            </content>
+        </ScrollPane>
+
+    </children>
+</AnchorPane>

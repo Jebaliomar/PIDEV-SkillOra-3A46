@@ -18,6 +18,9 @@ import tn.esprit.entities.Lesson;
 import tn.esprit.entities.User;
 import tn.esprit.services.UserService;
 import tn.esprit.tools.AppNavigator;
+import tn.esprit.mains.ForumCrudLauncher;
+import tn.esprit.controllers.forum.PostOverviewController;
+import javafx.stage.Stage;
 
 public class FrontShellController {
 
@@ -56,6 +59,12 @@ public class FrontShellController {
 
     @FXML
     private StackPane contentContainer;
+
+    @FXML
+    private Button topForumButton;
+
+    @FXML
+    private Button topAssessmentButton;
 
     private User activeUser;
     private String activeRole;
@@ -148,6 +157,48 @@ public class FrontShellController {
                 consumeController.setInitialLesson(lesson);
             }
         });
+    }
+
+    @FXML
+    private void handleTopForum() {
+        try {
+            ForumCrudLauncher launcher = new ForumCrudLauncher();
+            launcher.initForEmbedded(new Stage());
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/post-overview.fxml"));
+            Node content = loader.load();
+            Object controller = loader.getController();
+            if (controller instanceof PostOverviewController poc) {
+                poc.setApplication(launcher);
+                poc.loadPosts();
+            }
+            contentContainer.getChildren().setAll(content);
+            setActiveModule(null);
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Unable to load Forum");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    private void handleTopAssessment() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserAssessmentView.fxml"));
+            Node content = loader.load();
+            Object controller = loader.getController();
+            if (controller instanceof FrontShellAware shellAware) {
+                shellAware.setShellController(this);
+            }
+            contentContainer.getChildren().setAll(content);
+            setActiveModule(null);
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Unable to load Assessment");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
     }
 
     private void showPlaceholder(String title, String message) {
@@ -258,7 +309,7 @@ public class FrontShellController {
         if (!button.getStyleClass().contains("sidebar-item")) {
             button.getStyleClass().add("sidebar-item");
         }
-    }
+    }  
 
     @FunctionalInterface
     private interface ControllerConfigurer {

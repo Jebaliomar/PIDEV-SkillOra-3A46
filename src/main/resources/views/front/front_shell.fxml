@@ -6,6 +6,8 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 
 <StackPane prefHeight="860.0" prefWidth="1440.0" styleClass="app-shell-root"
            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
@@ -48,6 +50,17 @@
                 </VBox>
             </StackPane>
         </left>
+        <top>
+            <HBox spacing="12.0" alignment="CENTER_RIGHT" styleClass="front-topbar">
+                <padding>
+                    <Insets top="12.0" right="24.0" bottom="12.0" left="24.0"/>
+                </padding>
+                <Label styleClass="front-topbar-title" text="SkillORA" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="topForumButton" mnemonicParsing="false" onAction="#handleTopForum" styleClass="topbar-button" text="Forum" />
+                <Button fx:id="topAssessmentButton" mnemonicParsing="false" onAction="#handleTopAssessment" styleClass="topbar-button" text="Assessment" />
+            </HBox>
+        </top>
         <center>
             <StackPane fx:id="contentContainer" styleClass="content-host">
                 <BorderPane.margin>

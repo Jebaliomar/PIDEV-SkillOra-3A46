@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefWidth="1000.0" prefHeight="650.0"
+            stylesheets="@user-pass-assessment.css"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.UserExamResultController">
+
+    <children>
+        <VBox spacing="16.0"
+              styleClass="pass-page"
+              AnchorPane.topAnchor="0.0"
+              AnchorPane.leftAnchor="0.0"
+              AnchorPane.rightAnchor="0.0"
+              AnchorPane.bottomAnchor="0.0">
+
+            <padding>
+                <Insets top="18.0" right="18.0" bottom="18.0" left="18.0"/>
+            </padding>
+
+            <children>
+                <VBox spacing="8.0" styleClass="pass-header">
+                    <children>
+                        <Label fx:id="titleLabel" text="Exam Result" styleClass="pass-title"/>
+                        <Label fx:id="subtitleLabel" text="Votre examen soumis" styleClass="pass-subtitle"/>
+                        <Label fx:id="scoreLabel" text="Score : -" styleClass="pass-subtitle"/>
+                    </children>
+                </VBox>
+
+                <Label text="Document de l'examen" styleClass="section-label"/>
+
+                <TextArea fx:id="examContentArea"
+                          editable="false"
+                          wrapText="true"
+                          VBox.vgrow="ALWAYS"
+                          prefHeight="260.0"/>
+
+                <Label text="Votre réponse" styleClass="section-label"/>
+
+                <TextArea fx:id="answerArea"
+                          editable="false"
+                          wrapText="true"
+                          prefHeight="180.0"/>
+
+                <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                    <children>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Back"
+                                onAction="#handleBack"
+                                styleClass="secondary-button"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

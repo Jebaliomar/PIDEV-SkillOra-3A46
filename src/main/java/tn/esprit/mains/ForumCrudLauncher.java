@@ -43,7 +43,20 @@ public class ForumCrudLauncher extends Application {
     @Override
     public void start(Stage stage) {
         this.primaryStage = stage;
+        initializeServicesAndUser();
+        showOverviewScene();
+        primaryStage.show();
+    }
 
+    /**
+     * Prepare services and current user for embedded usage (non-Application entrypoints).
+     */
+    public void initForEmbedded(Stage stage) {
+        this.primaryStage = stage;
+        initializeServicesAndUser();
+    }
+
+    private void initializeServicesAndUser() {
         try {
             this.postService = new PostService();
             this.replyService = new ReplyService();
@@ -84,9 +97,6 @@ public class ForumCrudLauncher extends Application {
             showError("Database connection failed", exception.getMessage());
             throw exception;
         }
-
-        showOverviewScene();
-        primaryStage.show();
     }
 
     public void showOverviewScene() {

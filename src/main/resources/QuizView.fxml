@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="720.0" prefWidth="1400.0"
+            stylesheets="@style.css"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.QuizController"
+            styleClass="root">
+
+    <children>
+
+        <!-- HEADER -->
+        <Label fx:id="titleLabel"
+               layoutX="35.0"
+               layoutY="28.0"
+               text="Quiz"
+               styleClass="label-title"/>
+
+        <Label fx:id="subtitleLabel"
+               layoutX="35.0"
+               layoutY="72.0"
+               text="Gestion des questions et options"
+               styleClass="label-subtitle"/>
+
+        <!-- BOUTONS -->
+        <Button text="Retour"
+                layoutX="780.0"
+                layoutY="35.0"
+                prefWidth="150.0"
+                prefHeight="40.0"
+                onAction="#retour"
+                styleClass="button-secondary"/>
+
+        <Button text="+ Ajouter Question"
+                layoutX="950.0"
+                layoutY="35.0"
+                prefWidth="190.0"
+                prefHeight="40.0"
+                onAction="#ouvrirAjoutQuestion"
+                styleClass="button-primary"/>
+
+        <!-- =========================
+             ZONE CENTRÉE
+             ========================= -->
+        <StackPane layoutY="120.0"
+                   prefWidth="1400.0"
+                   prefHeight="580.0">
+
+            <children>
+
+                <ScrollPane fx:id="scrollPane"
+                            prefWidth="900.0"
+                            prefHeight="550.0"
+                            fitToWidth="true"
+                            styleClass="card-centered">
+
+                    <content>
+                        <VBox fx:id="questionContainer"
+                              spacing="20"
+                              styleClass="question-container"/>
+                    </content>
+
+                </ScrollPane>
+
+            </children>
+        </StackPane>
+
+    </children>
+</AnchorPane>
