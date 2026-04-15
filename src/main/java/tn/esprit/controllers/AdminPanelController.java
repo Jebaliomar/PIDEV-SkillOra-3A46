@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
+import tn.esprit.tools.AppNavigator;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
@@ -18,13 +19,21 @@ import java.util.ResourceBundle;
 
 public class AdminPanelController implements Initializable {
 
+    public enum InitialView {
+        DASHBOARD,
+        USERS,
+        STATISTICS
+    }
+
     @FXML private StackPane contentArea;
     @FXML private Button navDashboard;
     @FXML private Button navUsers;
+    @FXML private Button navCourses;
     @FXML private Button navStats;
     @FXML private Button themeToggleBtn;
 
     private static User currentUser;
+    private static InitialView initialView = InitialView.DASHBOARD;
     private Button activeNav;
 
     public static void setCurrentUser(User user) {
@@ -35,10 +44,20 @@ public class AdminPanelController implements Initializable {
         return currentUser;
     }
 
+    public static void setInitialView(InitialView view) {
+        initialView = view == null ? InitialView.DASHBOARD : view;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         updateThemeButton();
-        showDashboard();
+        InitialView view = initialView;
+        initialView = InitialView.DASHBOARD;
+        switch (view) {
+            case USERS -> showUserManagement();
+            case STATISTICS -> showStatistics();
+            default -> showDashboard();
+        }
     }
 
     @FXML
@@ -57,6 +76,11 @@ public class AdminPanelController implements Initializable {
     public void showStatistics() {
         loadContent("/fxml/StatisticsContent.fxml");
         setActiveNav(navStats);
+    }
+
+    @FXML
+    public void showCoursesAdmin() {
+        AppNavigator.showAdminDashboard(navCourses != null ? navCourses : contentArea);
     }
 
     @FXML

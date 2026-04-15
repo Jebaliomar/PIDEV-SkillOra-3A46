@@ -34,6 +34,8 @@
                         styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
                 <Button fx:id="navUsers" text="   User Management" onAction="#showUserManagement"
                         styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
+                <Button fx:id="navCourses" text="   Courses Admin" onAction="#showCoursesAdmin"
+                        styleClass="nav-item nav-item-bridge" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
                 <Button fx:id="navStats" text="   Statistics" onAction="#showStatistics"
                         styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
             </VBox>

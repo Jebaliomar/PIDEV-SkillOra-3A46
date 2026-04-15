@@ -29,4 +29,12 @@ public class HomeController implements Initializable {
     public void goToSettings() {
         StudentLayoutController.getInstance().showSettings();
     }
+
+    @FXML
+    public void goToBrowseCourses() {
+        StudentLayoutController controller = StudentLayoutController.getInstance();
+        if (controller != null) {
+            controller.showCourseHub();
+        }
+    }
 }

@@ -7,6 +7,9 @@ src/main/resources/mail.properties
 !**/src/test/**/target/
 .kotlin
 
+### File Uploads ###
+uploads/
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml

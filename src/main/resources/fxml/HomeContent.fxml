@@ -16,7 +16,7 @@
             <Label fx:id="heroTitle" text="Learn deeply. Grow visibly." styleClass="hero-title" wrapText="true"/>
             <Label text="Master new skills with courses built by top instructors. Track your progress, earn certificates, and grow your career." styleClass="hero-subtitle" wrapText="true"/>
             <HBox spacing="16">
-                <Button text="Browse Courses" styleClass="btn-primary"/>
+                <Button text="Browse Courses" onAction="#goToBrowseCourses" styleClass="btn-primary"/>
                 <Button text="View My Profile" onAction="#goToProfile" styleClass="btn-outline"/>
             </HBox>
         </VBox>

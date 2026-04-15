@@ -12,6 +12,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.tools.AppIcons;
+import tn.esprit.tools.AppNavigator;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
@@ -23,6 +24,7 @@ public class StudentLayoutController implements Initializable {
     @FXML private StackPane contentArea;
     @FXML private Button themeToggleBtn;
     @FXML private Button navHome;
+    @FXML private Button navCourses;
     @FXML private MenuButton userMenu;
     @FXML private MenuItem menuProfile;
     @FXML private MenuItem menuSettings;
@@ -64,6 +66,12 @@ public class StudentLayoutController implements Initializable {
     }
 
     @FXML
+    public void showCourses() {
+        AppNavigator.showFrontBrowseCourses(navCourses != null ? navCourses : navHome);
+        setActiveNav(navCourses);
+    }
+
+    @FXML
     public void showProfile() {
         loadContent("/fxml/ProfileContent.fxml");
         setActiveNav(null);
@@ -73,6 +81,10 @@ public class StudentLayoutController implements Initializable {
     public void showSettings() {
         loadContent("/fxml/SettingsContent.fxml");
         setActiveNav(null);
+    }
+
+    public void showCourseHub() {
+        AppNavigator.showFrontBrowseCourses(navCourses != null ? navCourses : navHome);
     }
 
     private void loadContent(String fxmlPath) {
@@ -86,8 +98,10 @@ public class StudentLayoutController implements Initializable {
     }
 
     private void setActiveNav(Button active) {
-        for (Button b : new Button[]{navHome}) {
-            b.getStyleClass().remove("student-nav-btn-active");
+        for (Button b : new Button[]{navHome, navCourses}) {
+            if (b != null) {
+                b.getStyleClass().remove("student-nav-btn-active");
+            }
         }
         if (active != null && !active.getStyleClass().contains("student-nav-btn-active")) {
             active.getStyleClass().add("student-nav-btn-active");
