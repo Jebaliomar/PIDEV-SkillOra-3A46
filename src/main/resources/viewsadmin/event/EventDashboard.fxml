@@ -55,11 +55,14 @@
 
             <Separator/>
 
-            <Label text="EVENT MANAGEMENT" styleClass="sidebar-section-title"/>
             <VBox spacing="6" styleClass="sidebar-nav-group">
+                <Button fx:id="dashboardNavButton" maxWidth="1.7976931348623157E308" text="Dashboard" styleClass="sidebar-nav-item" onAction="#onOpenDashboard"/>
+                <Button fx:id="usersNavButton" maxWidth="1.7976931348623157E308" text="User Management" styleClass="sidebar-nav-item" onAction="#onOpenUsers"/>
                 <Button fx:id="eventsNavButton" maxWidth="1.7976931348623157E308" text="Events" styleClass="sidebar-nav-item sidebar-nav-item-active" onAction="#onShowEventList"/>
                 <Button maxWidth="1.7976931348623157E308" text="Salles" styleClass="sidebar-nav-item" onAction="#onOpenSalles"/>
                 <Button maxWidth="1.7976931348623157E308" text="Reservations" styleClass="sidebar-nav-item" onAction="#onOpenReservations"/>
+                <Button fx:id="coursesNavButton" maxWidth="1.7976931348623157E308" text="Courses Admin" styleClass="sidebar-nav-item" onAction="#onOpenCourses"/>
+                <Button fx:id="statisticsNavButton" maxWidth="1.7976931348623157E308" text="Statistics" styleClass="sidebar-nav-item" onAction="#onOpenStatistics"/>
             </VBox>
         </VBox>
     </left>

@@ -23,6 +23,7 @@ import javafx.stage.Stage;
 import tn.esprit.entities.AdminReservationRow;
 import tn.esprit.services.ReservationDashboardService;
 import tn.esprit.services.ReservationService;
+import tn.esprit.tools.AppNavigator;
 import tn.esprit.tools.ThemeManager;
 
 import java.io.File;
@@ -40,11 +41,19 @@ public class ReservationDashboardController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
 
     @FXML
+    private Button dashboardNavButton;
+    @FXML
+    private Button usersNavButton;
+    @FXML
     private Button eventsNavButton;
     @FXML
     private Button sallesNavButton;
     @FXML
     private Button reservationsNavButton;
+    @FXML
+    private Button coursesNavButton;
+    @FXML
+    private Button statisticsNavButton;
     @FXML
     private Button themeToggleButton;
     @FXML
@@ -106,6 +115,26 @@ public class ReservationDashboardController {
     @FXML
     private void onOpenEvents() {
         navigateTo("/viewsadmin/event/EventDashboard.fxml", "Skillora Events", "/styles/event.css", "/styles/salle.css");
+    }
+
+    @FXML
+    private void onOpenDashboard() {
+        AppNavigator.showDashboardAdmin(reservationsNavButton);
+    }
+
+    @FXML
+    private void onOpenUsers() {
+        AppNavigator.showUserAdmin(reservationsNavButton);
+    }
+
+    @FXML
+    private void onOpenCourses() {
+        AppNavigator.showAdminDashboard(reservationsNavButton);
+    }
+
+    @FXML
+    private void onOpenStatistics() {
+        AppNavigator.showStatisticsAdmin(reservationsNavButton);
     }
 
     @FXML

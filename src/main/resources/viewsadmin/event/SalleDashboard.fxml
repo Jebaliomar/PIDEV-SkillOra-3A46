@@ -46,11 +46,14 @@
                 </VBox>
             </HBox>
             <Separator />
-            <Label styleClass="sidebar-section-title" text="EVENT MANAGEMENT" />
             <VBox spacing="6.0" styleClass="sidebar-nav-group">
+                <Button fx:id="dashboardNavButton" maxWidth="1.7976931348623157E308" onAction="#onOpenDashboard" styleClass="sidebar-nav-item" text="Dashboard" />
+                <Button fx:id="usersNavButton" maxWidth="1.7976931348623157E308" onAction="#onOpenUsers" styleClass="sidebar-nav-item" text="User Management" />
                 <Button fx:id="eventsNavButton" maxWidth="1.7976931348623157E308" onAction="#onBackToEvents" styleClass="sidebar-nav-item" text="Events" />
                 <Button fx:id="sallesNavButton" maxWidth="1.7976931348623157E308" onAction="#onShowList" styleClass="sidebar-nav-item sidebar-nav-item-active" text="Salles" />
                 <Button fx:id="reservationsNavButton" maxWidth="1.7976931348623157E308" onAction="#onReservationsPlaceholder" styleClass="sidebar-nav-item" text="Reservations" />
+                <Button fx:id="coursesNavButton" maxWidth="1.7976931348623157E308" onAction="#onOpenCourses" styleClass="sidebar-nav-item" text="Courses Admin" />
+                <Button fx:id="statisticsNavButton" maxWidth="1.7976931348623157E308" onAction="#onOpenStatistics" styleClass="sidebar-nav-item" text="Statistics" />
             </VBox>
             <Region VBox.vgrow="ALWAYS" />
         </VBox>

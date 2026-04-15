@@ -66,7 +66,7 @@
                         </padding>
 
                         <VBox alignment="CENTER" spacing="12">
-                            <Label text="Events" styleClass="site-hero-title"/>
+                            <Label text="SkillHarbor Events" styleClass="site-hero-title"/>
                             <Label text="Discover upcoming events and their salles, then narrow down the list with smart filters." styleClass="site-hero-subtitle"/>
                         </VBox>
 

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="860.0" prefWidth="1440.0" styleClass="app-shell-root"
+           xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="tn.esprit.controllers.front.FrontShellController">
+    <BorderPane styleClass="app-shell">
+        <left>
+            <StackPane prefWidth="286.0" maxWidth="286.0" styleClass="sidebar-shell">
+                <BorderPane.margin>
+                    <Insets top="20.0" right="14.0" bottom="20.0" left="20.0"/>
+                </BorderPane.margin>
+                <VBox spacing="22.0" styleClass="front-sidebar">
+                    <padding>
+                        <Insets top="30.0" right="20.0" bottom="28.0" left="20.0"/>
+                    </padding>
+                    <VBox spacing="4.0">
+                        <Label styleClass="front-brand-title" text="SkillORA"/>
+                        <Label styleClass="front-brand-subtitle" text="Learning Desktop"/>
+                    </VBox>
+
+                    <VBox spacing="4.0" styleClass="front-session-card">
+                        <Label fx:id="userSummaryLabel" styleClass="front-session-title" text="Connected User"/>
+                        <Label fx:id="sessionSummaryLabel" styleClass="front-session-subtitle" text="Course workspace" wrapText="true"/>
+                    </VBox>
+
+                    <VBox spacing="6.0" styleClass="sidebar-nav-group">
+                        <Button fx:id="homeNavButton" mnemonicParsing="false" onAction="#handleHome" styleClass="sidebar-item-selected" text="Home"/>
+                        <Button fx:id="browseCoursesNavButton" mnemonicParsing="false" onAction="#handleBrowseCourses" styleClass="sidebar-item" text="Browse Courses"/>
+                        <Button fx:id="myLearningNavButton" mnemonicParsing="false" onAction="#handleMyLearning" styleClass="sidebar-item" text="My Learning"/>
+                        <Button fx:id="communityNavButton" mnemonicParsing="false" onAction="#handleCommunity" styleClass="sidebar-item" text="Community"/>
+                        <Button fx:id="eventsNavButton" mnemonicParsing="false" onAction="#handleEvents" styleClass="sidebar-item" text="Event"/>
+                        <Button fx:id="rendezVousNavButton" mnemonicParsing="false" onAction="#handleRendezVous" styleClass="sidebar-item" text="Rendez-vous"/>
+                    </VBox>
+
+                    <VBox fx:id="dashboardCard" spacing="10.0" styleClass="front-spotlight-card">
+                        <Label styleClass="front-spotlight-title" text="Cross Navigation" />
+                        <Label styleClass="front-spotlight-body" text="Move back to the student users front or, when allowed, jump into the admin dashboard from the same sidebar block." wrapText="true"/>
+                        <Button fx:id="userFrontButton" mnemonicParsing="false" onAction="#handleUserFront" styleClass="secondary-button sidebar-utility-button" text="Users Front"/>
+                        <Button fx:id="dashboardButton" mnemonicParsing="false" onAction="#handleDashboard" styleClass="secondary-button sidebar-utility-button" text="Dashboard"/>
+                    </VBox>
+                </VBox>
+            </StackPane>
+        </left>
+        <center>
+            <StackPane fx:id="contentContainer" styleClass="content-host">
+                <BorderPane.margin>
+                    <Insets top="20.0" right="20.0" bottom="20.0" left="14.0"/>
+                </BorderPane.margin>
+                <padding>
+                    <Insets top="28.0" right="32.0" bottom="28.0" left="32.0"/>
+                </padding>
+            </StackPane>
+        </center>
+    </BorderPane>
+</StackPane>

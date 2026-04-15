@@ -50,11 +50,14 @@
                 </VBox>
             </HBox>
             <Separator/>
-            <Label text="EVENT MANAGEMENT" styleClass="sidebar-section-title"/>
             <VBox spacing="6" styleClass="sidebar-nav-group">
+                <Button fx:id="dashboardNavButton" maxWidth="1.7976931348623157E308" text="Dashboard" onAction="#onOpenDashboard" styleClass="sidebar-nav-item"/>
+                <Button fx:id="usersNavButton" maxWidth="1.7976931348623157E308" text="User Management" onAction="#onOpenUsers" styleClass="sidebar-nav-item"/>
                 <Button fx:id="eventsNavButton" maxWidth="1.7976931348623157E308" text="Events" onAction="#onOpenEvents" styleClass="sidebar-nav-item"/>
                 <Button fx:id="sallesNavButton" maxWidth="1.7976931348623157E308" text="Salles" onAction="#onOpenSalles" styleClass="sidebar-nav-item"/>
                 <Button fx:id="reservationsNavButton" maxWidth="1.7976931348623157E308" text="Reservations" styleClass="sidebar-nav-item sidebar-nav-item-active"/>
+                <Button fx:id="coursesNavButton" maxWidth="1.7976931348623157E308" text="Courses Admin" onAction="#onOpenCourses" styleClass="sidebar-nav-item"/>
+                <Button fx:id="statisticsNavButton" maxWidth="1.7976931348623157E308" text="Statistics" onAction="#onOpenStatistics" styleClass="sidebar-nav-item"/>
             </VBox>
         </VBox>
     </left>

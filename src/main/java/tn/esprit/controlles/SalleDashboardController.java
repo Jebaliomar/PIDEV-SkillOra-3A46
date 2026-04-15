@@ -31,6 +31,7 @@ import tn.esprit.entities.Salle;
 import tn.esprit.services.EventService;
 import tn.esprit.services.ReservationService;
 import tn.esprit.services.SalleService;
+import tn.esprit.tools.AppNavigator;
 import tn.esprit.tools.LocationMapHelper;
 import tn.esprit.tools.Model3dHelper;
 import tn.esprit.tools.ThemeManager;
@@ -52,11 +53,19 @@ public class SalleDashboardController {
     @FXML
     private ScrollPane formPane;
     @FXML
+    private Button dashboardNavButton;
+    @FXML
+    private Button usersNavButton;
+    @FXML
     private Button eventsNavButton;
     @FXML
     private Button sallesNavButton;
     @FXML
     private Button reservationsNavButton;
+    @FXML
+    private Button coursesNavButton;
+    @FXML
+    private Button statisticsNavButton;
     @FXML
     private Button themeToggleButton;
     @FXML
@@ -143,6 +152,26 @@ public class SalleDashboardController {
     private void onShowList() {
         showListPane();
         loadSalles();
+    }
+
+    @FXML
+    private void onOpenDashboard() {
+        AppNavigator.showDashboardAdmin(sallesNavButton);
+    }
+
+    @FXML
+    private void onOpenUsers() {
+        AppNavigator.showUserAdmin(sallesNavButton);
+    }
+
+    @FXML
+    private void onOpenCourses() {
+        AppNavigator.showAdminDashboard(sallesNavButton);
+    }
+
+    @FXML
+    private void onOpenStatistics() {
+        AppNavigator.showStatisticsAdmin(sallesNavButton);
     }
 
     @FXML

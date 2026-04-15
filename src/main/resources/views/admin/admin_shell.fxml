@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="860.0" prefWidth="1440.0" styleClass="app-shell-root"
+           xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="tn.esprit.controllers.admin.AdminShellController">
+    <BorderPane styleClass="app-shell">
+        <left>
+            <StackPane fx:id="sidebarShell" prefWidth="276.0" maxWidth="276.0" styleClass="sidebar-shell">
+                <BorderPane.margin>
+                    <Insets top="20.0" right="14.0" bottom="20.0" left="20.0"/>
+                </BorderPane.margin>
+                <VBox spacing="22.0" styleClass="sidebar">
+                    <padding>
+                        <Insets top="30.0" right="20.0" bottom="28.0" left="20.0"/>
+                    </padding>
+                    <VBox spacing="4.0">
+                        <Label styleClass="sidebar-title" text="SkillORA"/>
+                        <Label styleClass="sidebar-subtitle" text="Admin Desktop"/>
+                    </VBox>
+
+                    <VBox spacing="6.0" styleClass="sidebar-nav-group">
+                        <Button fx:id="coursesModuleButton" mnemonicParsing="false" onAction="#handleCoursesModule" styleClass="sidebar-item-selected" text="Courses"/>
+                        <Button fx:id="usersModuleButton" mnemonicParsing="false" onAction="#handleUsersModule" styleClass="sidebar-item" text="Users"/>
+                        <Button fx:id="eventsModuleButton" mnemonicParsing="false" onAction="#handleEventsModule" styleClass="sidebar-item" text="Events"/>
+                        <Button fx:id="evaluationsModuleButton" mnemonicParsing="false" onAction="#handleEvaluationsModule" styleClass="sidebar-item" text="Evaluations"/>
+                        <Button fx:id="forumModuleButton" mnemonicParsing="false" onAction="#handleForumModule" styleClass="sidebar-item" text="Forum"/>
+                        <Button fx:id="rendezVousModuleButton" mnemonicParsing="false" onAction="#handleRendezVousModule" styleClass="sidebar-item" text="Rendez-vous"/>
+                    </VBox>
+
+                    <VBox spacing="8.0" VBox.vgrow="ALWAYS">
+                        <Label styleClass="sidebar-section-label" text="Cross Navigation"/>
+                        <Label styleClass="sidebar-helper" text="Switch between the desktop course admin, the legacy user admin, and the front workspace from one consistent sidebar block." wrapText="true"/>
+                        <Button fx:id="usersAdminButton" mnemonicParsing="false" onAction="#handleUsersAdmin" styleClass="secondary-button sidebar-utility-button" text="Users Admin"/>
+                        <Button fx:id="frontHomeButton" mnemonicParsing="false" onAction="#handleFrontHome" styleClass="secondary-button sidebar-utility-button" text="Users Front"/>
+                    </VBox>
+                </VBox>
+            </StackPane>
+        </left>
+        <center>
+            <StackPane fx:id="contentContainer" styleClass="content-host">
+                <BorderPane.margin>
+                    <Insets top="20.0" right="20.0" bottom="20.0" left="14.0"/>
+                </BorderPane.margin>
+                <padding>
+                    <Insets top="28.0" right="30.0" bottom="28.0" left="30.0"/>
+                </padding>
+            </StackPane>
+        </center>
+    </BorderPane>
+</StackPane>

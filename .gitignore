@@ -1,8 +1,14 @@
 target/
+avatars/
+src/main/resources/avatars/
+src/main/resources/mail.properties
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
+
+### File Uploads ###
+uploads/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

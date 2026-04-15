@@ -29,6 +29,7 @@ import tn.esprit.entities.Event;
 import tn.esprit.entities.Salle;
 import tn.esprit.services.EventService;
 import tn.esprit.services.SalleService;
+import tn.esprit.tools.AppNavigator;
 import tn.esprit.tools.LocationMapHelper;
 import tn.esprit.tools.Model3dHelper;
 import tn.esprit.tools.ThemeManager;
@@ -59,7 +60,15 @@ public class EventDashboardController {
     @FXML
     private ScrollPane formPane;
     @FXML
+    private Button dashboardNavButton;
+    @FXML
+    private Button usersNavButton;
+    @FXML
     private Button eventsNavButton;
+    @FXML
+    private Button coursesNavButton;
+    @FXML
+    private Button statisticsNavButton;
     @FXML
     private Button themeToggleButton;
     @FXML
@@ -216,6 +225,26 @@ public class EventDashboardController {
     private void onShowEventList() {
         showListPane();
         loadEvents();
+    }
+
+    @FXML
+    private void onOpenDashboard() {
+        AppNavigator.showDashboardAdmin(eventsNavButton);
+    }
+
+    @FXML
+    private void onOpenUsers() {
+        AppNavigator.showUserAdmin(eventsNavButton);
+    }
+
+    @FXML
+    private void onOpenCourses() {
+        AppNavigator.showAdminDashboard(eventsNavButton);
+    }
+
+    @FXML
+    private void onOpenStatistics() {
+        AppNavigator.showStatisticsAdmin(eventsNavButton);
     }
 
     @FXML

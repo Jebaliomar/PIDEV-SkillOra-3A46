@@ -11,17 +11,16 @@ public class MainFx extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewsadmin/event/EventDashboard.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 1440, 900);
-        scene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
-        scene.getStylesheets().add(getClass().getResource("/styles/salle.css").toExternalForm());
+        Scene scene = new Scene(root, 1000, 620);
+        scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
         ThemeManager.applyTheme(scene);
 
-        stage.setTitle("Skillora Events");
-        stage.setMinWidth(1024);
-        stage.setMinHeight(700);
+        stage.setTitle("Sign In - SkillORA");
+        stage.setMinWidth(900);
+        stage.setMinHeight(600);
         stage.setScene(scene);
         stage.show();
     }
