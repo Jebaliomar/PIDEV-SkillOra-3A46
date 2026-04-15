@@ -72,6 +72,32 @@ public class UserService {
         return null;
     }
 
+    public boolean hasRole(Integer userId, String... roleNames) throws SQLException {
+        if (userId == null || roleNames == null || roleNames.length == 0) {
+            return false;
+        }
+
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM user_role WHERE user_id = ? AND UPPER(role) IN (");
+        for (int index = 0; index < roleNames.length; index++) {
+            if (index > 0) {
+                sql.append(", ");
+            }
+            sql.append("?");
+        }
+        sql.append(")");
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
+            preparedStatement.setInt(1, userId);
+            for (int index = 0; index < roleNames.length; index++) {
+                preparedStatement.setString(index + 2, roleNames[index] == null ? "" : roleNames[index].trim().toUpperCase());
+            }
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt(1) > 0;
+            }
+        }
+    }
+
     private User mapUser(ResultSet resultSet) throws SQLException {
         User user = new User();
         user.setId(resultSet.getInt("id"));

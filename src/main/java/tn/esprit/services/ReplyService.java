@@ -9,7 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 public class ReplyService {
@@ -143,6 +145,11 @@ public class ReplyService {
     }
 
     public boolean update(Reply reply) throws SQLException {
+        validateForUpdate(reply);
+        if (existsDuplicateExcludingId(reply)) {
+            throw new IllegalStateException("You already have the same reply on this post.");
+        }
+
         String sql = "UPDATE reply SET post_id = ?, parent_id = ?, content = ?, author_name = ?, upvotes = ?, "
                 + "created_at = ?, updated_at = ?, user_id = ? WHERE id = ?";
 
@@ -162,11 +169,63 @@ public class ReplyService {
     }
 
     public boolean delete(int id) throws SQLException {
-        String sql = "DELETE FROM reply WHERE id = ?";
+        boolean initialAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+
+        try {
+            List<Integer> replyIds = collectReplyIdsForDeletion(id);
+            for (Integer replyId : replyIds) {
+                deleteRelatedRows("reaction", "reply_id", replyId);
+                deleteRelatedRows("vote", "reply_id", replyId);
+            }
+
+            boolean deleted = false;
+            String sql = "DELETE FROM reply WHERE id = ?";
+            for (Integer replyId : replyIds) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.setInt(1, replyId);
+                    deleted = preparedStatement.executeUpdate() > 0 || deleted;
+                }
+            }
+
+            connection.commit();
+            return deleted;
+        } catch (SQLException exception) {
+            connection.rollback();
+            throw exception;
+        } finally {
+            connection.setAutoCommit(initialAutoCommit);
+        }
+    }
+
+    public void validateForUpdate(Reply reply) {
+        validateForCreate(reply);
+        if (reply.getId() == null || reply.getId() <= 0) {
+            throw new IllegalArgumentException("A valid reply ID is required for update.");
+        }
+    }
+
+    public boolean existsDuplicateExcludingId(Reply reply) throws SQLException {
+        String sql = """
+                SELECT COUNT(*)
+                FROM reply
+                WHERE id <> ?
+                  AND post_id = ?
+                  AND LOWER(TRIM(COALESCE(author_name, ''))) = ?
+                  AND LOWER(TRIM(COALESCE(content, ''))) = ?
+                  AND COALESCE(user_id, -1) = ?
+                """;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
+            preparedStatement.setInt(1, reply.getId());
+            preparedStatement.setInt(2, reply.getPostId());
+            preparedStatement.setString(3, normalizeComparableValue(reply.getAuthorName()));
+            preparedStatement.setString(4, normalizeComparableValue(reply.getContent()));
+            preparedStatement.setInt(5, reply.getUserId() == null ? -1 : reply.getUserId());
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt(1) > 0;
+            }
         }
     }
 
@@ -227,6 +286,39 @@ public class ReplyService {
 
     private String normalizeComparableValue(String value) {
         return value == null ? "" : value.trim().toLowerCase();
+    }
+
+    private List<Integer> collectReplyIdsForDeletion(int rootReplyId) throws SQLException {
+        List<Integer> replyIds = new ArrayList<>();
+        Deque<Integer> pendingReplyIds = new ArrayDeque<>();
+        pendingReplyIds.add(rootReplyId);
+
+        while (!pendingReplyIds.isEmpty()) {
+            Integer currentReplyId = pendingReplyIds.removeFirst();
+            replyIds.add(currentReplyId);
+
+            String sql = "SELECT id FROM reply WHERE parent_id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, currentReplyId);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        pendingReplyIds.add(resultSet.getInt("id"));
+                    }
+                }
+            }
+        }
+
+        return replyIds;
+    }
+
+    private void deleteRelatedRows(String tableName, String columnName, int foreignKeyValue) throws SQLException {
+        String sql = "DELETE FROM " + tableName + " WHERE " + columnName + " = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, foreignKeyValue);
+            preparedStatement.executeUpdate();
+        }
     }
 
     private boolean isBlank(String value) {

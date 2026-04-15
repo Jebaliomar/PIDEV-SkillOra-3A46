@@ -46,6 +46,18 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
+                <Button fx:id="adminPostsButton" text="Admin Posts" onAction="#handleOpenAdminPosts" managed="false" visible="false"
+                        style="-fx-background-color: white;
+                               -fx-text-fill: #1d4ed8;
+                               -fx-font-weight: 700;
+                               -fx-font-size: 14px;
+                               -fx-background-radius: 10;
+                               -fx-border-radius: 10;
+                               -fx-border-color: #bfdbfe;
+                               -fx-border-width: 1.5;
+                               -fx-cursor: hand;
+                               -fx-padding: 11 18 11 18;"/>
+
                 <Button text="+ New Post" onAction="#handleCreatePost"
                         style="-fx-background-color: #6366f1;
                                -fx-text-fill: white;

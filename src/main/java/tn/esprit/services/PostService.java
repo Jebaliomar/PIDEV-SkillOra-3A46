@@ -195,6 +195,11 @@ public class PostService {
     }
 
     public boolean update(Post post) throws SQLException {
+        validateForUpdate(post);
+        if (existsDuplicateExcludingId(post)) {
+            throw new IllegalStateException("A similar post already exists for this user.");
+        }
+
         String sql = "UPDATE post SET type = ?, title = ?, topic = ?, content = ?, created_at = ?, updated_at = ?, user_id = ? "
                 + "WHERE id = ?";
 
@@ -213,11 +218,64 @@ public class PostService {
     }
 
     public boolean delete(int id) throws SQLException {
-        String sql = "DELETE FROM post WHERE id = ?";
+        boolean initialAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+
+        try {
+            deleteRelatedRows("reaction", "post_id", id);
+            deleteRelatedRows("vote", "post_id", id);
+            deleteRelatedRows("report", "post_id", id);
+            deleteRelatedRows("post_tag", "post_id", id);
+            deleteRepliesForPost(id);
+
+            String sql = "DELETE FROM post WHERE id = ?";
+            boolean deleted;
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, id);
+                deleted = preparedStatement.executeUpdate() > 0;
+            }
+
+            connection.commit();
+            return deleted;
+        } catch (SQLException exception) {
+            connection.rollback();
+            throw exception;
+        } finally {
+            connection.setAutoCommit(initialAutoCommit);
+        }
+    }
+
+    public void validateForUpdate(Post post) {
+        validateForCreate(post);
+        if (post.getId() == null || post.getId() <= 0) {
+            throw new IllegalArgumentException("A valid post ID is required for update.");
+        }
+    }
+
+    public boolean existsDuplicateExcludingId(Post post) throws SQLException {
+        String sql = """
+                SELECT COUNT(*)
+                FROM post
+                WHERE id <> ?
+                  AND LOWER(TRIM(COALESCE(type, ''))) = ?
+                  AND LOWER(TRIM(COALESCE(title, ''))) = ?
+                  AND LOWER(TRIM(COALESCE(topic, ''))) = ?
+                  AND LOWER(TRIM(COALESCE(content, ''))) = ?
+                  AND COALESCE(user_id, -1) = ?
+                """;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
+            preparedStatement.setInt(1, post.getId());
+            preparedStatement.setString(2, normalizeComparableValue(post.getType()));
+            preparedStatement.setString(3, normalizeComparableValue(post.getTitle()));
+            preparedStatement.setString(4, normalizeComparableValue(post.getTopic()));
+            preparedStatement.setString(5, normalizeComparableValue(post.getContent()));
+            preparedStatement.setInt(6, post.getUserId() == null ? -1 : post.getUserId());
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt(1) > 0;
+            }
         }
     }
 
@@ -288,6 +346,40 @@ public class PostService {
 
     private String normalizeComparableValue(String value) {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private void deleteRepliesForPost(int postId) throws SQLException {
+        List<Integer> replyIds = new ArrayList<>();
+        String selectSql = "SELECT id FROM reply WHERE post_id = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectSql)) {
+            preparedStatement.setInt(1, postId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    replyIds.add(resultSet.getInt("id"));
+                }
+            }
+        }
+
+        for (Integer replyId : replyIds) {
+            deleteRelatedRows("reaction", "reply_id", replyId);
+            deleteRelatedRows("vote", "reply_id", replyId);
+        }
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM reply WHERE post_id = ?")) {
+            preparedStatement.setInt(1, postId);
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    private void deleteRelatedRows(String tableName, String columnName, int foreignKeyValue) throws SQLException {
+        String sql = "DELETE FROM " + tableName + " WHERE " + columnName + " = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, foreignKeyValue);
+            preparedStatement.executeUpdate();
+        }
     }
 
     private boolean isBlank(String value) {

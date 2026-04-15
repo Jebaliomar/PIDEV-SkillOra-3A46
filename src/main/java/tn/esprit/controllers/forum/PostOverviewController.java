@@ -28,12 +28,15 @@ public class PostOverviewController {
     @FXML private TextField searchField;
     @FXML private ComboBox<String> typeFilterComboBox;
     @FXML private ComboBox<String> topicFilterComboBox;
+    @FXML private Button adminPostsButton;
 
     private ForumCrudLauncher application;
 
     public void setApplication(ForumCrudLauncher application) {
         this.application = application;
         currentUserLabel.setText("Current user: " + application.getCurrentUserDisplay());
+        adminPostsButton.setManaged(application.canModeratePosts());
+        adminPostsButton.setVisible(application.canModeratePosts());
         initializeFilters();
     }
 
@@ -62,6 +65,7 @@ public class PostOverviewController {
     }
 
     @FXML private void handleCreatePost() { application.showCreatePostScene(); }
+    @FXML private void handleOpenAdminPosts() { application.showAdminPostManagementScene(); }
     @FXML private void handleSearch()     { loadPosts(); }
 
     @FXML

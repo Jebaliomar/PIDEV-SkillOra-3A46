@@ -5,7 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
+import tn.esprit.controllers.forum.AdminPostManagementController;
 import tn.esprit.controllers.forum.CreatePostController;
 import tn.esprit.controllers.forum.PostDetailsController;
 import tn.esprit.controllers.forum.PostOverviewController;
@@ -85,6 +87,23 @@ public class ForumCrudLauncher extends Application {
         }
     }
 
+    public void showEditPostScene(int postId) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/create-post.fxml"));
+            Parent root = loader.load();
+
+            CreatePostController controller = loader.getController();
+            controller.setApplication(this);
+            if (!controller.loadPostForEdit(postId)) {
+                return;
+            }
+
+            setScene(root, "Edit Post");
+        } catch (IOException exception) {
+            showError("View loading failed", exception.getMessage());
+        }
+    }
+
     public void showPostDetailsScene(int postId) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/post-details.fxml"));
@@ -92,9 +111,26 @@ public class ForumCrudLauncher extends Application {
 
             PostDetailsController controller = loader.getController();
             controller.setApplication(this);
-            controller.loadPost(postId);
+            if (!controller.loadPost(postId)) {
+                return;
+            }
 
             setScene(root, "Post Details");
+        } catch (IOException exception) {
+            showError("View loading failed", exception.getMessage());
+        }
+    }
+
+    public void showAdminPostManagementScene() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/admin-post-management.fxml"));
+            Parent root = loader.load();
+
+            AdminPostManagementController controller = loader.getController();
+            controller.setApplication(this);
+            controller.loadPosts();
+
+            setScene(root, "Admin Posts");
         } catch (IOException exception) {
             showError("View loading failed", exception.getMessage());
         }
@@ -119,6 +155,18 @@ public class ForumCrudLauncher extends Application {
 
     public String getCurrentUserDisplay() {
         return currentUser.getUsername() + " (ID: " + currentUser.getId() + ")";
+    }
+
+    public boolean canModeratePosts() {
+        if (currentUser == null || currentUser.getId() == null) {
+            return false;
+        }
+
+        try {
+            return userService.hasRole(currentUser.getId(), "ADMIN", "ROLE_ADMIN");
+        } catch (SQLException exception) {
+            return STATIC_USER_ID == currentUser.getId();
+        }
     }
 
     public String resolveUsername(Integer userId) {
@@ -161,5 +209,13 @@ public class ForumCrudLauncher extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    public boolean confirmAction(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        return alert.showAndWait().filter(ButtonType.OK::equals).isPresent();
     }
 }

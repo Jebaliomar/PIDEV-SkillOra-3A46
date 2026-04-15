@@ -72,9 +72,31 @@
                             <Insets top="28" right="28" bottom="28" left="28"/>
                         </padding>
 
-                        <!-- Post Title -->
-                        <Label fx:id="titleValueLabel" wrapText="true"
-                               style="-fx-text-fill: #0f172a; -fx-font-weight: 700; -fx-font-size: 22px;"/>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label fx:id="titleValueLabel" wrapText="true"
+                                   style="-fx-text-fill: #0f172a; -fx-font-weight: 700; -fx-font-size: 22px;"
+                                   HBox.hgrow="ALWAYS"/>
+                            <HBox fx:id="postActionsContainer" spacing="8" managed="false" visible="false">
+                                <Button fx:id="editPostButton" text="Edit Post" onAction="#handleEditPost" managed="false" visible="false"
+                                        style="-fx-background-color: #eff6ff;
+                                               -fx-text-fill: #1d4ed8;
+                                               -fx-font-weight: 700;
+                                               -fx-font-size: 13px;
+                                               -fx-background-radius: 8;
+                                               -fx-border-radius: 8;
+                                               -fx-cursor: hand;
+                                               -fx-padding: 8 16 8 16;"/>
+                                <Button fx:id="deletePostButton" text="Delete Post" onAction="#handleDeletePost" managed="false" visible="false"
+                                        style="-fx-background-color: #fef2f2;
+                                               -fx-text-fill: #dc2626;
+                                               -fx-font-weight: 700;
+                                               -fx-font-size: 13px;
+                                               -fx-background-radius: 8;
+                                               -fx-border-radius: 8;
+                                               -fx-cursor: hand;
+                                               -fx-padding: 8 16 8 16;"/>
+                            </HBox>
+                        </HBox>
 
                         <Region style="-fx-pref-height: 16;"/>
 
