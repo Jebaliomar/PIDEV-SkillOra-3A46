@@ -48,16 +48,48 @@ public class UserAssessmentController {
     private List<Object[]> filteredData = new ArrayList<>();
 
     private final int connectedUserId = 1;
-
     private int currentPage = 1;
     private final int itemsPerPage = 4;
-    private String currentFilter = "ALL";
+    private Evaluation selectedEvaluation;
 
     @FXML
     public void initialize() {
         loadData();
         setActiveButton(btnAll);
         applyFilter("ALL");
+    }
+
+    @FXML
+    private void goToDashboard() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ListeEvaluation.fxml"));
+            Parent root = loader.load();
+            evaluationContainer.getScene().setRoot(root);
+        } catch (IOException e) {
+            showError("Erreur retour dashboard : " + e.getMessage());
+        }
+    }
+
+    public void setSelectedEvaluation(Evaluation evaluation) {
+        this.selectedEvaluation = evaluation;
+
+        if (evaluation == null) {
+            setActiveButton(btnAll);
+            applyFilter("ALL");
+            return;
+        }
+
+        filteredData.clear();
+        currentPage = 1;
+
+        for (Object[] row : allData) {
+            Evaluation ev = (Evaluation) row[0];
+            if (ev != null && ev.getId() == evaluation.getId()) {
+                filteredData.add(row);
+            }
+        }
+
+        refreshPage();
     }
 
     private void loadData() {
@@ -116,7 +148,6 @@ public class UserAssessmentController {
     }
 
     private void applyFilter(String filter) {
-        currentFilter = filter;
         currentPage = 1;
         filteredData.clear();
 
@@ -125,6 +156,10 @@ public class UserAssessmentController {
             UserEvaluation userEvaluation = (UserEvaluation) row[1];
 
             if (evaluation == null || evaluation.getType() == null) {
+                continue;
+            }
+
+            if (selectedEvaluation != null && evaluation.getId() != selectedEvaluation.getId()) {
                 continue;
             }
 
@@ -186,9 +221,7 @@ public class UserAssessmentController {
 
     private void updatePaginationControls() {
         int totalPages = getTotalPages();
-
         pageLabel.setText("Page " + currentPage + " / " + totalPages);
-
         prevPageButton.setDisable(currentPage <= 1);
         nextPageButton.setDisable(currentPage >= totalPages);
     }

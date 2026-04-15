@@ -56,6 +56,14 @@
                        text="Manage quizzes and exams"
                        styleClass="label-subtitle" />
 
+                <Button layoutX="700.0"
+                        layoutY="34.0"
+                        prefWidth="180.0"
+                        prefHeight="44.0"
+                        text="User"
+                        styleClass="button-secondary"
+                        onAction="#ouvrirUserAssessmentView" />
+
                 <Button layoutX="900.0"
                         layoutY="34.0"
                         prefWidth="180.0"

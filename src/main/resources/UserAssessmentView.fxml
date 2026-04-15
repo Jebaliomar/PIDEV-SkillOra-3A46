@@ -6,7 +6,6 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane prefHeight="650.0" prefWidth="1000.0"
@@ -39,7 +38,15 @@
                             <Label text="Track your progress, launch pending assessments, and review completed results."
                                    wrapText="true"
                                    styleClass="hero-subtitle"/>
-                            <Button text="View assessments" styleClass="hero-button"/>
+
+                            <HBox spacing="10">
+                                <children>
+                                    <Button text="View assessments" styleClass="hero-button"/>
+                                    <Button text="Dashboard"
+                                            styleClass="hero-button"
+                                            onAction="#goToDashboard"/>
+                                </children>
+                            </HBox>
                         </children>
                     </VBox>
 

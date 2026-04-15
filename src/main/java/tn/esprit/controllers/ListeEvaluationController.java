@@ -328,6 +328,19 @@ public class ListeEvaluationController {
     }
 
     @FXML
+    private void ouvrirUserAssessmentView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserAssessmentView.fxml"));
+            Parent root = loader.load();
+
+            evaluationTable.getScene().setRoot(root);
+
+        } catch (IOException e) {
+            showError("Erreur ouverture UserAssessmentView : " + e.getMessage());
+        }
+    }
+
+    @FXML
     private void retourAjout(ActionEvent event) {
         try {
             EvaluationController.setEvaluationAModifier(null);
