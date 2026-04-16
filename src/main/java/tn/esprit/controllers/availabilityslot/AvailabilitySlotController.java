@@ -23,6 +23,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -57,6 +58,7 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -100,7 +102,7 @@ public class AvailabilitySlotController {
     private TextField searchField;
 
     @FXML
-    private GridPane cardsContainer;
+    private Pane cardsContainer;
 
     @FXML
     private ScrollPane cardsScrollPane;
@@ -728,29 +730,57 @@ public class AvailabilitySlotController {
     }
 
     private void renderCards(List<AvailabilitySlot> slots) {
-        cardsContainer.getChildren().clear();
-        cardsContainer.setMinHeight(Region.USE_PREF_SIZE);
-        cardsContainer.setPrefHeight(Region.USE_COMPUTED_SIZE);
+        if (cardsContainer == null) {
+            return;
+        }
+        if (cardsContainer instanceof GridPane gridContainer) {
+            renderSlotCards(gridContainer, slots);
+            return;
+        }
+        if (cardsContainer instanceof VBox tableContainer) {
+            renderSlotRows(tableContainer, slots);
+        }
+    }
+
+    private void renderSlotCards(GridPane gridContainer, List<AvailabilitySlot> slots) {
+        gridContainer.getChildren().clear();
+        gridContainer.setMinHeight(Region.USE_PREF_SIZE);
+        gridContainer.setPrefHeight(Region.USE_COMPUTED_SIZE);
         if (slots.isEmpty()) {
             Label empty = new Label("Aucun créneau trouvé avec les filtres actuels.");
             empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 15px;");
-            cardsContainer.add(empty, 0, 0);
+            gridContainer.add(empty, 0, 0);
             GridPane.setColumnSpan(empty, CARDS_PER_ROW);
             return;
         }
 
-        double cardWidth = computeCardWidth();
+        double cardWidth = computeCardWidth(gridContainer);
         int index = 0;
         for (AvailabilitySlot slot : slots) {
             VBox card = buildSlotCard(slot, cardWidth);
             int row = index / CARDS_PER_ROW;
             int col = index % CARDS_PER_ROW;
-            cardsContainer.add(card, col, row);
+            gridContainer.add(card, col, row);
             index++;
         }
     }
 
-    private double computeCardWidth() {
+    private void renderSlotRows(VBox tableContainer, List<AvailabilitySlot> slots) {
+        tableContainer.getChildren().clear();
+        if (slots.isEmpty()) {
+            Label empty = new Label("Aucun créneau trouvé avec les filtres actuels.");
+            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 15px; -fx-padding: 16;");
+            tableContainer.getChildren().add(empty);
+            return;
+        }
+
+        for (int i = 0; i < slots.size(); i++) {
+            AvailabilitySlot slot = slots.get(i);
+            tableContainer.getChildren().add(buildSlotRow(slot, i == slots.size() - 1));
+        }
+    }
+
+    private double computeCardWidth(GridPane gridContainer) {
         double fallback = 330;
         if (cardsScrollPane == null) {
             return fallback;
@@ -761,9 +791,9 @@ public class AvailabilitySlotController {
             return fallback;
         }
 
-        Insets padding = cardsContainer.getPadding();
+        Insets padding = gridContainer.getPadding();
         double horizontalPadding = padding == null ? 0 : padding.getLeft() + padding.getRight();
-        double available = viewportWidth - horizontalPadding - cardsContainer.getHgap() * (CARDS_PER_ROW - 1);
+        double available = viewportWidth - horizontalPadding - gridContainer.getHgap() * (CARDS_PER_ROW - 1);
         if (available <= 0) {
             return fallback;
         }
@@ -814,8 +844,18 @@ public class AvailabilitySlotController {
     }
 
     @FXML
+    private void goToSlotsBackOffice(ActionEvent event) {
+        switchScene(event, "/tn/esprit/views/backoffice/availability-slot-backoffice.fxml", "SkillOra - BackOffice Slots");
+    }
+
+    @FXML
     private void goToRendezVous(ActionEvent event) {
         switchScene(event, "/tn/esprit/views/rendezvous/rendezvous-list.fxml", "SkillOra - RendezVous");
+    }
+
+    @FXML
+    private void goToRendezVousBackOffice(ActionEvent event) {
+        switchScene(event, "/tn/esprit/views/backoffice/rendezvous-backoffice.fxml", "SkillOra - BackOffice RendezVous");
     }
 
     private void switchScene(ActionEvent event, String fxmlPath, String title) {
@@ -910,6 +950,90 @@ public class AvailabilitySlotController {
         return card;
     }
 
+    private HBox buildSlotRow(AvailabilitySlot slot, boolean lastRow) {
+        boolean booked = Boolean.TRUE.equals(slot.getIsBooked());
+        boolean selected = selectedSlot != null && selectedSlot.getId() != null && selectedSlot.getId().equals(slot.getId());
+
+        HBox row = new HBox(0);
+        String background = selected ? "#0f2a55" : "#081737";
+        String sideBorder = selected ? "1.4 0 1.4 3.4" : "1 0 1 0";
+        String borderColor = selected ? "#2f6fed" : "#1a3665";
+        String borderWidth = lastRow ? (selected ? "1.4 0 0 3.4" : "1 0 0 0") : sideBorder;
+        row.setStyle("-fx-alignment: center-left; -fx-padding: 12 14; -fx-background-color: " + background + "; -fx-border-color: " + borderColor + "; -fx-border-width: " + borderWidth + ";");
+
+        VBox startCell = new VBox(2);
+        startCell.setPrefWidth(245);
+        Label startDate = new Label(slot.getStartAt() == null ? "-" : slot.getStartAt().format(DATE_TIME_FORMATTER));
+        startDate.setStyle("-fx-text-fill: #f3f7ff; -fx-font-size: 15px; -fx-font-weight: 800;");
+        Label startMeta = new Label(slot.getStartAt() == null ? "-" : slot.getStartAt().format(TIME_FORMATTER));
+        startMeta.setStyle("-fx-text-fill: #9dc0f1; -fx-font-size: 12px; -fx-font-weight: 700;");
+        startCell.getChildren().addAll(startDate, startMeta);
+
+        VBox endCell = new VBox(2);
+        endCell.setPrefWidth(245);
+        Label endDate = new Label(slot.getEndAt() == null ? "-" : slot.getEndAt().format(DATE_TIME_FORMATTER));
+        endDate.setStyle("-fx-text-fill: #f3f7ff; -fx-font-size: 15px; -fx-font-weight: 800;");
+        Label endMeta = new Label(slot.getEndAt() == null ? "-" : slot.getEndAt().format(TIME_FORMATTER));
+        endMeta.setStyle("-fx-text-fill: #9dc0f1; -fx-font-size: 12px; -fx-font-weight: 700;");
+        endCell.getChildren().addAll(endDate, endMeta);
+
+        HBox durationCell = new HBox();
+        durationCell.setPrefWidth(170);
+        Label durationBadge = new Label("◷ " + formatDurationMinutes(slot.getStartAt(), slot.getEndAt()));
+        durationBadge.setStyle("-fx-background-color: #1a2f54; -fx-text-fill: #dbeafe; -fx-font-size: 13px; -fx-font-weight: 800; -fx-padding: 6 12; -fx-background-radius: 10;");
+        durationCell.getChildren().add(durationBadge);
+
+        HBox statusCell = new HBox();
+        statusCell.setPrefWidth(180);
+        Label statusBadge = new Label(booked ? "● Réservé" : "● Disponible");
+        statusBadge.setStyle(booked
+                ? "-fx-background-color: #2b1c2a; -fx-text-fill: #fca5a5; -fx-font-size: 13px; -fx-font-weight: 800; -fx-padding: 6 12; -fx-background-radius: 10;"
+                : "-fx-background-color: #11362e; -fx-text-fill: #4ade80; -fx-font-size: 13px; -fx-font-weight: 800; -fx-padding: 6 12; -fx-background-radius: 10;");
+        statusCell.getChildren().add(statusBadge);
+
+        VBox locationCell = new VBox(2);
+        locationCell.setPrefWidth(280);
+        Label locationText = new Label(defaultValue(slot.getLocationLabel()));
+        locationText.setWrapText(true);
+        locationText.setStyle("-fx-text-fill: #9dc0f1; -fx-font-size: 12px;");
+        Label professorText = new Label(resolveProfessorDisplayName(slot.getProfessorId()));
+        professorText.setStyle("-fx-text-fill: #7ea2d6; -fx-font-size: 12px;");
+        locationCell.getChildren().addAll(locationText, professorText);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox actions = new HBox(8);
+        actions.setPrefWidth(130);
+        actions.setStyle("-fx-alignment: center-left;");
+        if (canManageSlots()) {
+            if (canEditSlot(slot)) {
+                Button editBtn = new Button("✎");
+                editBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #60a5fa; -fx-font-size: 20px; -fx-font-weight: 900;");
+                editBtn.setOnAction(event -> {
+                    selectedSlot = slot;
+                    handleEdit();
+                });
+                actions.getChildren().add(editBtn);
+            }
+            Button deleteBtn = new Button("🗑");
+            deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #dbeafe; -fx-font-size: 18px; -fx-font-weight: 900;");
+            deleteBtn.setOnAction(event -> deleteSlot(slot));
+            actions.getChildren().add(deleteBtn);
+        } else {
+            Label noAction = new Label("—");
+            noAction.setStyle("-fx-text-fill: #617ca8; -fx-font-size: 14px;");
+            actions.getChildren().add(noAction);
+        }
+
+        row.getChildren().addAll(startCell, endCell, durationCell, statusCell, locationCell, spacer, actions);
+        row.setOnMouseClicked(event -> {
+            selectedSlot = slot;
+            applyFiltersAndRender();
+        });
+        return row;
+    }
+
     @FXML
     private void handleCreate() {
         if (!canManageSlots()) {
@@ -937,7 +1061,7 @@ public class AvailabilitySlotController {
             return;
         }
         if (selectedSlot == null) {
-            showWarning("Selection required", "Select a slot card before trying to edit.");
+            showWarning("Selection required", "Select a slot " + selectionTargetLabel() + " before trying to edit.");
             return;
         }
         try {
@@ -982,7 +1106,7 @@ public class AvailabilitySlotController {
             return;
         }
         if (selectedSlot == null) {
-            showWarning("Selection required", "Select a slot card before trying to delete.");
+            showWarning("Selection required", "Select a slot " + selectionTargetLabel() + " before trying to delete.");
             return;
         }
         deleteSlot(selectedSlot);
@@ -1223,6 +1347,16 @@ public class AvailabilitySlotController {
                 if (!slot.getEndAt().isAfter(slot.getStartAt())) {
                     throw new IllegalArgumentException("End date/time must be after start date/time.");
                 }
+                if (slot.getStartAt().isBefore(LocalDateTime.now().minusMinutes(1))) {
+                    throw new IllegalArgumentException("Start date/time must be now or in the future.");
+                }
+                long durationMinutes = Duration.between(slot.getStartAt(), slot.getEndAt()).toMinutes();
+                if (durationMinutes < 30) {
+                    throw new IllegalArgumentException("A slot must be at least 30 minutes.");
+                }
+                if (durationMinutes > 240) {
+                    throw new IllegalArgumentException("A slot cannot exceed 4 hours.");
+                }
 
                 slot.setIsBooked(editMode && source.getIsBooked() != null ? source.getIsBooked() : false);
 
@@ -1234,6 +1368,9 @@ public class AvailabilitySlotController {
                     slot.setLocationLabel(toNull(locationSearchField.getText()));
                     slot.setLocationLat(null);
                     slot.setLocationLng(null);
+                }
+                if (slot.getLocationLabel() != null && slot.getLocationLabel().length() > 255) {
+                    throw new IllegalArgumentException("Location is too long (max 255 characters).");
                 }
 
                 slot.setCreatedAt(editMode && source.getCreatedAt() != null ? source.getCreatedAt() : LocalDateTime.now());
@@ -1580,6 +1717,14 @@ public class AvailabilitySlotController {
         return startAt.format(TIME_FORMATTER) + " - " + endAt.format(TIME_FORMATTER);
     }
 
+    private String formatDurationMinutes(LocalDateTime startAt, LocalDateTime endAt) {
+        if (startAt == null || endAt == null) {
+            return "-";
+        }
+        long minutes = Math.max(0, Duration.between(startAt, endAt).toMinutes());
+        return minutes + " min";
+    }
+
     private String formatCoordinates(double lat, double lon) {
         return String.format(Locale.US, "Lat: %.6f  |  Lng: %.6f", lat, lon);
     }
@@ -1605,6 +1750,10 @@ public class AvailabilitySlotController {
 
     private String defaultValue(Object value) {
         return value == null ? "-" : String.valueOf(value);
+    }
+
+    private String selectionTargetLabel() {
+        return cardsContainer instanceof VBox ? "row" : "card";
     }
 
     private String resolveProfessorDisplayName(Integer professorId) {

@@ -30,6 +30,8 @@
                         styleClass="nav-btn nav-btn-active" />
                 <Button mnemonicParsing="false" onAction="#goToSlots" text="Slots"
                         styleClass="nav-btn" />
+                <Button mnemonicParsing="false" onAction="#goToRendezVousBackOffice" text="Back Office"
+                        styleClass="nav-btn" />
                 <Region HBox.hgrow="ALWAYS" />
                 <TextField fx:id="searchField" promptText="Search courses..."
                            prefWidth="340.0"

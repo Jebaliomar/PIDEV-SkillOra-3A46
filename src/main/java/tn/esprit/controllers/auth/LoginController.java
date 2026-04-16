@@ -44,6 +44,18 @@ public class LoginController {
             showError("Veuillez saisir l'email/username et le mot de passe.");
             return;
         }
+        if (identifier.length() < 3 || identifier.length() > 190) {
+            showError("Email/username invalide (3 à 190 caractères).");
+            return;
+        }
+        if (identifier.contains(" ")) {
+            showError("Email/username ne doit pas contenir d'espaces.");
+            return;
+        }
+        if (password.length() < 4 || password.length() > 128) {
+            showError("Mot de passe invalide (4 à 128 caractères).");
+            return;
+        }
 
         try {
             Optional<AuthService.AuthResult> authenticated = authService.authenticate(identifier, password);

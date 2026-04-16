@@ -21,6 +21,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -40,6 +41,8 @@ import tn.esprit.tools.MyConnection;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -66,6 +69,9 @@ public class RendezVousController {
     private static final String BTN_ACTIVE = "-fx-background-color: linear-gradient(to bottom, #2f6fed, #285fd0); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: 800; -fx-background-radius: 12; -fx-padding: 9 14;";
     private static final String BTN_INACTIVE = "-fx-background-color: #23395f; -fx-text-fill: #dbeafe; -fx-font-size: 14px; -fx-font-weight: 800; -fx-background-radius: 12; -fx-padding: 9 14;";
     private static final double DETAILS_KEY_WIDTH = 170;
+    private static final int MAX_MESSAGE_LENGTH = 1000;
+    private static final int MAX_MEETING_LINK_LENGTH = 255;
+    private static final int MAX_FILE_NAME_LENGTH = 255;
     private static final int CURRENT_USER_ID = parseCurrentUserId();
     private static final String CURRENT_USER_ROLE = normalizeRole(System.getProperty("skillora.role", "student"));
 
@@ -76,7 +82,7 @@ public class RendezVousController {
     private TextField searchField;
 
     @FXML
-    private FlowPane cardsContainer;
+    private Pane cardsContainer;
 
     @FXML
     private ScrollPane cardsScrollPane;
@@ -236,34 +242,61 @@ public class RendezVousController {
     }
 
     private void renderCards(List<RendezVous> rendezVousList) {
-        cardsContainer.getChildren().clear();
-        if (rendezVousList.isEmpty()) {
-            Label empty = new Label("No rendez-vous found with current filter.");
-            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 14px;");
-            cardsContainer.getChildren().add(empty);
+        if (cardsContainer == null) {
             return;
         }
-        double cardWidth = computeCardWidth(rendezVousList.size());
-        for (RendezVous rdv : rendezVousList) {
-            cardsContainer.getChildren().add(buildRendezVousCard(rdv, cardWidth));
+        if (cardsContainer instanceof FlowPane flowContainer) {
+            renderRendezVousCards(flowContainer, rendezVousList);
+            return;
+        }
+        if (cardsContainer instanceof VBox tableContainer) {
+            renderRendezVousRows(tableContainer, rendezVousList);
         }
     }
 
-    private double computeCardWidth(int cardCount) {
+    private void renderRendezVousCards(FlowPane flowContainer, List<RendezVous> rendezVousList) {
+        flowContainer.getChildren().clear();
+        if (rendezVousList.isEmpty()) {
+            Label empty = new Label("No rendez-vous found with current filter.");
+            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 14px;");
+            flowContainer.getChildren().add(empty);
+            return;
+        }
+        double cardWidth = computeCardWidth(flowContainer, rendezVousList.size());
+        for (RendezVous rdv : rendezVousList) {
+            flowContainer.getChildren().add(buildRendezVousCard(rdv, cardWidth));
+        }
+    }
+
+    private void renderRendezVousRows(VBox tableContainer, List<RendezVous> rendezVousList) {
+        tableContainer.getChildren().clear();
+        if (rendezVousList.isEmpty()) {
+            Label empty = new Label("No rendez-vous found with current filter.");
+            empty.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 14px; -fx-padding: 16;");
+            tableContainer.getChildren().add(empty);
+            return;
+        }
+        for (int i = 0; i < rendezVousList.size(); i++) {
+            RendezVous rdv = rendezVousList.get(i);
+            tableContainer.getChildren().add(buildRendezVousRow(rdv, i == rendezVousList.size() - 1));
+        }
+    }
+
+    private double computeCardWidth(FlowPane flowContainer, int cardCount) {
         double viewportWidth = 0;
         if (cardsScrollPane != null && cardsScrollPane.getViewportBounds() != null) {
             viewportWidth = cardsScrollPane.getViewportBounds().getWidth();
         }
         if (viewportWidth <= 0) {
-            viewportWidth = cardsContainer.getWidth();
+            viewportWidth = flowContainer.getWidth();
         }
         if (viewportWidth <= 0) {
             return 540;
         }
 
-        double horizontalPadding = cardsContainer.getInsets().getLeft() + cardsContainer.getInsets().getRight();
+        double horizontalPadding = flowContainer.getInsets().getLeft() + flowContainer.getInsets().getRight();
         double usableWidth = Math.max(0, viewportWidth - horizontalPadding);
-        cardsContainer.setPrefWrapLength(usableWidth);
+        flowContainer.setPrefWrapLength(usableWidth);
 
         int columns;
         if (cardCount <= 1) {
@@ -274,7 +307,7 @@ public class RendezVousController {
             columns = 1;
         }
 
-        double totalGap = cardsContainer.getHgap() * (columns - 1);
+        double totalGap = flowContainer.getHgap() * (columns - 1);
         double width = (usableWidth - totalGap) / columns;
         return Math.max(340, Math.floor(width));
     }
@@ -351,13 +384,15 @@ public class RendezVousController {
 
             Button acceptBtn = new Button("Accepter");
             acceptBtn.setStyle("-fx-background-color: #15803d; -fx-background-radius: 14; -fx-text-fill: white; -fx-font-weight: 800;");
-            acceptBtn.setDisable(!pending);
             acceptBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "confirme", meetingLinkField.getText()));
 
             Button refuseBtn = new Button("Refuser");
             refuseBtn.setStyle("-fx-background-color: #b91c1c; -fx-background-radius: 14; -fx-text-fill: white; -fx-font-weight: 800;");
-            refuseBtn.setDisable(!pending);
             refuseBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "refuse"));
+            acceptBtn.setManaged(pending);
+            acceptBtn.setVisible(pending);
+            refuseBtn.setManaged(pending);
+            refuseBtn.setVisible(pending);
 
             VBox professorActions = new VBox(8);
             HBox firstRow = new HBox(10, detailsBtn, coursePdfBtn);
@@ -376,6 +411,128 @@ public class RendezVousController {
             applyFiltersAndRender();
         });
         return card;
+    }
+
+    private VBox buildRendezVousRow(RendezVous rdv, boolean lastRow) {
+        boolean selected = selectedRendezVous != null
+                && selectedRendezVous.getId() != null
+                && selectedRendezVous.getId().equals(rdv.getId());
+
+        VBox rowWrap = new VBox(8);
+        String background = selected ? "#0f2a55" : "#081737";
+        String borderColor = selected ? "#2f6fed" : "#1a3665";
+        String borderWidth = selected
+                ? (lastRow ? "1.4 0 0 3.4" : "1.4 0 1.4 3.4")
+                : (lastRow ? "1 0 0 0" : "1 0 1 0");
+        rowWrap.setStyle("-fx-background-color: " + background + "; -fx-border-color: " + borderColor + "; -fx-border-width: " + borderWidth + "; -fx-padding: 12 14;");
+
+        HBox row = new HBox(0);
+        row.setStyle("-fx-alignment: center-left;");
+
+        VBox dateCell = new VBox(2);
+        dateCell.setPrefWidth(180);
+        Label dateMain = new Label(formatCardDate(rdv.getCreatedAt()));
+        dateMain.setStyle("-fx-text-fill: #f3f7ff; -fx-font-size: 15px; -fx-font-weight: 800;");
+        Label dateSub = new Label(meetingTypeDisplay(rdv.getMeetingType()));
+        dateSub.setStyle("-fx-text-fill: #9dc0f1; -fx-font-size: 12px; -fx-font-weight: 700;");
+        dateCell.getChildren().addAll(dateMain, dateSub);
+
+        VBox professorCell = new VBox(2);
+        professorCell.setPrefWidth(200);
+        Label professorMain = new Label(resolveProfessorName(rdv.getProfessorId()));
+        professorMain.setStyle("-fx-text-fill: #f3f7ff; -fx-font-size: 14px; -fx-font-weight: 800;");
+        Label slotSub = new Label("Créneau " + safeNumber(rdv.getSlotId()));
+        slotSub.setStyle("-fx-text-fill: #7ea2d6; -fx-font-size: 12px;");
+        professorCell.getChildren().addAll(professorMain, slotSub);
+
+        VBox studentCell = new VBox(2);
+        studentCell.setPrefWidth(200);
+        Label studentMain = new Label(resolveStudentName(rdv.getStudentId()));
+        studentMain.setStyle("-fx-text-fill: #f3f7ff; -fx-font-size: 14px; -fx-font-weight: 800;");
+        Label idSub = new Label("RDV " + safeNumber(rdv.getId()));
+        idSub.setStyle("-fx-text-fill: #7ea2d6; -fx-font-size: 12px;");
+        studentCell.getChildren().addAll(studentMain, idSub);
+
+        VBox courseCell = new VBox(2);
+        courseCell.setPrefWidth(230);
+        Label courseMain = new Label(resolveCourseName(rdv.getCourseId()));
+        courseMain.setWrapText(true);
+        courseMain.setStyle("-fx-text-fill: #f3f7ff; -fx-font-size: 14px; -fx-font-weight: 800;");
+        String linkText = normalizeDefault(rdv.getMeetingLink(), normalizeDefault(rdv.getLocationLabel(), normalizeDefault(rdv.getLocation(), "-")));
+        Label linkSub = new Label(linkText);
+        linkSub.setWrapText(true);
+        linkSub.setStyle("-fx-text-fill: #7ea2d6; -fx-font-size: 12px;");
+        courseCell.getChildren().addAll(courseMain, linkSub);
+
+        HBox statusCell = new HBox();
+        statusCell.setPrefWidth(150);
+        Label statusBadge = new Label(statusDisplay(rdv.getStatut()));
+        statusBadge.setStyle(statusStyle(rdv.getStatut()) + "-fx-font-size: 12px;");
+        statusCell.getChildren().add(statusBadge);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+        HBox actions = new HBox(8);
+        actions.setPrefWidth(300);
+        actions.setStyle("-fx-alignment: center-left;");
+
+        Button detailsBtn = new Button("Voir détails");
+        detailsBtn.setStyle("-fx-background-color: #142e58; -fx-border-color: #3a5e95; -fx-border-radius: 10; -fx-background-radius: 10; -fx-text-fill: #eef3ff; -fx-font-size: 12px; -fx-font-weight: 800;");
+        detailsBtn.setOnAction(event -> showRendezVousDetailsDialog(rdv));
+
+        Button editBtn = new Button("Modifier");
+        editBtn.setStyle("-fx-background-color: linear-gradient(to bottom, #2f6fed, #285fd0); -fx-background-radius: 10; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: 800;");
+        editBtn.setOnAction(event -> {
+            selectedRendezVous = rdv;
+            editSelectedRendezVous();
+        });
+
+        Button coursePdfBtn = buildCoursePdfButton(rdv);
+        coursePdfBtn.setText(toNull(rdv.getCoursePdfName()) == null ? "PDF +" : "PDF");
+        coursePdfBtn.setStyle("-fx-background-color: #223a63; -fx-background-radius: 10; -fx-text-fill: #e2e8f0; -fx-font-size: 12px; -fx-font-weight: 800;");
+
+        row.getChildren().addAll(dateCell, professorCell, studentCell, courseCell, statusCell, spacer, actions);
+
+        if (isProfessorMode()) {
+            boolean pending = isPendingStatus(rdv.getStatut());
+            TextField meetingLinkField = new TextField(normalizeDefault(rdv.getMeetingLink(), ""));
+            meetingLinkField.setPromptText("https://...");
+            meetingLinkField.setDisable(!pending);
+            meetingLinkField.setMaxWidth(250);
+            styleTextField(meetingLinkField);
+
+            Button acceptBtn = new Button("Accepter");
+            acceptBtn.setStyle("-fx-background-color: #15803d; -fx-background-radius: 10; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: 800;");
+            acceptBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "confirme", meetingLinkField.getText()));
+
+            Button refuseBtn = new Button("Refuser");
+            refuseBtn.setStyle("-fx-background-color: #b91c1c; -fx-background-radius: 10; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: 800;");
+            refuseBtn.setOnAction(event -> updateStatusAsProfessor(rdv, "refuse"));
+            acceptBtn.setManaged(pending);
+            acceptBtn.setVisible(pending);
+            refuseBtn.setManaged(pending);
+            refuseBtn.setVisible(pending);
+
+            actions.getChildren().addAll(detailsBtn, coursePdfBtn);
+
+            HBox professorRow = new HBox(8);
+            professorRow.setStyle("-fx-alignment: center-right;");
+            Region professorSpacer = new Region();
+            HBox.setHgrow(professorSpacer, javafx.scene.layout.Priority.ALWAYS);
+            professorRow.getChildren().addAll(professorSpacer, meetingLinkField, acceptBtn, refuseBtn);
+
+            rowWrap.getChildren().addAll(row, professorRow);
+        } else {
+            actions.getChildren().addAll(detailsBtn, editBtn, coursePdfBtn);
+            rowWrap.getChildren().add(row);
+        }
+
+        rowWrap.setOnMouseClicked(event -> {
+            selectedRendezVous = rdv;
+            applyFiltersAndRender();
+        });
+        return rowWrap;
     }
 
     private String statusStyle(String rawStatus) {
@@ -423,7 +580,7 @@ public class RendezVousController {
 
     private void editSelectedRendezVous() {
         if (selectedRendezVous == null) {
-            showWarning("Selection required", "Select a rendez-vous card before trying to edit.");
+            showWarning("Selection required", "Select a rendez-vous " + selectionTargetLabel() + " before trying to edit.");
             return;
         }
         if (!canStudentManage(selectedRendezVous)) {
@@ -459,7 +616,7 @@ public class RendezVousController {
     @FXML
     private void handleDelete() {
         if (selectedRendezVous == null) {
-            showWarning("Selection required", "Select a rendez-vous card before trying to delete.");
+            showWarning("Selection required", "Select a rendez-vous " + selectionTargetLabel() + " before trying to delete.");
             return;
         }
         if (!canStudentManage(selectedRendezVous)) {
@@ -508,8 +665,18 @@ public class RendezVousController {
     }
 
     @FXML
+    private void goToRendezVousBackOffice(ActionEvent event) {
+        switchScene(event, "/tn/esprit/views/backoffice/rendezvous-backoffice.fxml", "SkillOra - BackOffice RendezVous");
+    }
+
+    @FXML
     private void goToSlots(ActionEvent event) {
         switchScene(event, "/tn/esprit/views/availability-slot/availability-slot-list.fxml", "SkillOra - Availability Slots");
+    }
+
+    @FXML
+    private void goToSlotsBackOffice(ActionEvent event) {
+        switchScene(event, "/tn/esprit/views/backoffice/availability-slot-backoffice.fxml", "SkillOra - BackOffice Slots");
     }
 
     private void switchScene(ActionEvent event, String fxmlPath, String title) {
@@ -650,7 +817,7 @@ public class RendezVousController {
         }
 
         RendezVous updated = copyRendezVous(source);
-        updated.setCoursePdfName(picked.getName());
+        updated.setCoursePdfName(validatePdfFileName(picked));
         try {
             boolean ok = rendezVousService.update(updated);
             if (!ok) {
@@ -661,6 +828,8 @@ public class RendezVousController {
             if (statusLabel != null) {
                 statusLabel.setText("PDF ajouté au rendez-vous #" + safeNumber(updated.getId()));
             }
+        } catch (IllegalArgumentException exception) {
+            showWarning("Validation error", exception.getMessage());
         } catch (SQLException exception) {
             showError("Unable to update rendez-vous PDF", exception);
         }
@@ -920,40 +1089,38 @@ public class RendezVousController {
         try {
             SlotOption selectedSlot = slotCombo.getValue();
             CourseOption selectedCourse = courseCombo.getValue();
-            if (selectedSlot == null) {
-                throw new IllegalArgumentException("Please choose a slot.");
-            }
-            if (selectedSlot.professorId() == null) {
-                throw new IllegalArgumentException("Selected slot has no professor.");
-            }
-            if (selectedCourse == null || selectedCourse.id() == null) {
-                throw new IllegalArgumentException("Please choose an existing course.");
-            }
+            AvailabilitySlot validatedSlot = validateSelectedSlotForSubmission(selectedSlot, slotOptions, null);
+            CourseOption validatedCourse = validateSelectedCourseForProfessor(selectedCourse, validatedSlot.getProfessorId());
+            String validatedMessage = validateMessageInput(messageArea.getText());
+            String validatedPdfName = validatePdfFileName(selectedFile[0]);
 
             RendezVous rdv = new RendezVous();
-            rdv.setSlotId(selectedSlot.id());
-            rdv.setProfessorId(selectedSlot.professorId());
+            rdv.setSlotId(validatedSlot.getId());
+            rdv.setProfessorId(validatedSlot.getProfessorId());
             rdv.setStudentId(CURRENT_USER_ID);
-            rdv.setCourseId(selectedCourse.id());
+            rdv.setCourseId(validatedCourse.id());
             boolean inPerson = inPersonRadio.isSelected();
             rdv.setMeetingType(inPerson ? "en_personne" : "en_ligne");
             rdv.setStatut("en_attente");
             rdv.setMeetingLink(null);
             if (inPerson) {
-                rdv.setLocation(resolveSlotLocationValue(selectedSlot));
-                rdv.setLocationLabel(toNull(selectedSlot.locationLabel()));
-                rdv.setLocationLat(selectedSlot.locationLat());
-                rdv.setLocationLng(selectedSlot.locationLng());
+                rdv.setLocation(resolveSlotLocationValue(validatedSlot));
+                rdv.setLocationLabel(toNull(validatedSlot.getLocationLabel()));
+                rdv.setLocationLat(validatedSlot.getLocationLat());
+                rdv.setLocationLng(validatedSlot.getLocationLng());
             } else {
                 rdv.setLocation(null);
                 rdv.setLocationLabel(null);
                 rdv.setLocationLat(null);
                 rdv.setLocationLng(null);
             }
-            rdv.setMessage(toNull(messageArea.getText()));
+            rdv.setMessage(validatedMessage);
             rdv.setCreatedAt(LocalDateTime.now());
-            rdv.setCoursePdfName(selectedFile[0] != null ? selectedFile[0].getName() : null);
+            rdv.setCoursePdfName(validatedPdfName);
             return Optional.of(rdv);
+        } catch (SQLException ex) {
+            showError("Unable to validate rendez-vous input", ex);
+            return Optional.empty();
         } catch (IllegalArgumentException ex) {
             showWarning("Validation error", ex.getMessage());
             return Optional.empty();
@@ -1037,33 +1204,33 @@ public class RendezVousController {
             return Optional.empty();
         }
 
-        SlotOption chosen = slotCombo.getValue();
-        CourseOption chosenCourse = courseCombo.getValue();
-        if (chosen == null) {
-            showWarning("Validation error", "Please choose a slot.");
-            return Optional.empty();
-        }
-        if (chosenCourse == null || chosenCourse.id() == null) {
-            showWarning("Validation error", "Please choose an existing course.");
-            return Optional.empty();
-        }
+        try {
+            SlotOption chosen = slotCombo.getValue();
+            CourseOption chosenCourse = courseCombo.getValue();
+            AvailabilitySlot validatedSlot = validateSelectedSlotForSubmission(chosen, slotOptions, source.getSlotId());
+            CourseOption validatedCourse = validateSelectedCourseForProfessor(chosenCourse, validatedSlot.getProfessorId());
 
-        RendezVous updated = copyRendezVous(source);
-        updated.setSlotId(chosen.id());
-        if (chosen.professorId() != null) {
-            updated.setProfessorId(chosen.professorId());
+            RendezVous updated = copyRendezVous(source);
+            updated.setSlotId(validatedSlot.getId());
+            updated.setProfessorId(validatedSlot.getProfessorId());
+            if (isInPersonMeetingType(updated.getMeetingType())) {
+                updated.setLocation(resolveSlotLocationValue(validatedSlot));
+                updated.setLocationLabel(toNull(validatedSlot.getLocationLabel()));
+                updated.setLocationLat(validatedSlot.getLocationLat());
+                updated.setLocationLng(validatedSlot.getLocationLng());
+            }
+            updated.setCourseId(validatedCourse.id());
+            if (selectedFile[0] != null) {
+                updated.setCoursePdfName(validatePdfFileName(selectedFile[0]));
+            }
+            return Optional.of(updated);
+        } catch (SQLException exception) {
+            showError("Unable to validate rendez-vous edit input", exception);
+            return Optional.empty();
+        } catch (IllegalArgumentException exception) {
+            showWarning("Validation error", exception.getMessage());
+            return Optional.empty();
         }
-        if (isInPersonMeetingType(updated.getMeetingType())) {
-            updated.setLocation(resolveSlotLocationValue(chosen));
-            updated.setLocationLabel(toNull(chosen.locationLabel()));
-            updated.setLocationLat(chosen.locationLat());
-            updated.setLocationLng(chosen.locationLng());
-        }
-        updated.setCourseId(chosenCourse.id());
-        if (selectedFile[0] != null) {
-            updated.setCoursePdfName(selectedFile[0].getName());
-        }
-        return Optional.of(updated);
     }
 
     private List<SlotOption> loadSlotOptions(Integer includeSlotId, Integer professorIdScope) throws SQLException {
@@ -1143,6 +1310,20 @@ public class RendezVousController {
         }
         if (slotOption.locationLat() != null && slotOption.locationLng() != null) {
             return slotOption.locationLat() + ", " + slotOption.locationLng();
+        }
+        return null;
+    }
+
+    private String resolveSlotLocationValue(AvailabilitySlot slot) {
+        if (slot == null) {
+            return null;
+        }
+        String label = toNull(slot.getLocationLabel());
+        if (label != null) {
+            return label;
+        }
+        if (slot.getLocationLat() != null && slot.getLocationLng() != null) {
+            return slot.getLocationLat() + ", " + slot.getLocationLng();
         }
         return null;
     }
@@ -1453,6 +1634,111 @@ public class RendezVousController {
         return copy;
     }
 
+    private AvailabilitySlot validateSelectedSlotForSubmission(
+            SlotOption selectedSlot,
+            List<SlotOption> availableOptions,
+            Integer includeSlotId
+    ) throws SQLException {
+        if (selectedSlot == null || selectedSlot.id() == null) {
+            throw new IllegalArgumentException("Please choose a slot.");
+        }
+        boolean existsInCurrentOptions = availableOptions.stream()
+                .anyMatch(option -> option != null && sameInteger(option.id(), selectedSlot.id()));
+        if (!existsInCurrentOptions) {
+            throw new IllegalArgumentException("Selected slot is invalid. Please reopen the form.");
+        }
+
+        AvailabilitySlot persistedSlot = availabilitySlotService.getById(selectedSlot.id());
+        if (persistedSlot == null) {
+            throw new IllegalArgumentException("Selected slot no longer exists.");
+        }
+        if (persistedSlot.getProfessorId() == null) {
+            throw new IllegalArgumentException("Selected slot has no professor.");
+        }
+        if (!isSlotAvailable(persistedSlot, includeSlotId)) {
+            throw new IllegalArgumentException("Selected slot is no longer available.");
+        }
+        if (persistedSlot.getStartAt() != null && persistedSlot.getStartAt().isBefore(LocalDateTime.now().minusMinutes(1))) {
+            throw new IllegalArgumentException("Selected slot is in the past.");
+        }
+
+        return persistedSlot;
+    }
+
+    private CourseOption validateSelectedCourseForProfessor(CourseOption selectedCourse, Integer professorId) throws SQLException {
+        if (professorId == null) {
+            throw new IllegalArgumentException("Selected slot has no professor.");
+        }
+        if (selectedCourse == null || selectedCourse.id() == null) {
+            throw new IllegalArgumentException("Please choose an existing course.");
+        }
+
+        List<CourseOption> allowedCourses = loadCourseOptionsForProfessor(professorId);
+        if (allowedCourses.isEmpty()) {
+            throw new IllegalArgumentException("No course available for this professor.");
+        }
+
+        return allowedCourses.stream()
+                .filter(option -> option != null && sameInteger(option.id(), selectedCourse.id()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Selected course is invalid for this professor."));
+    }
+
+    private String validateMessageInput(String rawMessage) {
+        String message = toNull(rawMessage);
+        if (message == null) {
+            return null;
+        }
+        if (message.length() > MAX_MESSAGE_LENGTH) {
+            throw new IllegalArgumentException("Message is too long (max " + MAX_MESSAGE_LENGTH + " characters).");
+        }
+        return message;
+    }
+
+    private String validatePdfFileName(File pickedFile) {
+        if (pickedFile == null) {
+            return null;
+        }
+        String fileName = toNull(pickedFile.getName());
+        if (fileName == null) {
+            throw new IllegalArgumentException("Invalid file name.");
+        }
+        if (!fileName.toLowerCase().endsWith(".pdf")) {
+            throw new IllegalArgumentException("Only PDF files are allowed.");
+        }
+        if (fileName.length() > MAX_FILE_NAME_LENGTH) {
+            throw new IllegalArgumentException("PDF file name is too long (max " + MAX_FILE_NAME_LENGTH + " characters).");
+        }
+        return fileName;
+    }
+
+    private String validateMeetingLinkInput(String rawInput) {
+        String meetingLink = toNull(rawInput);
+        if (meetingLink == null) {
+            return null;
+        }
+        if (meetingLink.length() > MAX_MEETING_LINK_LENGTH) {
+            throw new IllegalArgumentException("Meeting link is too long (max " + MAX_MEETING_LINK_LENGTH + " characters).");
+        }
+        if (!isHttpMeetingLink(meetingLink)) {
+            throw new IllegalArgumentException("Meeting link must be a valid http/https URL.");
+        }
+        return meetingLink;
+    }
+
+    private boolean isHttpMeetingLink(String value) {
+        try {
+            URI uri = new URI(value);
+            String scheme = toNull(uri.getScheme());
+            if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https"))) {
+                return false;
+            }
+            return toNull(uri.getHost()) != null;
+        } catch (URISyntaxException exception) {
+            return false;
+        }
+    }
+
     private record SlotOption(
             Integer id,
             Integer professorId,
@@ -1506,9 +1792,25 @@ public class RendezVousController {
             return true;
         }
         if (isProfessorMode()) {
-            return sameInteger(rdv.getProfessorId(), CURRENT_USER_ID);
+            return isVisibleForCurrentProfessorBySlot(rdv);
         }
         return sameInteger(rdv.getStudentId(), CURRENT_USER_ID);
+    }
+
+    private boolean isVisibleForCurrentProfessorBySlot(RendezVous rdv) {
+        if (rdv == null || rdv.getSlotId() == null) {
+            return false;
+        }
+        try {
+            AvailabilitySlot slot = availabilitySlotService.getById(rdv.getSlotId());
+            if (slot == null || slot.getProfessorId() == null) {
+                return false;
+            }
+            return sameInteger(slot.getProfessorId(), CURRENT_USER_ID);
+        } catch (SQLException exception) {
+            // Keep a fallback in case the slot lookup fails temporarily.
+            return sameInteger(rdv.getProfessorId(), CURRENT_USER_ID);
+        }
     }
 
     private boolean canStudentManage(RendezVous rdv) {
@@ -1546,23 +1848,29 @@ public class RendezVousController {
         }
 
         try {
-            if (!isAdminMode() && !isCurrentProfessorSlotOwner(source)) {
-                showWarning("Action not allowed", "You can only update rendez-vous assigned to your own slots.");
-                return;
+            AvailabilitySlot slot = source.getSlotId() == null ? null : availabilitySlotService.getById(source.getSlotId());
+            if (!isAdminMode()) {
+                if (slot == null) {
+                    showWarning("Action not allowed", "This rendez-vous has no valid slot anymore.");
+                    return;
+                }
+                if (slot.getProfessorId() == null || !sameInteger(slot.getProfessorId(), CURRENT_USER_ID)) {
+                    showWarning("Action not allowed", "You can only update rendez-vous assigned to your own slots.");
+                    return;
+                }
             }
 
             RendezVous updated = copyRendezVous(source);
             updated.setStatut(newStatus);
 
             if (isConfirmedStatus(newStatus)) {
-                String meetingLink = toNull(meetingLinkInput);
+                String meetingLink = validateMeetingLinkInput(meetingLinkInput);
                 if (meetingLink != null) {
                     updated.setMeetingLink(meetingLink);
                 }
                 updated.setRefusalReason(null);
             }
 
-            AvailabilitySlot slot = source.getSlotId() == null ? null : availabilitySlotService.getById(source.getSlotId());
             if (slot != null && slot.getProfessorId() != null) {
                 updated.setProfessorId(slot.getProfessorId());
             }
@@ -1578,22 +1886,18 @@ public class RendezVousController {
                 markSlotBookedState(updated.getSlotId(), true);
             }
             createStudentStatusNotification(updated);
+            boolean switchedFromPendingFilter = currentFilter == RendezVousFilter.PENDING;
             refreshRendezVous();
-            statusLabel.setText("Rendez-vous #" + safeNumber(updated.getId()) + " is now " + statusDisplay(newStatus));
+            if (switchedFromPendingFilter) {
+                setActiveFilter(RendezVousFilter.ALL);
+            }
+            statusLabel.setText("Rendez-vous #" + safeNumber(updated.getId()) + " is now " + statusDisplay(newStatus)
+                    + (switchedFromPendingFilter ? " (filtre: Tous)" : ""));
+        } catch (IllegalArgumentException exception) {
+            showWarning("Validation error", exception.getMessage());
         } catch (SQLException exception) {
             showError("Unable to update rendez-vous status", exception);
         }
-    }
-
-    private boolean isCurrentProfessorSlotOwner(RendezVous source) throws SQLException {
-        if (source == null || source.getSlotId() == null) {
-            return false;
-        }
-        AvailabilitySlot slot = availabilitySlotService.getById(source.getSlotId());
-        if (slot == null || slot.getProfessorId() == null) {
-            return false;
-        }
-        return sameInteger(slot.getProfessorId(), CURRENT_USER_ID);
     }
 
     private String toNull(String raw) {
@@ -1607,6 +1911,10 @@ public class RendezVousController {
     private String normalizeDefault(String raw, String fallback) {
         String value = raw == null ? "" : raw.trim();
         return value.isEmpty() ? fallback : value;
+    }
+
+    private String selectionTargetLabel() {
+        return cardsContainer instanceof VBox ? "row" : "card";
     }
 
     private boolean isPendingStatus(String rawStatus) {

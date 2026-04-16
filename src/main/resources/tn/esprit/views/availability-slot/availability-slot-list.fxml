@@ -30,6 +30,8 @@
                         style="-fx-background-color: #1f3b70; -fx-background-radius: 12; -fx-text-fill: #60a5fa; -fx-font-size: 14px; -fx-font-weight: 700;" />
                 <Button mnemonicParsing="false" onAction="#goToRendezVous" text="Rendez-vous"
                         style="-fx-background-color: transparent; -fx-text-fill: #cbd5e1; -fx-font-size: 14px; -fx-font-weight: 700;" />
+                <Button mnemonicParsing="false" onAction="#goToSlotsBackOffice" text="Back Office"
+                        style="-fx-background-color: transparent; -fx-text-fill: #93c5fd; -fx-font-size: 14px; -fx-font-weight: 700;" />
                 <Region HBox.hgrow="ALWAYS" />
                 <TextField fx:id="searchField" promptText="Rechercher (date, heure, lieu...)"
                            prefWidth="360.0"
@@ -104,4 +106,3 @@
         </HBox>
     </bottom>
 </BorderPane>
-
