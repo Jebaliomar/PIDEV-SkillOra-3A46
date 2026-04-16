@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.rendezvous.RendezVousController"
+            stylesheets="@../theme/skillora-pro.css"
+            styleClass="app-root">
+
+    <top>
+        <VBox spacing="14.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="16.0" right="18.0" bottom="10.0" left="18.0" />
+            </padding>
+
+            <HBox spacing="14.0" styleClass="top-shell">
+                <Label text="SkillHarbor" styleClass="brand-label" />
+                <Button mnemonicParsing="false" onAction="#goToEvents" text="Events"
+                        styleClass="nav-btn" />
+                <Button mnemonicParsing="false" onAction="#goToRendezVous" text="Rendez-vous"
+                        styleClass="nav-btn nav-btn-active" />
+                <Button mnemonicParsing="false" onAction="#goToSlots" text="Slots"
+                        styleClass="nav-btn" />
+                <Button mnemonicParsing="false" onAction="#goToRendezVousBackOffice" text="Back Office"
+                        styleClass="nav-btn" />
+                <Region HBox.hgrow="ALWAYS" />
+                <TextField fx:id="searchField" promptText="Search courses..."
+                           prefWidth="340.0"
+                           styleClass="text-field app-search" />
+                <Button fx:id="notificationButton" mnemonicParsing="false" onAction="#showUnreadNotifications" text="🔔 0"
+                        styleClass="badge-btn" />
+            </HBox>
+
+            <VBox spacing="8.0" styleClass="hero-panel">
+                <Label text="Mes Rendez-vous"
+                       styleClass="hero-title" />
+                <Label text="Consultez, modifiez et gérez vos rendez-vous."
+                       styleClass="hero-subtitle" />
+            </VBox>
+
+            <HBox spacing="10.0" styleClass="filter-bar">
+                <Label text="Filtrer:" styleClass="label-soft" />
+                <Button fx:id="filterAllBtn" onAction="#setFilterAll" text="Tous (0)"
+                        styleClass="btn-secondary" />
+                <Button fx:id="filterPendingBtn" onAction="#setFilterPending" text="En attente (0)"
+                        styleClass="btn-secondary" />
+                <Button fx:id="filterConfirmedBtn" onAction="#setFilterConfirmed" text="Confirmés (0)"
+                        styleClass="btn-secondary" />
+                <Button fx:id="filterRefusedBtn" onAction="#setFilterRefused" text="Refusés (0)"
+                        styleClass="btn-secondary" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button mnemonicParsing="false" onAction="#goToSlots" text="Voir les créneaux"
+                        styleClass="btn-ghost" />
+                <Button fx:id="createTopBtn" mnemonicParsing="false" onAction="#handleCreate" text="Nouveau rendez-vous"
+                        styleClass="btn-primary" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="10.0">
+            <padding>
+                <Insets top="8.0" right="18.0" bottom="12.0" left="18.0" />
+            </padding>
+            <Label text="Cards des Rendez-vous" styleClass="section-title" />
+            <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" styleClass="cards-scroll">
+                <content>
+                    <FlowPane fx:id="cardsContainer" hgap="12.0" vgap="12.0" prefWrapLength="1110.0" styleClass="cards-container" />
+                </content>
+            </ScrollPane>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="10.0" styleClass="footer-shell">
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="statusLabel" text="Ready" styleClass="status-text" />
+        </HBox>
+    </bottom>
+</BorderPane>

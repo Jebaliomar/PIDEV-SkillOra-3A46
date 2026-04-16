@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Pagination?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.availabilityslot.AvailabilitySlotController"
+            stylesheets="@../theme/skillora-pro.css"
+            styleClass="app-root">
+
+    <top>
+        <VBox spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="14.0" right="18.0" bottom="8.0" left="18.0"/>
+            </padding>
+
+            <HBox spacing="12.0" styleClass="top-shell">
+                <Label text="Back Office" styleClass="brand-label"/>
+                <Button mnemonicParsing="false" onAction="#goToSlots" text="Front Slots" styleClass="nav-btn"/>
+                <Button mnemonicParsing="false" onAction="#goToRendezVous" text="Front Rendez-vous" styleClass="nav-btn"/>
+                <Button mnemonicParsing="false" onAction="#goToSlotsBackOffice" text="BO Slots" styleClass="nav-btn nav-btn-active"/>
+                <Button mnemonicParsing="false" onAction="#goToRendezVousBackOffice" text="BO Rendez-vous" styleClass="nav-btn"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="searchField" promptText="Rechercher créneau..." prefWidth="320.0" styleClass="app-search"/>
+            </HBox>
+
+            <HBox spacing="10.0" styleClass="filter-bar">
+                <Label text="Filtrer:" styleClass="label-soft"/>
+                <Button fx:id="filterAllBtn" onAction="#setFilterAll" text="Tous" styleClass="btn-secondary"/>
+                <Button fx:id="filterAvailableBtn" onAction="#setFilterAvailable" text="Disponibles" styleClass="btn-secondary"/>
+                <Button fx:id="filterBookedBtn" onAction="#setFilterBooked" text="Réservés" styleClass="btn-secondary"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button mnemonicParsing="false" onAction="#clearSearch" text="Effacer" styleClass="btn-ghost"/>
+                <Button fx:id="heroCreateBtn" mnemonicParsing="false" onAction="#handleCreate" text="Nouveau créneau" styleClass="btn-primary"/>
+            </HBox>
+
+            <HBox spacing="10.0">
+                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                    <Label text="Total" styleClass="metric-title"/>
+                    <Label fx:id="totalCountLabel" text="0" styleClass="metric-value"/>
+                </VBox>
+                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                    <Label text="Disponibles" styleClass="metric-title"/>
+                    <Label fx:id="availableCountLabel" text="0" styleClass="metric-value"/>
+                </VBox>
+                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                    <Label text="Réservés" styleClass="metric-title"/>
+                    <Label fx:id="bookedCountLabel" text="0" styleClass="metric-value"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="10.0" style="-fx-padding: 0 18 8 18;">
+            <VBox style="-fx-background-color: #061232; -fx-border-color: #173467; -fx-border-radius: 16; -fx-background-radius: 16;">
+                <HBox spacing="8.0" style="-fx-padding: 12 16; -fx-background-color: #132548; -fx-background-radius: 16 16 0 0;">
+                    <Label text="Tous les créneaux (Back Office)" style="-fx-text-fill: #f3f7ff; -fx-font-size: 21px; -fx-font-weight: 900;"/>
+                </HBox>
+                <HBox spacing="0.0" style="-fx-padding: 10 14; -fx-background-color: #0d1d3f; -fx-border-color: #173467; -fx-border-width: 1 0 1 0;">
+                    <Label text="DÉBUT" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="245"/>
+                    <Label text="FIN" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="245"/>
+                    <Label text="DURÉE" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="170"/>
+                    <Label text="STATUT" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="180"/>
+                    <Label text="LIEU / PROF" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="280"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="ACTIONS" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="130"/>
+                </HBox>
+                <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="cards-scroll">
+                    <content>
+                        <VBox fx:id="cardsContainer" spacing="0.0" style="-fx-padding: 0 0 8 0;"/>
+                    </content>
+                </ScrollPane>
+            </VBox>
+            <Pagination fx:id="slotsPagination" maxPageIndicatorCount="7" styleClass="pagination"/>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="10.0" styleClass="footer-shell">
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="statusLabel" text="Ready" styleClass="status-text"/>
+        </HBox>
+    </bottom>
+</BorderPane>

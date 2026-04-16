@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.availabilityslot.AvailabilitySlotController"
+            stylesheets="@../theme/skillora-pro.css"
+            styleClass="app-root">
+
+    <top>
+        <VBox spacing="12.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="14.0" right="16.0" bottom="8.0" left="16.0" />
+            </padding>
+
+            <HBox spacing="12.0" styleClass="top-shell">
+                <Label text="SkillHarbor" styleClass="brand-label" />
+                <Button mnemonicParsing="false" onAction="#goToEvents" text="Events"
+                        styleClass="nav-btn" />
+                <Button mnemonicParsing="false" onAction="#goToRendezVous" text="Rendez-vous"
+                        styleClass="nav-btn" />
+                <Button mnemonicParsing="false" onAction="#goToSlots" text="Slots"
+                        styleClass="nav-btn nav-btn-active" />
+            </HBox>
+
+            <VBox spacing="8.0" styleClass="hero-panel">
+                <Label text="Calendrier des créneaux"
+                       styleClass="hero-title" />
+                <Label text="Affichage mensuel des créneaux disponibles (vert) et réservés (rouge)."
+                       styleClass="hero-subtitle" />
+            </VBox>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="10.0" styleClass="calendar-wrap">
+            <padding>
+                <Insets top="8.0" right="16.0" bottom="10.0" left="16.0" />
+            </padding>
+            <WebView fx:id="calendarWebView" VBox.vgrow="ALWAYS" />
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox spacing="10.0" styleClass="footer-shell">
+            <Button mnemonicParsing="false" onAction="#refreshCalendar" text="Refresh"
+                    styleClass="btn-secondary" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="statusLabel" text="Ready" styleClass="status-text" />
+        </HBox>
+    </bottom>
+</BorderPane>
