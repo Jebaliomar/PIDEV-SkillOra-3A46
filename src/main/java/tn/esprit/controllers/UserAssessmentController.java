@@ -84,7 +84,7 @@ public class UserAssessmentController {
 
         for (Object[] row : allData) {
             Evaluation ev = (Evaluation) row[0];
-            if (ev != null && ev.getId() == evaluation.getId()) {
+            if (ev != null && ev.getId() != null && evaluation.getId() != null && ev.getId().intValue() == evaluation.getId().intValue()) {
                 filteredData.add(row);
             }
         }
@@ -159,7 +159,10 @@ public class UserAssessmentController {
                 continue;
             }
 
-            if (selectedEvaluation != null && evaluation.getId() != selectedEvaluation.getId()) {
+            if (selectedEvaluation != null
+                    && selectedEvaluation.getId() != null
+                    && evaluation.getId() != null
+                    && evaluation.getId().intValue() != selectedEvaluation.getId().intValue()) {
                 continue;
             }
 
@@ -292,7 +295,7 @@ public class UserAssessmentController {
 
         if ("COMPLETED".equals(status) && userEvaluation != null) {
             int totalQuestions = getQuestionCountForEvaluation(evaluation.getId());
-            int score = userEvaluation.getScore() != null ? userEvaluation.getScore().intValue() : 0;
+            int score = userEvaluation.getScore() != null ? userEvaluation.getScore() : 0;
 
             Label scoreLabel = new Label("Score: " + score + "/" + totalQuestions);
             scoreLabel.getStyleClass().add("card-score");
@@ -318,7 +321,7 @@ public class UserAssessmentController {
             if ("TO DO".equals(status)) {
                 openAssessmentPage(evaluation);
             } else {
-                openResultPage(evaluation, userEvaluation);
+                openResultPage(evaluation);
             }
         });
 
@@ -345,17 +348,18 @@ public class UserAssessmentController {
                 Parent root = loader.load();
 
                 UserExamPassController controller = loader.getController();
-                controller.setEvaluation(evaluation);
                 controller.setUserId(connectedUserId);
+                controller.setEvaluation(evaluation);
 
                 evaluationContainer.getScene().setRoot(root);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             showError("Erreur ouverture évaluation : " + e.getMessage());
         }
     }
 
-    private void openResultPage(Evaluation evaluation, UserEvaluation userEvaluation) {
+    private void openResultPage(Evaluation evaluation) {
         try {
             if ("QUIZ".equalsIgnoreCase(evaluation.getType())) {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserQuizResultView.fxml"));
@@ -378,7 +382,8 @@ public class UserAssessmentController {
                 evaluationContainer.getScene().setRoot(root);
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             showError("Erreur ouverture résultat : " + e.getMessage());
         }
     }
@@ -400,6 +405,6 @@ public class UserAssessmentController {
         alert.setTitle("Erreur");
         alert.setHeaderText(null);
         alert.setContentText(msg);
-        alert.show();
+        alert.showAndWait();
     }
 }

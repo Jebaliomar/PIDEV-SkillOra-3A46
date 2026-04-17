@@ -694,3 +694,52 @@
     -fx-border-color: #ff4d5a;
     -fx-effect: dropshadow(gaussian, rgba(255,77,90,0.25), 6, 0.2, 0, 0);
 }
+
+.main-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.main-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.pdf-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.pdf-scroll > .viewport {
+    -fx-background-color: #eef2f7;
+}
+
+.exam-doc-area {
+    -fx-font-size: 14px;
+}
+
+.answer-area {
+    -fx-font-size: 15px;
+}
+
+
+.main-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.main-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.pdf-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.pdf-scroll > .viewport {
+    -fx-background-color: #eef2f7;
+}
