@@ -3,10 +3,11 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -38,6 +39,8 @@
                            styleClass="text-field app-search" />
                 <Button fx:id="notificationButton" mnemonicParsing="false" onAction="#showUnreadNotifications" text="🔔 0"
                         styleClass="badge-btn" />
+                <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout"
+                        styleClass="btn-danger" />
             </HBox>
 
             <VBox spacing="8.0" styleClass="hero-panel">
@@ -67,21 +70,22 @@
     </top>
 
     <center>
-        <VBox spacing="10.0">
-            <padding>
-                <Insets top="8.0" right="18.0" bottom="12.0" left="18.0" />
-            </padding>
-            <Label text="Cards des Rendez-vous" styleClass="section-title" />
-            <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" styleClass="cards-scroll">
-                <content>
-                    <FlowPane fx:id="cardsContainer" hgap="12.0" vgap="12.0" prefWrapLength="1110.0" styleClass="cards-container" />
-                </content>
-            </ScrollPane>
-        </VBox>
+        <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="cards-scroll">
+            <content>
+                <VBox spacing="10.0">
+                    <padding>
+                        <Insets top="8.0" right="18.0" bottom="12.0" left="18.0" />
+                    </padding>
+                    <Label text="Cards des Rendez-vous" styleClass="section-title" />
+                    <GridPane fx:id="cardsContainer" hgap="12.0" vgap="12.0" styleClass="cards-container" />
+                </VBox>
+            </content>
+        </ScrollPane>
     </center>
 
     <bottom>
         <HBox spacing="10.0" styleClass="footer-shell">
+            <Pagination fx:id="rendezVousPagination" maxPageIndicatorCount="8" />
             <Region HBox.hgrow="ALWAYS" />
             <Label fx:id="statusLabel" text="Ready" styleClass="status-text" />
         </HBox>

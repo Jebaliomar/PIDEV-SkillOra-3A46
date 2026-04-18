@@ -81,7 +81,9 @@ public class LoginController implements Initializable {
                 System.out.println("Login successful! User: " + user.getFirstName() + " " + user.getLastName() + " | Role: " + role);
 
                 // Route by role: students go to student layout, admins/professors to admin panel
-                String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
+                String normalizedRole = normalizeRole(role);
+                System.setProperty("skillora.userId", String.valueOf(user.getId()));
+                System.setProperty("skillora.role", normalizedRole);
                 boolean isStudent = normalizedRole.equals("student");
 
                 String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
@@ -154,7 +156,9 @@ public class LoginController implements Initializable {
             }
 
             String role = userService.getUserRole(user.getId());
-            String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
+            String normalizedRole = normalizeRole(role);
+            System.setProperty("skillora.userId", String.valueOf(user.getId()));
+            System.setProperty("skillora.role", normalizedRole);
             boolean isStudent = normalizedRole.equals("student");
             String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
             String title = isStudent ? "SkillORA" : "SkillORA - Admin Panel";
@@ -221,5 +225,19 @@ public class LoginController implements Initializable {
     private void hideError() {
         errorBox.setVisible(false);
         errorBox.setManaged(false);
+    }
+
+    private String normalizeRole(String role) {
+        if (role == null) {
+            return "student";
+        }
+        String normalized = role.trim().toLowerCase().replace("role_", "");
+        if (normalized.contains("admin")) {
+            return "admin";
+        }
+        if (normalized.contains("prof") || normalized.contains("teacher") || normalized.contains("instructor")) {
+            return "professor";
+        }
+        return "student";
     }
 }

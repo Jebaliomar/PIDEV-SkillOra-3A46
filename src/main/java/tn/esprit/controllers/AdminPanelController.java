@@ -140,6 +140,8 @@ public class AdminPanelController implements Initializable {
     public void handleLogout() {
         try {
             currentUser = null;
+            System.clearProperty("skillora.userId");
+            System.clearProperty("skillora.role");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);

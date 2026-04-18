@@ -14,7 +14,8 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.availabilityslot.AvailabilitySlotController"
-            style="-fx-background-color: linear-gradient(to bottom, #020718, #031338);">
+            stylesheets="@../theme/skillora-pro.css"
+            styleClass="app-root">
 
     <top>
         <VBox spacing="12.0" BorderPane.alignment="CENTER">
@@ -22,48 +23,50 @@
                 <Insets top="14.0" right="12.0" bottom="8.0" left="12.0" />
             </padding>
 
-            <HBox spacing="12.0" style="-fx-background-color: #0b1734; -fx-border-color: #182b54; -fx-border-width: 0 0 1 0; -fx-padding: 10 14;">
-                <Label text="⚓ SkillHarbor" style="-fx-text-fill: #e2e8f0; -fx-font-size: 26px; -fx-font-weight: 800;" />
+            <HBox spacing="12.0" style="-fx-background-color: #ffffff; -fx-border-color: #d2dff3; -fx-border-width: 0 0 1 0; -fx-padding: 10 14; -fx-background-radius: 14;">
+                <Label text="⚓ SkillHarbor" style="-fx-text-fill: #264fb2; -fx-font-size: 26px; -fx-font-weight: 800;" />
                 <Button mnemonicParsing="false" onAction="#goToEvents" text="Events"
-                        style="-fx-background-color: transparent; -fx-text-fill: #cbd5e1; -fx-font-size: 14px; -fx-font-weight: 700;" />
+                        style="-fx-background-color: transparent; -fx-text-fill: #4f648d; -fx-font-size: 14px; -fx-font-weight: 700;" />
                 <Button mnemonicParsing="false" onAction="#goToSlots" text="Slots"
-                        style="-fx-background-color: #1f3b70; -fx-background-radius: 12; -fx-text-fill: #60a5fa; -fx-font-size: 14px; -fx-font-weight: 700;" />
+                        style="-fx-background-color: #264fb2; -fx-background-radius: 12; -fx-text-fill: #ffffff; -fx-font-size: 14px; -fx-font-weight: 700;" />
                 <Button mnemonicParsing="false" onAction="#goToRendezVous" text="Rendez-vous"
-                        style="-fx-background-color: transparent; -fx-text-fill: #cbd5e1; -fx-font-size: 14px; -fx-font-weight: 700;" />
+                        style="-fx-background-color: transparent; -fx-text-fill: #4f648d; -fx-font-size: 14px; -fx-font-weight: 700;" />
                 <Button mnemonicParsing="false" onAction="#goToSlotsBackOffice" text="Back Office"
-                        style="-fx-background-color: transparent; -fx-text-fill: #93c5fd; -fx-font-size: 14px; -fx-font-weight: 700;" />
+                        style="-fx-background-color: transparent; -fx-text-fill: #264fb2; -fx-font-size: 14px; -fx-font-weight: 700;" />
                 <Region HBox.hgrow="ALWAYS" />
                 <TextField fx:id="searchField" promptText="Rechercher (date, heure, lieu...)"
                            prefWidth="360.0"
-                           style="-fx-background-color: #172746; -fx-text-fill: #e2e8f0; -fx-prompt-text-fill: #7ea2d6; -fx-background-radius: 12;" />
+                           style="-fx-background-color: #ffffff; -fx-border-color: #b8c8e7; -fx-text-fill: #1f2a44; -fx-prompt-text-fill: #8aa0c6; -fx-background-radius: 12; -fx-border-radius: 12;" />
+                <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout"
+                        style="-fx-background-color: #cc4054; -fx-text-fill: #ffffff; -fx-font-size: 13px; -fx-font-weight: 800; -fx-background-radius: 10; -fx-padding: 8 14;" />
             </HBox>
 
-            <VBox spacing="10.0" style="-fx-background-color: linear-gradient(to right, #2b5fd2, #1e3a8a); -fx-background-radius: 16; -fx-padding: 22;">
+            <VBox spacing="10.0" style="-fx-background-color: linear-gradient(to right, #2f5fc8, #264fb2); -fx-background-radius: 16; -fx-padding: 22;">
                 <Label text="Créneaux Horaires"
-                       style="-fx-font-size: 54px; -fx-font-weight: 800; -fx-text-fill: #e2e8f0;" />
+                       style="-fx-font-size: 54px; -fx-font-weight: 800; -fx-text-fill: #ffffff;" />
                 <Label text="Gérez tous les créneaux horaires disponibles pour les rendez-vous."
-                       style="-fx-font-size: 15px; -fx-text-fill: #c7dbff;" />
+                       style="-fx-font-size: 15px; -fx-text-fill: #dbe8ff;" />
                 <Button fx:id="heroCreateBtn" mnemonicParsing="false" onAction="#handleCreate" text="⊕ Créer un créneau"
-                        style="-fx-background-color: #eef2ff; -fx-text-fill: #2563eb; -fx-font-size: 15px; -fx-font-weight: 800; -fx-background-radius: 12; -fx-padding: 10 18;" />
+                        style="-fx-background-color: #ffffff; -fx-text-fill: #264fb2; -fx-font-size: 15px; -fx-font-weight: 800; -fx-background-radius: 12; -fx-padding: 10 18;" />
             </VBox>
 
             <HBox spacing="10.0">
-                <VBox style="-fx-background-color: #071533; -fx-border-color: #173467; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12;" HBox.hgrow="ALWAYS">
-                    <Label text="Total" style="-fx-text-fill: #7ea2d6; -fx-font-size: 13px; -fx-font-weight: 700;" />
-                    <Label fx:id="totalCountLabel" text="0" style="-fx-text-fill: #e2e8f0; -fx-font-size: 30px; -fx-font-weight: 800;" />
+                <VBox style="-fx-background-color: #ffffff; -fx-border-color: #d2dff3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12;" HBox.hgrow="ALWAYS">
+                    <Label text="Total" style="-fx-text-fill: #6f84aa; -fx-font-size: 13px; -fx-font-weight: 700;" />
+                    <Label fx:id="totalCountLabel" text="0" style="-fx-text-fill: #223a6d; -fx-font-size: 30px; -fx-font-weight: 800;" />
                 </VBox>
-                <VBox style="-fx-background-color: #071533; -fx-border-color: #173467; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12;" HBox.hgrow="ALWAYS">
-                    <Label text="Disponibles" style="-fx-text-fill: #7ee8a3; -fx-font-size: 13px; -fx-font-weight: 700;" />
-                    <Label fx:id="availableCountLabel" text="0" style="-fx-text-fill: #e2e8f0; -fx-font-size: 30px; -fx-font-weight: 800;" />
+                <VBox style="-fx-background-color: #ffffff; -fx-border-color: #d2dff3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12;" HBox.hgrow="ALWAYS">
+                    <Label text="Disponibles" style="-fx-text-fill: #16855a; -fx-font-size: 13px; -fx-font-weight: 700;" />
+                    <Label fx:id="availableCountLabel" text="0" style="-fx-text-fill: #223a6d; -fx-font-size: 30px; -fx-font-weight: 800;" />
                 </VBox>
-                <VBox style="-fx-background-color: #071533; -fx-border-color: #173467; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12;" HBox.hgrow="ALWAYS">
-                    <Label text="Réservés" style="-fx-text-fill: #93c5fd; -fx-font-size: 13px; -fx-font-weight: 700;" />
-                    <Label fx:id="bookedCountLabel" text="0" style="-fx-text-fill: #e2e8f0; -fx-font-size: 30px; -fx-font-weight: 800;" />
+                <VBox style="-fx-background-color: #ffffff; -fx-border-color: #d2dff3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12;" HBox.hgrow="ALWAYS">
+                    <Label text="Réservés" style="-fx-text-fill: #264fb2; -fx-font-size: 13px; -fx-font-weight: 700;" />
+                    <Label fx:id="bookedCountLabel" text="0" style="-fx-text-fill: #223a6d; -fx-font-size: 30px; -fx-font-weight: 800;" />
                 </VBox>
             </HBox>
 
-            <HBox spacing="8.0" style="-fx-background-color: #081a42; -fx-border-color: #173467; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;">
-                <Label text="Filtrer:" style="-fx-text-fill: #7ea2d6; -fx-font-size: 14px; -fx-font-weight: 700;" />
+            <HBox spacing="8.0" style="-fx-background-color: #ffffff; -fx-border-color: #d2dff3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;">
+                <Label text="Filtrer:" style="-fx-text-fill: #6f84aa; -fx-font-size: 14px; -fx-font-weight: 700;" />
                 <Button fx:id="filterAllBtn" onAction="#setFilterAll" text="Tous"
                         style="-fx-font-size: 13px; -fx-font-weight: 700;" />
                 <Button fx:id="filterAvailableBtn" onAction="#setFilterAvailable" text="Disponibles"
@@ -72,37 +75,40 @@
                         style="-fx-font-size: 13px; -fx-font-weight: 700;" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Button mnemonicParsing="false" onAction="#clearSearch" text="Effacer"
-                        style="-fx-background-color: #1f2f57; -fx-text-fill: #cbd5e1; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 10;" />
+                        style="-fx-background-color: #e9effb; -fx-text-fill: #27498d; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 10;" />
             </HBox>
         </VBox>
     </top>
 
     <center>
-        <VBox spacing="10.0" style="-fx-padding: 0 0 8 0;">
-            <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" fitToHeight="false" hbarPolicy="NEVER"
-                        style="-fx-background: transparent; -fx-background-color: transparent;">
-                <content>
-                    <GridPane fx:id="cardsContainer" hgap="26.0" vgap="22.0"
-                              style="-fx-padding: 20 18 12 18; -fx-alignment: top-center;" />
-                </content>
-            </ScrollPane>
-            <Pagination fx:id="slotsPagination" maxPageIndicatorCount="7"
-                        style="-fx-page-information-visible: false; -fx-padding: 0 18 0 18;" />
-        </VBox>
+        <ScrollPane fx:id="cardsScrollPane"
+                    fitToWidth="true"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    style="-fx-background: transparent; -fx-background-color: transparent;">
+            <content>
+                <VBox spacing="10.0" style="-fx-padding: 0 0 8 0;">
+                    <GridPane fx:id="cardsContainer" hgap="40.0" vgap="34.0"
+                              style="-fx-padding: 24 24 14 24; -fx-alignment: top-center;" />
+                    <Pagination fx:id="slotsPagination" maxPageIndicatorCount="7"
+                                style="-fx-page-information-visible: false; -fx-padding: 0 18 0 18;" />
+                </VBox>
+            </content>
+        </ScrollPane>
     </center>
 
     <bottom>
         <HBox spacing="10.0" style="-fx-padding: 10 12 12 12;">
             <Button mnemonicParsing="false" onAction="#refreshSlots" text="Refresh"
-                    style="-fx-background-color: #1e293b; -fx-text-fill: #e2e8f0; -fx-font-weight: 700; -fx-background-radius: 10;" />
+                    style="-fx-background-color: #edf2fc; -fx-text-fill: #264fb2; -fx-font-weight: 700; -fx-background-radius: 10;" />
             <Button fx:id="addSlotBtn" mnemonicParsing="false" onAction="#handleCreate" text="Ajouter"
-                    style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10;" />
+                    style="-fx-background-color: #264fb2; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10;" />
             <Button fx:id="editSlotBtn" mnemonicParsing="false" onAction="#handleEdit" text="Modifier"
-                    style="-fx-background-color: #0f766e; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10;" />
+                    style="-fx-background-color: #2f5fc8; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10;" />
             <Button fx:id="deleteSlotBtn" mnemonicParsing="false" onAction="#handleDelete" text="Supprimer"
-                    style="-fx-background-color: #7f1d1d; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10;" />
+                    style="-fx-background-color: #cc4054; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10;" />
             <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: #93c5fd; -fx-font-size: 13px;" />
+            <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: #4e6491; -fx-font-size: 13px;" />
         </HBox>
     </bottom>
 </BorderPane>

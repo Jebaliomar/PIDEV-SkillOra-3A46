@@ -2,6 +2,7 @@ target/
 avatars/
 src/main/resources/avatars/
 src/main/resources/mail.properties
+src/main/resources/config.properties
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

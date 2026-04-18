@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -174,11 +175,37 @@ public class UserService {
 
     public String getUserRole(int userId) throws SQLException {
         String sql = "SELECT role FROM user_roles WHERE user_id = ?";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setInt(1, userId);
-        ResultSet rs = ps.executeQuery();
-        if (rs.next()) {
-            return rs.getString("role");
+        String professorRole = null;
+        String studentRole = null;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String role = rs.getString("role");
+                    String normalized = role == null ? "" : role.toLowerCase(Locale.ROOT);
+                    if (normalized.contains("admin")) {
+                        return role;
+                    }
+                    if (professorRole == null
+                            && (normalized.contains("prof")
+                            || normalized.contains("teacher")
+                            || normalized.contains("instructor"))) {
+                        professorRole = role;
+                        continue;
+                    }
+                    if (studentRole == null) {
+                        studentRole = role;
+                    }
+                }
+            }
+        }
+
+        if (professorRole != null) {
+            return professorRole;
+        }
+        if (studentRole != null) {
+            return studentRole;
         }
         return "ROLE_STUDENT";
     }

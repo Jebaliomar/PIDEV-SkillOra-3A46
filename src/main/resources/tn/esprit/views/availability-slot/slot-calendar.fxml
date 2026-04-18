@@ -28,6 +28,9 @@
                         styleClass="nav-btn" />
                 <Button mnemonicParsing="false" onAction="#goToSlots" text="Slots"
                         styleClass="nav-btn nav-btn-active" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout"
+                        styleClass="btn-danger" />
             </HBox>
 
             <VBox spacing="8.0" styleClass="hero-panel">

@@ -2,7 +2,13 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Pagination?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
@@ -30,6 +36,7 @@
                 <Region HBox.hgrow="ALWAYS"/>
                 <TextField fx:id="searchField" promptText="Rechercher rendez-vous..." prefWidth="320.0" styleClass="app-search"/>
                 <Button fx:id="notificationButton" mnemonicParsing="false" onAction="#showUnreadNotifications" text="🔔 0" styleClass="badge-btn"/>
+                <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout" styleClass="btn-danger"/>
             </HBox>
 
             <HBox spacing="10.0" styleClass="filter-bar">
@@ -41,35 +48,120 @@
                 <Region HBox.hgrow="ALWAYS"/>
                 <Button fx:id="createTopBtn" mnemonicParsing="false" onAction="#handleCreate" text="Nouveau rendez-vous" styleClass="btn-primary"/>
             </HBox>
+
+            <HBox spacing="10.0">
+                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                    <Label text="Total" styleClass="metric-title"/>
+                    <Label fx:id="totalCountLabel" text="0" styleClass="metric-value"/>
+                </VBox>
+                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                    <Label text="En attente" style="-fx-text-fill: #a46708; -fx-font-size: 12px; -fx-font-weight: 800;"/>
+                    <Label fx:id="pendingCountLabel" text="0" styleClass="metric-value"/>
+                </VBox>
+                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                    <Label text="Confirmés" style="-fx-text-fill: #16855a; -fx-font-size: 12px; -fx-font-weight: 800;"/>
+                    <Label fx:id="confirmedCountLabel" text="0" styleClass="metric-value"/>
+                </VBox>
+                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                    <Label text="Refusés" style="-fx-text-fill: #c2414b; -fx-font-size: 12px; -fx-font-weight: 800;"/>
+                    <Label fx:id="refusedCountLabel" text="0" styleClass="metric-value"/>
+                </VBox>
+            </HBox>
+
         </VBox>
     </top>
 
     <center>
-        <VBox spacing="10.0" style="-fx-padding: 0 18 8 18;">
-            <VBox style="-fx-background-color: #061232; -fx-border-color: #173467; -fx-border-radius: 16; -fx-background-radius: 16;">
-                <HBox spacing="8.0" style="-fx-padding: 12 16; -fx-background-color: #132548; -fx-background-radius: 16 16 0 0;">
-                    <Label text="Tous les rendez-vous (Back Office)" style="-fx-text-fill: #f3f7ff; -fx-font-size: 21px; -fx-font-weight: 900;"/>
-                </HBox>
-                <HBox spacing="0.0" style="-fx-padding: 10 14; -fx-background-color: #0d1d3f; -fx-border-color: #173467; -fx-border-width: 1 0 1 0;">
-                    <Label text="DATE" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="180"/>
-                    <Label text="PROFESSEUR" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="200"/>
-                    <Label text="ÉTUDIANT" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="200"/>
-                    <Label text="COURS / LIEN" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="230"/>
-                    <Label text="STATUT" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="150"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label text="ACTIONS" style="-fx-text-fill: #8fb0dc; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="300"/>
-                </HBox>
-                <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="cards-scroll">
-                    <content>
+        <ScrollPane fx:id="cardsScrollPane" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="cards-scroll">
+            <content>
+                <VBox spacing="10.0" style="-fx-padding: 0 18 8 18;">
+                    <VBox spacing="8.0" style="-fx-background-color: #ffffff; -fx-border-color: #d2dff3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12 14;">
+                        <Label text="Pourcentage Acceptés / Refusés par professeur"
+                               style="-fx-text-fill: #21365d; -fx-font-size: 14px; -fx-font-weight: 900;"/>
+                        <HBox spacing="16.0" alignment="CENTER">
+                            <VBox spacing="8.0" prefWidth="430.0">
+                                <Label text="Professeur" styleClass="metric-title"/>
+                                <ComboBox fx:id="teacherStatsCombo" prefWidth="360.0" styleClass="app-search"/>
+                                <Label fx:id="teacherStatsSummaryLabel"
+                                       text="Sélectionnez un professeur pour voir les pourcentages."
+                                       wrapText="true"
+                                       style="-fx-text-fill: #4e6491; -fx-font-size: 12px; -fx-font-weight: 700;"/>
+                            </VBox>
+                            <PieChart fx:id="teacherStatsPieChart"
+                                      prefWidth="420.0"
+                                      prefHeight="230.0"
+                                      minWidth="380.0"
+                                      minHeight="220.0"
+                                      legendVisible="true"
+                                      labelsVisible="true"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="8.0" style="-fx-background-color: #ffffff; -fx-border-color: #d2dff3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12 14;">
+                        <Label text="Top professeurs actifs (acceptations)"
+                               style="-fx-text-fill: #21365d; -fx-font-size: 14px; -fx-font-weight: 900;"/>
+                        <HBox spacing="14.0">
+                            <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                                <BarChart fx:id="professorActivityBarChart"
+                                          prefHeight="250.0"
+                                          minHeight="230.0"
+                                          animated="false"
+                                          legendVisible="false"
+                                          categoryGap="14.0"
+                                          barGap="4.0">
+                                    <xAxis>
+                                        <CategoryAxis label="Professeurs" tickLabelRotation="-15.0"/>
+                                    </xAxis>
+                                    <yAxis>
+                                        <NumberAxis label="Acceptations"/>
+                                    </yAxis>
+                                </BarChart>
+                                <Label fx:id="professorActivitySummaryLabel"
+                                       text="Chargement des stats activité professeurs..."
+                                       wrapText="true"
+                                       style="-fx-text-fill: #4e6491; -fx-font-size: 12px; -fx-font-weight: 700;"/>
+                            </VBox>
+
+                            <VBox spacing="8.0"
+                                  prefWidth="360.0"
+                                  style="-fx-background-color: #f8faff; -fx-border-color: #d2dff3; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10 12;">
+                                <Label text="Liste des professeurs" style="-fx-text-fill: #21365d; -fx-font-size: 13px; -fx-font-weight: 900;"/>
+                                <ScrollPane fitToWidth="true"
+                                            hbarPolicy="NEVER"
+                                            vbarPolicy="AS_NEEDED"
+                                            prefHeight="245.0"
+                                            style="-fx-background: transparent; -fx-background-color: transparent;">
+                                    <content>
+                                        <VBox fx:id="professorRankingContainer" spacing="8.0" style="-fx-padding: 2 0 2 0;"/>
+                                    </content>
+                                </ScrollPane>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <VBox style="-fx-background-color: #ffffff; -fx-border-color: #d2dff3; -fx-border-radius: 16; -fx-background-radius: 16;">
+                        <HBox spacing="8.0" style="-fx-padding: 12 16; -fx-background-color: #eef3fb; -fx-background-radius: 16 16 0 0;">
+                            <Label text="Tous les rendez-vous (Back Office)" style="-fx-text-fill: #1f2a44; -fx-font-size: 21px; -fx-font-weight: 900;"/>
+                        </HBox>
+                        <HBox spacing="0.0" style="-fx-padding: 10 14; -fx-background-color: #f8faff; -fx-border-color: #d2dff3; -fx-border-width: 1 0 1 0;">
+                            <Label text="DATE" style="-fx-text-fill: #5f739a; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="180"/>
+                            <Label text="PROFESSEUR" style="-fx-text-fill: #5f739a; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="200"/>
+                            <Label text="ÉTUDIANT" style="-fx-text-fill: #5f739a; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="200"/>
+                            <Label text="COURS / LIEN" style="-fx-text-fill: #5f739a; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="230"/>
+                            <Label text="STATUT" style="-fx-text-fill: #5f739a; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="150"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="ACTIONS" style="-fx-text-fill: #5f739a; -fx-font-size: 13px; -fx-font-weight: 800;" prefWidth="300"/>
+                        </HBox>
                         <VBox fx:id="cardsContainer" spacing="0.0" style="-fx-padding: 0 0 8 0;"/>
-                    </content>
-                </ScrollPane>
-            </VBox>
-        </VBox>
+                    </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
     </center>
 
     <bottom>
         <HBox spacing="10.0" styleClass="footer-shell">
+            <Pagination fx:id="rendezVousPagination" maxPageIndicatorCount="8"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="statusLabel" text="Ready" styleClass="status-text"/>
         </HBox>
