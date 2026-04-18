@@ -12,3 +12,4 @@ public final class JavaFxAppLauncher {
         Application.launch(JavaFxApp.class, args);
     }
 }
+.
