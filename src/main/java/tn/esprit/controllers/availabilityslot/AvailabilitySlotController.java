@@ -1454,7 +1454,7 @@ public class AvailabilitySlotController {
                 if (deletedRendezVous) {
                     deletedRdvCount++;
                     if (isReservedRendezVousStatus(rendezVous.getStatut())) {
-                        notifyStudentSlotDeletion(rendezVous, persistedSlot.getId());
+                        notifyStudentSlotDeletion(rendezVous, persistedSlot);
                     }
                 }
             }
@@ -1688,7 +1688,7 @@ public class AvailabilitySlotController {
         notification.setUserId(rendezVous.getStudentId());
         notification.setTitle("Rendez-vous annulé");
         if (professorCancellation) {
-            String safeProfessorName = toNull(professorName) == null ? "Unknown" : professorName;
+            String safeProfessorName = resolveProfessorNameForNotification(professorName);
             notification.setMessage("Sorry, Professor " + safeProfessorName + " cancelled your rendez-vous. Reason: " + reason + ".");
         } else {
             String optionalReason = toNull(reason);
@@ -2047,15 +2047,20 @@ public class AvailabilitySlotController {
         return false;
     }
 
-    private void notifyStudentSlotDeletion(RendezVous rendezVous, Integer slotId) {
+    private void notifyStudentSlotDeletion(RendezVous rendezVous, AvailabilitySlot deletedSlot) {
         if (rendezVous == null || rendezVous.getStudentId() == null || rendezVous.getId() == null) {
             return;
         }
         Notification notification = new Notification();
         notification.setUserId(rendezVous.getStudentId());
         notification.setTitle("Rendez-vous annulé");
-        notification.setMessage("Le professeur a supprimé le créneau #" + defaultValue(slotId)
-                + ". Votre rendez-vous #" + rendezVous.getId() + " a été supprimé.");
+        String professorName = deletedSlot == null ? null : resolveProfessorDisplayName(deletedSlot.getProfessorId());
+        String safeProfessorName = resolveProfessorNameForNotification(professorName);
+        String slotDate = deletedSlot == null ? null : formatDateTime(deletedSlot.getStartAt());
+        String safeDate = toNull(slotDate) == null ? "la date prévue" : slotDate;
+        notification.setMessage("Le professeur " + safeProfessorName
+                + " a supprimé le créneau du " + safeDate
+                + ". Votre rendez-vous a été supprimé automatiquement.");
         notification.setLink("/rendezvous");
         notification.setIsRead(false);
         notification.setCreatedAt(LocalDateTime.now());
@@ -2329,6 +2334,14 @@ public class AvailabilitySlotController {
         }
         String trimmed = raw.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String resolveProfessorNameForNotification(String rawProfessorName) {
+        String value = toNull(rawProfessorName);
+        if (value == null || value.matches("(?i)^prof\\s*#?\\s*\\d+$") || value.matches("(?i)^professeur\\s*#?\\s*\\d+$")) {
+            return "inconnu";
+        }
+        return value;
     }
 
     private String defaultEmpty(String value) {

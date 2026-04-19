@@ -185,6 +185,7 @@ public class RendezVousController {
     private final RendezVousEmailService rendezVousEmailService = new RendezVousEmailService();
     private final Map<Integer, String> userDisplayNameCache = new HashMap<>();
     private final Map<Integer, String> userEmailCache = new HashMap<>();
+    private final Map<Integer, RendezVous> notificationRendezVousCache = new HashMap<>();
     private final Map<Integer, String> courseTitleCache = new HashMap<>();
     private List<RendezVous> allRendezVous = List.of();
     private List<RendezVous> filteredRendezVous = List.of();
@@ -235,6 +236,7 @@ public class RendezVousController {
         try {
             userDisplayNameCache.clear();
             userEmailCache.clear();
+            notificationRendezVousCache.clear();
             courseTitleCache.clear();
             List<RendezVous> loaded = rendezVousService.getAll();
             if (isAdminMode()) {
@@ -3410,17 +3412,17 @@ public class RendezVousController {
 
         int unreadCount = unread == null ? 0 : unread.size();
         VBox root = new VBox(10);
-        root.setPrefWidth(380);
-        root.setStyle("-fx-background-color: #ffffff; -fx-border-color: #d2dff3; -fx-border-width: 1; -fx-border-radius: 14; -fx-background-radius: 14; -fx-padding: 12;");
+        root.setPrefWidth(420);
+        root.setStyle("-fx-background-color: linear-gradient(to bottom, #ffffff, #f7fbff); -fx-border-color: #c8daf7; -fx-border-width: 1.2; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 14; -fx-effect: dropshadow(gaussian, rgba(20,44,90,0.22), 16, 0.25, 0, 4);");
 
         Label title = new Label("Notifications");
-        title.setStyle("-fx-text-fill: #1f2a44; -fx-font-size: 18px; -fx-font-weight: 800;");
+        title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 22px; -fx-font-weight: 900;");
         Label count = new Label(unreadCount + " non lue(s)");
-        count.setStyle("-fx-text-fill: #5f739a; -fx-font-size: 13px; -fx-font-weight: 700;");
+        count.setStyle("-fx-text-fill: #5b6f96; -fx-font-size: 13px; -fx-font-weight: 700;");
 
         Button markAllBtn = new Button("Tout marquer lu");
         markAllBtn.setDisable(unreadCount == 0);
-        markAllBtn.setStyle("-fx-background-color: #edf2fc; -fx-text-fill: #264fb2; -fx-font-size: 12px; -fx-font-weight: 700; -fx-background-radius: 10;");
+        markAllBtn.setStyle("-fx-background-color: #e7efff; -fx-text-fill: #214fb1; -fx-font-size: 12px; -fx-font-weight: 800; -fx-background-radius: 999; -fx-padding: 7 14;");
         markAllBtn.setOnAction(event -> {
             try {
                 notificationService.markAllAsReadForUser(getCurrentUserId());
@@ -3449,7 +3451,7 @@ public class RendezVousController {
         }
 
         Button viewAllBtn = new Button("Voir toutes les notifications");
-        viewAllBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #264fb2; -fx-font-size: 13px; -fx-font-weight: 700;");
+        viewAllBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #214fb1; -fx-font-size: 14px; -fx-font-weight: 800;");
         viewAllBtn.setOnAction(event -> {
             menu.hide();
             showAllNotificationsDialog();
@@ -3466,26 +3468,27 @@ public class RendezVousController {
 
     private HBox buildNotificationDropdownItem(Notification notification, ContextMenu menu) {
         HBox row = new HBox(10);
-        row.setStyle("-fx-background-color: #f3f6fc; -fx-background-radius: 10; -fx-padding: 10;");
+        boolean unread = !Boolean.TRUE.equals(notification.getIsRead());
+        String rowBackground = unread ? "#eef4ff" : "#ffffff";
+        row.setStyle("-fx-background-color: " + rowBackground + "; -fx-border-color: #d6e2f8; -fx-border-width: 1; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10 12;");
 
         Label icon = new Label("🔔");
-        icon.setStyle("-fx-background-color: #e9effb; -fx-text-fill: #264fb2; -fx-font-size: 13px; -fx-padding: 6; -fx-background-radius: 14;");
+        icon.setStyle("-fx-background-color: #dbe7ff; -fx-text-fill: #204cad; -fx-font-size: 13px; -fx-padding: 6; -fx-background-radius: 14;");
 
         VBox textBox = new VBox(3);
         HBox.setHgrow(textBox, javafx.scene.layout.Priority.ALWAYS);
         Label title = new Label(normalizeDefault(notification.getTitle(), "Notification"));
-        title.setStyle("-fx-text-fill: #1f2a44; -fx-font-size: 13px; -fx-font-weight: 800;");
+        title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 13px; -fx-font-weight: 900;");
         title.setWrapText(true);
-        Label message = new Label(normalizeDefault(notification.getMessage(), "-"));
-        message.setStyle("-fx-text-fill: #5f739a; -fx-font-size: 12px;");
+        Label message = new Label(resolveNotificationMessage(notification));
+        message.setStyle("-fx-text-fill: #4e6491; -fx-font-size: 12px; -fx-font-weight: 600;");
         message.setWrapText(true);
         Label time = new Label(formatNotificationDate(notification.getCreatedAt()));
-        time.setStyle("-fx-text-fill: #7c8fb2; -fx-font-size: 11px;");
+        time.setStyle("-fx-text-fill: #6e83aa; -fx-font-size: 11px;");
         textBox.getChildren().addAll(title, message, time);
 
         Button markReadBtn = new Button("Lu");
-        markReadBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #16855a; -fx-font-size: 12px; -fx-font-weight: 700;");
-        boolean unread = !Boolean.TRUE.equals(notification.getIsRead());
+        markReadBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #138a5a; -fx-font-size: 12px; -fx-font-weight: 800;");
         markReadBtn.setManaged(unread);
         markReadBtn.setVisible(unread);
         markReadBtn.setOnAction(event -> {
@@ -3496,10 +3499,7 @@ public class RendezVousController {
         });
 
         row.setOnMouseClicked(event -> {
-            showInfo(
-                    normalizeDefault(notification.getTitle(), "Notification"),
-                    normalizeDefault(notification.getMessage(), "") + "\n" + normalizeDefault(notification.getLink(), "")
-            );
+            showNotificationDetailsDialog(notification);
             if (!Boolean.TRUE.equals(notification.getIsRead())) {
                 markNotificationAsReadSimple(notification);
             }
@@ -3522,6 +3522,118 @@ public class RendezVousController {
         }
     }
 
+    private String resolveNotificationMessage(Notification notification) {
+        if (notification == null) {
+            return "-";
+        }
+        RendezVous rdv = resolveRendezVousFromNotification(notification);
+        if (rdv != null) {
+            String title = normalizeDefault(notification.getTitle(), "").toLowerCase(Locale.ROOT);
+            if (title.contains("nouvelle demande")) {
+                return buildProfessorRequestNotificationMessage(rdv);
+            }
+            if (title.contains("mise à jour")) {
+                return buildStudentStatusNotificationMessage(rdv);
+            }
+            return rewriteNotificationMessageWithNames(normalizeDefault(notification.getMessage(), "-"), rdv);
+        }
+        return cleanupNotificationMessage(normalizeDefault(notification.getMessage(), "-"));
+    }
+
+    private RendezVous resolveRendezVousFromNotification(Notification notification) {
+        if (notification == null) {
+            return null;
+        }
+        Integer rdvId = extractRendezVousIdFromLink(notification.getLink());
+        if (rdvId == null) {
+            return null;
+        }
+        if (notificationRendezVousCache.containsKey(rdvId)) {
+            return notificationRendezVousCache.get(rdvId);
+        }
+        RendezVous rdv = null;
+        try {
+            rdv = rendezVousService.getById(rdvId);
+        } catch (SQLException ignored) {
+            // Keep null when rendez-vous lookup fails.
+        }
+        notificationRendezVousCache.put(rdvId, rdv);
+        return rdv;
+    }
+
+    private Integer extractRendezVousIdFromLink(String link) {
+        String value = toNull(link);
+        if (value == null) {
+            return null;
+        }
+        int slashIndex = value.lastIndexOf('/');
+        if (slashIndex < 0 || slashIndex >= value.length() - 1) {
+            return null;
+        }
+        String idPart = value.substring(slashIndex + 1).trim();
+        if (idPart.contains("?")) {
+            idPart = idPart.substring(0, idPart.indexOf('?')).trim();
+        }
+        try {
+            return Integer.parseInt(idPart);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private AvailabilitySlot resolveSlotForNotification(Integer slotId) {
+        if (slotId == null) {
+            return null;
+        }
+        try {
+            return availabilitySlotService.getById(slotId);
+        } catch (SQLException ignored) {
+            return null;
+        }
+    }
+
+    private String buildProfessorRequestNotificationMessage(RendezVous rdv) {
+        if (rdv == null) {
+            return "Nouvelle demande de rendez-vous.";
+        }
+        String studentName = resolveStudentNameForNotification(rdv.getStudentId());
+        String courseName = resolveCourseNameForNotification(rdv.getCourseId());
+        AvailabilitySlot slot = resolveSlotForNotification(rdv.getSlotId());
+        String requestedAt = resolveRequestedMeetingDateTime(rdv, slot);
+        String coursePart = "un cours".equalsIgnoreCase(courseName) ? courseName : ("\"" + courseName + "\"");
+        return "Nouvelle demande de " + studentName + " pour " + coursePart + " le " + requestedAt + ".";
+    }
+
+    private String buildStudentStatusNotificationMessage(RendezVous rdv) {
+        if (rdv == null) {
+            return "Mise à jour de votre rendez-vous.";
+        }
+        AvailabilitySlot slot = resolveSlotForNotification(rdv.getSlotId());
+        String professorName = resolveProfessorNameForNotification(rdv.getProfessorId());
+        String requestedAt = resolveRequestedMeetingDateTime(rdv, slot);
+        String status = statusDisplay(rdv.getStatut()).toLowerCase(Locale.ROOT);
+
+        StringBuilder message = new StringBuilder("Votre rendez-vous avec ")
+                .append(professorName)
+                .append(" prévu le ")
+                .append(requestedAt)
+                .append(" est ")
+                .append(status)
+                .append(".");
+
+        if (isConfirmedStatus(rdv.getStatut())) {
+            String location = resolveMeetingLocationForEmail(rdv, slot);
+            message.append(" Détails: ").append(location).append(".");
+        } else if (isRefusedStatus(rdv.getStatut())) {
+            String reason = toNull(rdv.getRefusalReason());
+            if (reason != null) {
+                message.append(" Motif: ").append(reason).append(".");
+            }
+        }
+
+        return message.toString();
+    }
+
     private void createProfessorNotification(RendezVous rdv) {
         if (rdv.getProfessorId() == null) {
             return;
@@ -3529,7 +3641,7 @@ public class RendezVousController {
         Notification notification = new Notification();
         notification.setUserId(rdv.getProfessorId());
         notification.setTitle("Nouvelle demande de rendez-vous");
-        notification.setMessage("Nouvelle demande de l'étudiant " + rdv.getStudentId() + " pour le rendez-vous " + rdv.getId());
+        notification.setMessage(buildProfessorRequestNotificationMessage(rdv));
         notification.setLink("/rendezvous/" + rdv.getId());
         notification.setIsRead(false);
         notification.setCreatedAt(LocalDateTime.now());
@@ -3544,14 +3656,10 @@ public class RendezVousController {
         if (rdv == null || rdv.getStudentId() == null) {
             return;
         }
-        String message = "Votre rendez-vous " + rdv.getId() + " a été " + statusDisplay(rdv.getStatut()).toLowerCase() + ".";
-        if (isConfirmedStatus(rdv.getStatut()) && toNull(rdv.getMeetingLink()) != null) {
-            message += " Lien de réunion: " + rdv.getMeetingLink();
-        }
         Notification notification = new Notification();
         notification.setUserId(rdv.getStudentId());
         notification.setTitle("Mise à jour rendez-vous");
-        notification.setMessage(message);
+        notification.setMessage(buildStudentStatusNotificationMessage(rdv));
         notification.setLink("/rendezvous/" + rdv.getId());
         notification.setIsRead(false);
         notification.setCreatedAt(LocalDateTime.now());
@@ -3634,10 +3742,10 @@ public class RendezVousController {
 
     private HBox buildUnreadPreviewCard(Notification notification) {
         HBox row = new HBox(12);
-        row.setStyle("-fx-background-color: #f3f6fc; -fx-background-radius: 12; -fx-padding: 12;");
+        row.setStyle("-fx-background-color: #eef4ff; -fx-border-color: #d6e2f8; -fx-border-width: 1; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12;");
 
         Label icon = new Label("🔔");
-        icon.setStyle("-fx-background-color: #e9effb; -fx-text-fill: #264fb2; -fx-font-size: 15px; -fx-padding: 8; -fx-background-radius: 18;");
+        icon.setStyle("-fx-background-color: #dbe7ff; -fx-text-fill: #214fb1; -fx-font-size: 15px; -fx-padding: 8; -fx-background-radius: 18;");
 
         VBox textBox = new VBox(4);
         textBox.setMaxWidth(Double.MAX_VALUE);
@@ -3645,9 +3753,9 @@ public class RendezVousController {
 
         Label title = new Label(normalizeDefault(notification.getTitle(), "Notification"));
         title.setWrapText(true);
-        title.setStyle("-fx-text-fill: #1f2a44; -fx-font-size: 16px; -fx-font-weight: 800;");
+        title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 16px; -fx-font-weight: 900;");
 
-        Label message = new Label(normalizeDefault(notification.getMessage(), "-"));
+        Label message = new Label(resolveNotificationMessage(notification));
         message.setWrapText(true);
         message.setStyle("-fx-text-fill: #4e6491; -fx-font-size: 14px; -fx-font-weight: 600;");
 
@@ -3685,16 +3793,16 @@ public class RendezVousController {
 
         AtomicBoolean shouldReload = new AtomicBoolean(false);
         VBox root = new VBox(14);
-        root.setStyle("-fx-background-color: #f7f9fd; -fx-border-color: #d2dff3; -fx-border-width: 1; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 18;");
-        root.setPrefWidth(980);
-        root.setMaxWidth(980);
+        root.setStyle("-fx-background-color: linear-gradient(to bottom, #fafdff, #f5f9ff); -fx-border-color: #c8daf7; -fx-border-width: 1.2; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 18; -fx-effect: dropshadow(gaussian, rgba(20,44,90,0.22), 18, 0.25, 0, 4);");
+        root.setPrefWidth(1020);
+        root.setMaxWidth(1020);
         root.setPrefHeight(640);
 
         HBox header = new HBox(12);
         Label title = new Label("Notifications");
-        title.setStyle("-fx-text-fill: #1f2a44; -fx-font-size: 42px; -fx-font-weight: 800;");
+        title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 30px; -fx-font-weight: 900;");
         Button markAllBtn = new Button("Tout marquer comme lu");
-        markAllBtn.setStyle("-fx-background-color: #264fb2; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: 700; -fx-background-radius: 12; -fx-padding: 8 16;");
+        markAllBtn.setStyle("-fx-background-color: #214fb1; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 800; -fx-background-radius: 999; -fx-padding: 8 16;");
         markAllBtn.setDisable(unreadCount == 0);
         markAllBtn.setOnAction(event -> {
             try {
@@ -3750,43 +3858,160 @@ public class RendezVousController {
     private HBox buildNotificationRow(Notification notification, boolean lastRow, Dialog<ButtonType> dialog, AtomicBoolean shouldReload, ButtonType closeType) {
         HBox row = new HBox(14);
         String border = lastRow ? "0 0 0 0" : "0 0 1 0";
-        String background = Boolean.TRUE.equals(notification.getIsRead()) ? "#ffffff" : "#f1f5fd";
+        String background = Boolean.TRUE.equals(notification.getIsRead()) ? "#ffffff" : "#eef4ff";
         row.setStyle("-fx-alignment: center-left; -fx-padding: 14 16; -fx-border-color: #d2dff3; -fx-border-width: " + border + "; -fx-background-color: " + background + ";");
 
         Label icon = new Label("🔔");
-        icon.setStyle("-fx-background-color: #e9effb; -fx-text-fill: #264fb2; -fx-font-size: 14px; -fx-padding: 8; -fx-background-radius: 18;");
+        icon.setStyle("-fx-background-color: #dbe7ff; -fx-text-fill: #214fb1; -fx-font-size: 14px; -fx-padding: 8; -fx-background-radius: 18;");
 
         VBox textBox = new VBox(4);
         textBox.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(textBox, javafx.scene.layout.Priority.ALWAYS);
 
         Label title = new Label(normalizeDefault(notification.getTitle(), "Notification"));
-        title.setStyle("-fx-text-fill: #1f2a44; -fx-font-size: 20px; -fx-font-weight: 800;");
-        Label message = new Label(normalizeDefault(notification.getMessage(), "-"));
+        title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 19px; -fx-font-weight: 900;");
+        Label message = new Label(resolveNotificationMessage(notification));
         message.setWrapText(true);
-        message.setStyle("-fx-text-fill: #4e6491; -fx-font-size: 14px;");
+        message.setStyle("-fx-text-fill: #4e6491; -fx-font-size: 14px; -fx-font-weight: 600;");
         Label time = new Label(formatNotificationDate(notification.getCreatedAt()));
         time.setStyle("-fx-text-fill: #6f84aa; -fx-font-size: 12px;");
         textBox.getChildren().addAll(title, message, time);
 
         HBox actions = new HBox(8);
         Button openBtn = new Button("Ouvrir");
-        openBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #264fb2; -fx-font-size: 13px; -fx-font-weight: 700;");
-        openBtn.setOnAction(event -> showInfo(
-                normalizeDefault(notification.getTitle(), "Notification"),
-                normalizeDefault(notification.getMessage(), "") + "\n" + normalizeDefault(notification.getLink(), "")
-        ));
+        openBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #214fb1; -fx-font-size: 13px; -fx-font-weight: 800;");
+        openBtn.setOnAction(event -> showNotificationDetailsDialog(notification));
         actions.getChildren().add(openBtn);
 
         if (!Boolean.TRUE.equals(notification.getIsRead())) {
             Button markReadBtn = new Button("Marquer lu");
-            markReadBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #4ade80; -fx-font-size: 13px; -fx-font-weight: 700;");
+            markReadBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #138a5a; -fx-font-size: 13px; -fx-font-weight: 800;");
             markReadBtn.setOnAction(event -> markNotificationAsRead(notification, dialog, shouldReload, closeType));
             actions.getChildren().add(markReadBtn);
         }
 
         row.getChildren().addAll(icon, textBox, actions);
         return row;
+    }
+
+    private void showNotificationDetailsDialog(Notification notification) {
+        if (notification == null) {
+            return;
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Notification");
+        ButtonType closeType = new ButtonType("Fermer", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().add(closeType);
+
+        VBox root = new VBox(14);
+        root.setStyle("-fx-background-color: linear-gradient(to bottom, #f9fbff, #f3f8ff); -fx-border-color: #c8daf7; -fx-border-width: 1.2; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 18; -fx-effect: dropshadow(gaussian, rgba(20,44,90,0.2), 16, 0.25, 0, 4);");
+        root.setPrefWidth(700);
+        root.setMaxWidth(700);
+
+        Label title = new Label(normalizeDefault(notification.getTitle(), "Notification"));
+        title.setWrapText(true);
+        title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 25px; -fx-font-weight: 900;");
+
+        Label message = new Label(resolveNotificationMessage(notification));
+        message.setWrapText(true);
+        message.setStyle("-fx-text-fill: #334f80; -fx-font-size: 15px; -fx-font-weight: 600;");
+
+        Label time = new Label("Reçue le " + formatNotificationDate(notification.getCreatedAt()));
+        time.setStyle("-fx-text-fill: #6f84aa; -fx-font-size: 13px; -fx-font-weight: 600;");
+
+        VBox details = new VBox(6);
+        details.setStyle("-fx-background-color: #ffffff; -fx-border-color: #d6e2f8; -fx-border-width: 1; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10 12;");
+        RendezVous rdv = resolveRendezVousFromNotification(notification);
+        if (rdv != null) {
+            AvailabilitySlot slot = resolveSlotForNotification(rdv.getSlotId());
+
+            Label professorLine = new Label("Professeur: " + resolveProfessorNameForNotification(rdv.getProfessorId()));
+            Label studentLine = new Label("Étudiant: " + resolveStudentNameForNotification(rdv.getStudentId()));
+            Label courseLine = new Label("Cours: " + resolveCourseNameForNotification(rdv.getCourseId()));
+            Label dateLine = new Label("Date: " + resolveRequestedMeetingDateTime(rdv, slot));
+
+            professorLine.setStyle("-fx-text-fill: #29467f; -fx-font-size: 13px; -fx-font-weight: 700;");
+            studentLine.setStyle("-fx-text-fill: #29467f; -fx-font-size: 13px; -fx-font-weight: 700;");
+            courseLine.setStyle("-fx-text-fill: #29467f; -fx-font-size: 13px; -fx-font-weight: 700;");
+            dateLine.setStyle("-fx-text-fill: #29467f; -fx-font-size: 13px; -fx-font-weight: 700;");
+            details.getChildren().addAll(professorLine, studentLine, courseLine, dateLine);
+        } else {
+            Label fallback = new Label("Informations détaillées non disponibles.");
+            fallback.setStyle("-fx-text-fill: #5d7198; -fx-font-size: 13px; -fx-font-weight: 600;");
+            details.getChildren().add(fallback);
+        }
+
+        root.getChildren().addAll(title, message, time, details);
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.setStyle("-fx-background-color: transparent;");
+        pane.setContent(root);
+
+        Button closeButton = (Button) pane.lookupButton(closeType);
+        if (closeButton != null) {
+            closeButton.setStyle("-fx-background-color: #214fb1; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: 800; -fx-background-radius: 10; -fx-padding: 8 16;");
+        }
+
+        dialog.showAndWait();
+    }
+
+    private String resolveProfessorNameForNotification(Integer professorId) {
+        String resolved = toNull(resolveProfessorName(professorId));
+        if (resolved == null || resolved.equalsIgnoreCase("Professeur inconnu") || resolved.matches("(?i)^professeur\\s+\\d+$")) {
+            return "le professeur";
+        }
+        return resolved;
+    }
+
+    private String resolveStudentNameForNotification(Integer studentId) {
+        String resolved = toNull(resolveStudentName(studentId));
+        if (resolved == null || resolved.equalsIgnoreCase("Etudiant inconnu")
+                || resolved.equalsIgnoreCase("Étudiant inconnu")
+                || resolved.matches("(?i)^etudiant\\s+\\d+$")
+                || resolved.matches("(?i)^étudiant\\s+\\d+$")) {
+            return "un étudiant";
+        }
+        return resolved;
+    }
+
+    private String resolveCourseNameForNotification(Integer courseId) {
+        String resolved = toNull(resolveCourseName(courseId));
+        if (resolved == null || resolved.equals("-") || resolved.matches("(?i)^cours\\s+\\d+$")) {
+            return "un cours";
+        }
+        return resolved;
+    }
+
+    private String rewriteNotificationMessageWithNames(String rawMessage, RendezVous rdv) {
+        String message = normalizeDefault(rawMessage, "-");
+        if (rdv == null) {
+            return cleanupNotificationMessage(message);
+        }
+
+        String studentName = resolveStudentNameForNotification(rdv.getStudentId());
+        String professorName = resolveProfessorNameForNotification(rdv.getProfessorId());
+        String courseName = resolveCourseNameForNotification(rdv.getCourseId());
+
+        message = message
+                .replaceAll("(?i)\\b(etudiant|étudiant|student)\\s*#?\\s*\\d+\\b", studentName)
+                .replaceAll("(?i)\\b(professeur|professor|teacher)\\s*#?\\s*\\d+\\b", professorName)
+                .replaceAll("(?i)\\b(cours|course)\\s*#?\\s*\\d+\\b", courseName);
+
+        return cleanupNotificationMessage(message);
+    }
+
+    private String cleanupNotificationMessage(String message) {
+        String cleaned = normalizeDefault(message, "-")
+                .replaceAll("#\\s*\\d+", "")
+                .replaceAll("\\s{2,}", " ")
+                .replace(" .", ".")
+                .trim();
+
+        if (cleaned.isEmpty()) {
+            return "-";
+        }
+        return cleaned;
     }
 
     private void markNotificationAsRead(Notification notification, Dialog<ButtonType> dialog, AtomicBoolean shouldReload, ButtonType closeType) {
