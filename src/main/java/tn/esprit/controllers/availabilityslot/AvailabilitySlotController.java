@@ -1001,11 +1001,13 @@ public class AvailabilitySlotController {
 
     private double computeCardWidth(GridPane gridContainer) {
         double fallback = CARD_FALLBACK_WIDTH;
-        if (cardsScrollPane == null) {
-            return fallback;
+        double viewportWidth = 0;
+        if (cardsScrollPane != null && cardsScrollPane.getViewportBounds() != null) {
+            viewportWidth = cardsScrollPane.getViewportBounds().getWidth();
         }
-
-        double viewportWidth = cardsScrollPane.getViewportBounds().getWidth();
+        if (viewportWidth <= 0) {
+            viewportWidth = gridContainer.getWidth();
+        }
         if (viewportWidth <= 0) {
             return fallback;
         }

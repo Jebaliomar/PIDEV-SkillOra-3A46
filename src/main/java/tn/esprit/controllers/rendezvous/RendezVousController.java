@@ -58,6 +58,7 @@ import tn.esprit.entities.User;
 import tn.esprit.services.AIService;
 import tn.esprit.services.AvailabilitySlotService;
 import tn.esprit.services.NotificationService;
+import tn.esprit.services.RendezVousEmailService;
 import tn.esprit.services.RendezVousService;
 import tn.esprit.services.UserService;
 import tn.esprit.tools.MyConnection;
@@ -102,6 +103,7 @@ public class RendezVousController {
     private static final double DETAILS_KEY_WIDTH = 170;
     private static final int MAX_MESSAGE_LENGTH = 1000;
     private static final int MAX_MEETING_LINK_LENGTH = 255;
+    private static final int MAX_REFUSAL_REASON_LENGTH = 500;
     private static final int MAX_FILE_NAME_LENGTH = 255;
     private static final int RENDEZ_VOUS_PER_PAGE = 8;
 
@@ -157,6 +159,9 @@ public class RendezVousController {
     private ComboBox<TeacherPerformanceStats> teacherStatsCombo;
 
     @FXML
+    private VBox teacherStatsButtonsContainer;
+
+    @FXML
     private PieChart teacherStatsPieChart;
 
     @FXML
@@ -177,12 +182,15 @@ public class RendezVousController {
     private final RendezVousService rendezVousService = new RendezVousService();
     private final AvailabilitySlotService availabilitySlotService = new AvailabilitySlotService();
     private final NotificationService notificationService = new NotificationService();
+    private final RendezVousEmailService rendezVousEmailService = new RendezVousEmailService();
     private final Map<Integer, String> userDisplayNameCache = new HashMap<>();
+    private final Map<Integer, String> userEmailCache = new HashMap<>();
     private final Map<Integer, String> courseTitleCache = new HashMap<>();
     private List<RendezVous> allRendezVous = List.of();
     private List<RendezVous> filteredRendezVous = List.of();
     private RendezVous selectedRendezVous;
     private RendezVousFilter currentFilter = RendezVousFilter.ALL;
+    private Integer selectedTeacherStatsProfessorId;
 
     private enum RendezVousFilter {
         ALL,
@@ -226,6 +234,7 @@ public class RendezVousController {
     private void refreshRendezVous() {
         try {
             userDisplayNameCache.clear();
+            userEmailCache.clear();
             courseTitleCache.clear();
             List<RendezVous> loaded = rendezVousService.getAll();
             if (isAdminMode()) {
@@ -407,12 +416,12 @@ public class RendezVousController {
     }
 
     private void updateTeacherStatsChart() {
-        if (teacherStatsCombo == null || teacherStatsPieChart == null) {
+        if (teacherStatsPieChart == null || (teacherStatsCombo == null && teacherStatsButtonsContainer == null)) {
             return;
         }
         Map<Integer, TeacherPerformanceStats> statsByProfessor = buildTeacherStatsByProfessor();
 
-        TeacherPerformanceStats previousSelection = teacherStatsCombo.getValue();
+        TeacherPerformanceStats previousComboSelection = teacherStatsCombo == null ? null : teacherStatsCombo.getValue();
         List<TeacherPerformanceStats> sorted = new ArrayList<>(statsByProfessor.values());
         sorted.sort((a, b) -> {
             int processedCompare = Integer.compare(b.processedCount(), a.processedCount());
@@ -422,10 +431,24 @@ public class RendezVousController {
             return normalizeDefault(a.professorName, "").compareToIgnoreCase(normalizeDefault(b.professorName, ""));
         });
 
-        teacherStatsCombo.getItems().setAll(sorted);
+        List<TeacherPerformanceStats> topProfessors = sorted.stream()
+                .limit(3)
+                .collect(Collectors.toList());
+        if (teacherStatsCombo != null) {
+            teacherStatsCombo.getItems().setAll(topProfessors);
+        }
 
         if (statsByProfessor.isEmpty()) {
-            teacherStatsCombo.setDisable(true);
+            selectedTeacherStatsProfessorId = null;
+            if (teacherStatsCombo != null) {
+                teacherStatsCombo.setDisable(true);
+            }
+            if (teacherStatsButtonsContainer != null) {
+                teacherStatsButtonsContainer.getChildren().clear();
+                Label empty = new Label("Aucun professeur trouvé.");
+                empty.setStyle("-fx-text-fill: #6f84aa; -fx-font-size: 12px; -fx-font-weight: 700;");
+                teacherStatsButtonsContainer.getChildren().add(empty);
+            }
             teacherStatsPieChart.setData(FXCollections.observableArrayList(new PieChart.Data("Aucune donnée", 100)));
             teacherStatsPieChart.setTitle("Répartition");
             if (teacherStatsSummaryLabel != null) {
@@ -439,21 +462,24 @@ public class RendezVousController {
             return;
         }
 
-        teacherStatsCombo.setDisable(false);
         TeacherPerformanceStats selected = null;
-        if (previousSelection != null && previousSelection.professorId != null) {
-            Integer previousId = previousSelection.professorId;
-            selected = sorted.stream()
-                    .filter(item -> item.professorId != null && item.professorId.equals(previousId))
-                    .findFirst()
-                    .orElse(null);
+        if (selectedTeacherStatsProfessorId != null) {
+            selected = findTeacherStatsByProfessorId(topProfessors, selectedTeacherStatsProfessorId);
+        }
+        if (selected == null && previousComboSelection != null && previousComboSelection.professorId != null) {
+            selected = findTeacherStatsByProfessorId(topProfessors, previousComboSelection.professorId);
         }
         if (selected == null) {
-            selected = sorted.get(0);
+            selected = topProfessors.get(0);
         }
+        selectedTeacherStatsProfessorId = selected.professorId;
 
-        teacherStatsCombo.setValue(selected);
-        updateTeacherStatsPieForSelection();
+        if (teacherStatsCombo != null) {
+            teacherStatsCombo.setDisable(false);
+            teacherStatsCombo.setValue(selected);
+        }
+        renderTeacherStatsButtons(topProfessors, selected.professorId);
+        updateTeacherStatsPieForSelection(selected);
     }
 
     private Map<Integer, TeacherPerformanceStats> buildTeacherStatsByProfessor() {
@@ -483,14 +509,22 @@ public class RendezVousController {
     }
 
     private void updateTeacherStatsPieForSelection() {
-        if (teacherStatsCombo == null || teacherStatsPieChart == null) {
-            return;
+        TeacherPerformanceStats stats = null;
+        if (teacherStatsCombo != null) {
+            stats = teacherStatsCombo.getValue();
         }
-        TeacherPerformanceStats stats = teacherStatsCombo.getValue();
-        if (stats == null) {
-            return;
+        if (stats == null && selectedTeacherStatsProfessorId != null) {
+            stats = buildTeacherStatsByProfessor().get(selectedTeacherStatsProfessorId);
         }
+        updateTeacherStatsPieForSelection(stats);
+    }
 
+    private void updateTeacherStatsPieForSelection(TeacherPerformanceStats stats) {
+        if (teacherStatsPieChart == null || stats == null) {
+            return;
+        }
+        selectedTeacherStatsProfessorId = stats.professorId;
+        highlightTeacherStatsButtons(stats.professorId);
         int processed = stats.processedCount();
         ObservableList<PieChart.Data> chartData;
         if (processed <= 0) {
@@ -515,7 +549,7 @@ public class RendezVousController {
         teacherStatsPieChart.setStartAngle(90);
 
         if (teacherStatsSummaryLabel != null) {
-            String name = normalizeDefault(stats.professorName, "Prof #" + safeNumber(stats.professorId));
+            String name = normalizeDefault(stats.professorName, "Professeur " + safeNumber(stats.professorId));
             teacherStatsSummaryLabel.setText(
                     name
                             + "  •  Acceptés: " + formatPercent(stats.acceptedRate())
@@ -526,6 +560,71 @@ public class RendezVousController {
         }
 
         Platform.runLater(() -> applyTeacherStatsPieColors(stats, chartData));
+    }
+
+    private TeacherPerformanceStats findTeacherStatsByProfessorId(List<TeacherPerformanceStats> statsList, Integer professorId) {
+        if (statsList == null || statsList.isEmpty() || professorId == null) {
+            return null;
+        }
+        return statsList.stream()
+                .filter(item -> item != null && sameInteger(item.professorId, professorId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void renderTeacherStatsButtons(List<TeacherPerformanceStats> statsList, Integer selectedProfessorId) {
+        if (teacherStatsButtonsContainer == null) {
+            return;
+        }
+        teacherStatsButtonsContainer.getChildren().clear();
+        if (statsList == null || statsList.isEmpty()) {
+            return;
+        }
+
+        for (TeacherPerformanceStats stats : statsList) {
+            if (stats == null || stats.professorId == null) {
+                continue;
+            }
+            String professorName = normalizeDefault(stats.professorName, "Professeur " + safeNumber(stats.professorId));
+            Button button = new Button(professorName);
+            button.setUserData(stats.professorId);
+            button.setWrapText(false);
+            button.setMaxWidth(Double.MAX_VALUE);
+            button.setPrefWidth(390);
+            button.setStyle(teacherStatsButtonStyle(sameInteger(stats.professorId, selectedProfessorId)));
+            button.setOnAction(event -> {
+                selectedTeacherStatsProfessorId = stats.professorId;
+                if (teacherStatsCombo != null) {
+                    TeacherPerformanceStats current = teacherStatsCombo.getValue();
+                    if (current == null || !sameInteger(current.professorId, stats.professorId)) {
+                        teacherStatsCombo.setValue(stats);
+                    }
+                }
+                highlightTeacherStatsButtons(stats.professorId);
+                updateTeacherStatsPieForSelection(stats);
+            });
+            teacherStatsButtonsContainer.getChildren().add(button);
+        }
+    }
+
+    private void highlightTeacherStatsButtons(Integer selectedProfessorId) {
+        if (teacherStatsButtonsContainer == null) {
+            return;
+        }
+        for (Node node : teacherStatsButtonsContainer.getChildren()) {
+            if (!(node instanceof Button button)) {
+                continue;
+            }
+            Integer buttonProfessorId = button.getUserData() instanceof Integer value ? value : null;
+            button.setStyle(teacherStatsButtonStyle(sameInteger(buttonProfessorId, selectedProfessorId)));
+        }
+    }
+
+    private String teacherStatsButtonStyle(boolean selected) {
+        if (selected) {
+            return "-fx-alignment: center-left; -fx-background-color: linear-gradient(to bottom, #2f5fc8, #264fb2); -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: 800; -fx-background-radius: 999; -fx-padding: 7 14;";
+        }
+        return "-fx-alignment: center-left; -fx-background-color: #edf2fc; -fx-text-fill: #264fb2; -fx-font-size: 12px; -fx-font-weight: 800; -fx-border-color: #b9c9e9; -fx-border-radius: 999; -fx-background-radius: 999; -fx-padding: 7 14;";
     }
 
     private void updateProfessorActivityLineChart() {
@@ -590,7 +689,7 @@ public class RendezVousController {
         professorActivityBarChart.getData().setAll(acceptedSeries);
 
         TeacherPerformanceStats topEntry = topActive.get(0);
-        String topProfessorName = normalizeDefault(topEntry.professorName, "Prof #" + safeNumber(topEntry.professorId));
+        String topProfessorName = normalizeDefault(topEntry.professorName, "Professeur " + safeNumber(topEntry.professorId));
         int topAcceptedCount = topEntry.confirmed;
         if (professorActivitySummaryLabel != null) {
             professorActivitySummaryLabel.setText(
@@ -664,7 +763,7 @@ public class RendezVousController {
             rankBadge.setStyle("-fx-alignment: center; -fx-text-fill: #264fb2; -fx-font-size: 12px; -fx-font-weight: 900; -fx-background-color: #edf2fc; -fx-background-radius: 999;");
 
             VBox textBox = new VBox(2);
-            Label name = new Label(normalizeDefault(stats.professorName, "Prof #" + safeNumber(stats.professorId)));
+            Label name = new Label(normalizeDefault(stats.professorName, "Professeur " + safeNumber(stats.professorId)));
             name.setStyle("-fx-text-fill: #1f2a44; -fx-font-size: 12px; -fx-font-weight: 800;");
             name.setWrapText(true);
             Label details = new Label(
@@ -864,7 +963,7 @@ public class RendezVousController {
             if (professorName != null && !professorName.isBlank()) {
                 return professorName;
             }
-            return "Prof #" + (professorId == null ? "-" : professorId);
+            return "Professeur " + (professorId == null ? "-" : professorId);
         }
     }
 
@@ -1305,7 +1404,7 @@ public class RendezVousController {
                     markSlotBookedState(updated.getSlotId(), true);
                 }
                 refreshRendezVous();
-                statusLabel.setText("Rendez-vous #" + selectedRendezVous.getId() + " updated");
+                statusLabel.setText("Rendez-vous " + selectedRendezVous.getId() + " updated");
             } else {
                 showWarning("Update failed", "The selected rendez-vous could not be updated.");
             }
@@ -1327,7 +1426,7 @@ public class RendezVousController {
 
         Alert confirmation = new Alert(
                 Alert.AlertType.CONFIRMATION,
-                "Delete rendez-vous #" + selectedRendezVous.getId() + "?",
+                "Delete rendez-vous " + selectedRendezVous.getId() + "?",
                 ButtonType.YES,
                 ButtonType.CANCEL
         );
@@ -1346,7 +1445,7 @@ public class RendezVousController {
                 markSlotBookedState(deletedSlotId, false);
                 selectedRendezVous = null;
                 refreshRendezVous();
-                statusLabel.setText("Rendez-vous #" + deletedId + " deleted");
+                statusLabel.setText("Rendez-vous " + deletedId + " deleted");
             } else {
                 showWarning("Delete failed", "The selected rendez-vous could not be deleted.");
             }
@@ -1534,7 +1633,7 @@ public class RendezVousController {
             }
             refreshRendezVous();
             if (statusLabel != null) {
-                statusLabel.setText("PDF ajouté au rendez-vous #" + safeNumber(updated.getId()));
+                statusLabel.setText("PDF ajouté au rendez-vous " + safeNumber(updated.getId()));
             }
         } catch (IllegalArgumentException exception) {
             showWarning("Validation error", exception.getMessage());
@@ -1695,20 +1794,33 @@ public class RendezVousController {
             return Optional.empty();
         }
 
+        List<ProfessorOption> professorOptions = extractProfessorOptions(slotOptions);
+        if (professorOptions.isEmpty()) {
+            showWarning("No professor available", "No professor with available slots was found.");
+            return Optional.empty();
+        }
+
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Nouveau rendez-vous");
         ButtonType createType = new ButtonType("Créer", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(cancelType, createType);
 
+        TextField professorSearchField = new TextField();
+        professorSearchField.setPromptText("Rechercher un professeur...");
+        styleTextField(professorSearchField);
+
+        ComboBox<ProfessorOption> professorCombo = new ComboBox<>();
+        styleCombo(professorCombo);
+        professorCombo.getItems().setAll(professorOptions);
+        professorCombo.setValue(professorOptions.get(0));
+        professorCombo.setPromptText("Choisir professeur");
+
         ComboBox<SlotOption> slotCombo = new ComboBox<>();
-        slotCombo.getItems().setAll(slotOptions);
-        slotCombo.setValue(slotOptions.get(0));
         styleCombo(slotCombo);
+        slotCombo.setPromptText("Choisir créneau");
 
         ListView<SlotOption> slotsListView = new ListView<>();
-        slotsListView.getItems().setAll(slotOptions);
-        slotsListView.getSelectionModel().select(slotOptions.get(0));
         slotsListView.setPrefHeight(172);
         slotsListView.setMaxHeight(172);
         slotsListView.setStyle("-fx-background-color: #ffffff; -fx-border-color: #b8c8e7; -fx-border-radius: 10; -fx-background-radius: 10;");
@@ -1725,7 +1837,6 @@ public class RendezVousController {
 
         ComboBox<CourseOption> courseCombo = new ComboBox<>();
         styleCombo(courseCombo);
-        refreshCourseOptionsForSlot(slotCombo.getValue(), courseCombo, null);
 
         Button aiSuggestBtn = new Button("✨ Suggest Best Time");
         aiSuggestBtn.setStyle("-fx-background-color: #264fb2; -fx-text-fill: #ffffff; -fx-font-weight: 800; -fx-background-radius: 10; -fx-padding: 8 12;");
@@ -1793,7 +1904,10 @@ public class RendezVousController {
         inlineError.setVisible(false);
         inlineError.setStyle("-fx-background-color: #fdecee; -fx-border-color: #e9a8b2; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10 12; -fx-text-fill: #c2414b; -fx-font-size: 14px; -fx-font-weight: 700;");
 
+        Label professorSearchLabel = sectionLabel("Recherche professeur");
+        Label professorLabel = sectionLabel("Professeur");
         Label slotLabel = sectionLabel("Créneaux disponibles");
+        Label slotSelectLabel = sectionLabel("Créneau à sélectionner");
         Label aiLabel = sectionLabel("AI Suggestion");
         HBox aiSuggestRow = new HBox(10, aiSuggestBtn, aiProgressIndicator);
         aiSuggestRow.setStyle("-fx-alignment: center-left;");
@@ -1814,13 +1928,51 @@ public class RendezVousController {
         HBox typeBox = new HBox(16, onlineRadio, inPersonRadio);
         HBox pdfBox = new HBox(10, fileBtn, pdfNameLabel);
 
+        AtomicReference<List<SlotOption>> scopedSlotOptionsRef = new AtomicReference<>(List.of());
         Runnable refreshLocationPreview = () -> {
             locationPreview.setText(formatSlotLocationDisplay(slotCombo.getValue()));
             boolean showLocation = inPersonRadio.isSelected();
             locationPreviewBox.setManaged(showLocation);
             locationPreviewBox.setVisible(showLocation);
         };
+        Runnable refreshScopedSlots = () -> {
+            Integer selectedProfessorId = professorCombo.getValue() == null ? null : professorCombo.getValue().id();
+            List<SlotOption> scoped = filterSlotOptionsByProfessor(slotOptions, selectedProfessorId);
+            scopedSlotOptionsRef.set(scoped);
 
+            Integer preferredSlotId = slotCombo.getValue() == null ? null : slotCombo.getValue().id();
+            slotCombo.getItems().setAll(scoped);
+            slotsListView.getItems().setAll(scoped);
+
+            SlotOption selectedScopedSlot = findSlotOptionById(scoped, preferredSlotId);
+            slotCombo.setDisable(scoped.isEmpty());
+            slotsListView.setDisable(scoped.isEmpty());
+            slotCombo.setValue(selectedScopedSlot);
+            if (selectedScopedSlot != null) {
+                slotsListView.getSelectionModel().select(selectedScopedSlot);
+            } else {
+                slotsListView.getSelectionModel().clearSelection();
+            }
+
+            refreshCourseOptionsForSlot(selectedScopedSlot, courseCombo, null);
+            refreshLocationPreview.run();
+            clearInlineDialogError(inlineError);
+            aiSuggestionLabel.setText(" ");
+        };
+
+        professorSearchField.textProperty().addListener((obs, oldValue, newValue) -> {
+            ProfessorOption previousSelection = professorCombo.getValue();
+            List<ProfessorOption> filtered = filterProfessorOptions(professorOptions, newValue);
+            professorCombo.getItems().setAll(filtered);
+            ProfessorOption selected = previousSelection == null ? null : findProfessorOptionById(filtered, previousSelection.id());
+            if (selected == null && !filtered.isEmpty()) {
+                selected = filtered.get(0);
+            }
+            professorCombo.setValue(selected);
+            clearInlineDialogError(inlineError);
+            aiSuggestionLabel.setText(" ");
+        });
+        professorCombo.valueProperty().addListener((obs, oldValue, newValue) -> refreshScopedSlots.run());
         slotCombo.valueProperty().addListener((obs, oldValue, newValue) -> {
             refreshCourseOptionsForSlot(newValue, courseCombo, null);
             refreshLocationPreview.run();
@@ -1830,10 +1982,15 @@ public class RendezVousController {
         typeGroup.selectedToggleProperty().addListener((obs, oldValue, newValue) -> refreshLocationPreview.run());
         courseCombo.valueProperty().addListener((obs, oldValue, newValue) -> clearInlineDialogError(inlineError));
         messageArea.textProperty().addListener((obs, oldValue, newValue) -> clearInlineDialogError(inlineError));
+
+        refreshScopedSlots.run();
         refreshLocationPreview.run();
 
         content.getChildren().addAll(
                 topHeader, divider, inlineError,
+                professorSearchLabel, professorSearchField,
+                professorLabel, professorCombo,
+                slotSelectLabel, slotCombo,
                 slotLabel, slotsListView,
                 aiLabel, aiSuggestRow, aiSuggestionLabel,
                 courseLabel, courseCombo,
@@ -1865,7 +2022,7 @@ public class RendezVousController {
                 try {
                     SlotOption selectedSlot = slotCombo.getValue();
                     CourseOption selectedCourse = courseCombo.getValue();
-                    AvailabilitySlot validatedSlot = validateSelectedSlotForSubmission(selectedSlot, slotOptions, null);
+                    AvailabilitySlot validatedSlot = validateSelectedSlotForSubmission(selectedSlot, scopedSlotOptionsRef.get(), null);
                     CourseOption validatedCourse = validateSelectedCourseForProfessor(selectedCourse, validatedSlot.getProfessorId());
                     String validatedMessage = validateMessageInput(messageArea.getText());
                     String validatedPdfName = validatePdfFileName(selectedFile[0]);
@@ -1993,7 +2150,7 @@ public class RendezVousController {
         }
 
         Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Modifier le créneau #" + safeNumber(source.getId()));
+        dialog.setTitle("Modifier le créneau " + safeNumber(source.getId()));
         ButtonType saveType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(cancelType, saveType);
@@ -2086,7 +2243,7 @@ public class RendezVousController {
                 .map(RendezVous::getSlotId)
                 .collect(Collectors.toSet());
 
-        return availabilitySlotService.getAll().stream()
+        return loadVisibleSlotsForCurrentUser().stream()
                 .filter(slot -> professorIdScope == null || sameInteger(slot.getProfessorId(), professorIdScope))
                 .filter(slot -> isSlotAvailable(slot, includeSlotId, reservedSlotIds))
                 .map(slot -> {
@@ -2101,6 +2258,73 @@ public class RendezVousController {
                             slot.getLocationLng()
                     );
                 })
+                .collect(Collectors.toList());
+    }
+
+    private List<AvailabilitySlot> loadVisibleSlotsForCurrentUser() throws SQLException {
+        if (isStudentMode()) {
+            // Student can book only slots created by professors.
+            return availabilitySlotService.getAllCreatedByProfessors();
+        }
+        // Admin (and other non-student flows) can see all slots.
+        return availabilitySlotService.getAll();
+    }
+
+    private List<ProfessorOption> extractProfessorOptions(List<SlotOption> slotOptions) {
+        if (slotOptions == null || slotOptions.isEmpty()) {
+            return List.of();
+        }
+        Map<Integer, ProfessorOption> byId = new HashMap<>();
+        for (SlotOption option : slotOptions) {
+            if (option == null || option.professorId() == null) {
+                continue;
+            }
+            String resolvedName = normalizeDefault(toNull(option.professorName()), "Professeur " + option.professorId());
+            byId.putIfAbsent(option.professorId(), new ProfessorOption(option.professorId(), resolvedName));
+        }
+        return byId.values().stream()
+                .sorted(
+                        Comparator.comparing((ProfessorOption option) -> normalizeDefault(option.name(), "").toLowerCase(Locale.ROOT))
+                                .thenComparing(option -> option.id() == null ? Integer.MAX_VALUE : option.id())
+                )
+                .collect(Collectors.toList());
+    }
+
+    private List<ProfessorOption> filterProfessorOptions(List<ProfessorOption> options, String rawQuery) {
+        if (options == null || options.isEmpty()) {
+            return List.of();
+        }
+        String query = toNull(rawQuery);
+        if (query == null) {
+            return new ArrayList<>(options);
+        }
+        String lowered = query.toLowerCase(Locale.ROOT);
+        return options.stream()
+                .filter(option -> option != null)
+                .filter(option -> {
+                    String name = normalizeDefault(option.name(), "").toLowerCase(Locale.ROOT);
+                    String id = option.id() == null ? "" : option.id().toString();
+                    return name.contains(lowered) || id.contains(lowered);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private ProfessorOption findProfessorOptionById(List<ProfessorOption> options, Integer professorId) {
+        if (options == null || options.isEmpty() || professorId == null) {
+            return null;
+        }
+        return options.stream()
+                .filter(option -> option != null && sameInteger(option.id(), professorId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private List<SlotOption> filterSlotOptionsByProfessor(List<SlotOption> options, Integer professorId) {
+        if (options == null || options.isEmpty() || professorId == null) {
+            return List.of();
+        }
+        return options.stream()
+                .filter(option -> option != null && sameInteger(option.professorId(), professorId))
                 .collect(Collectors.toList());
     }
 
@@ -2176,8 +2400,8 @@ public class RendezVousController {
         String end = slot.getEndAt() == null ? "-" : slot.getEndAt().format(DATE_TIME_FORMATTER);
         String currentFlag = selectedRendezVous != null && selectedRendezVous.getSlotId() != null
                 && selectedRendezVous.getSlotId().equals(slot.getId()) ? " (actuel)" : "";
-        String professor = normalizeDefault(professorName, "Prof #" + safeNumber(slot.getProfessorId()));
-        return "#" + safeNumber(slot.getId()) + "  " + start + " -> " + end + "  |  " + professor + currentFlag;
+        String professor = normalizeDefault(professorName, "Professeur " + safeNumber(slot.getProfessorId()));
+        return "Créneau " + safeNumber(slot.getId()) + "  " + start + " -> " + end + "  |  " + professor + currentFlag;
     }
 
     private String formatSlotLocationDisplay(SlotOption slotOption) {
@@ -2227,13 +2451,47 @@ public class RendezVousController {
     }
 
     private String resolveProfessorName(Integer professorId) {
-        String fallback = professorId == null ? "Professeur inconnu" : ("Prof #" + professorId);
+        String fallback = professorId == null ? "Professeur inconnu" : ("Professeur " + professorId);
         return resolveUserDisplayName(professorId, fallback);
     }
 
     private String resolveStudentName(Integer studentId) {
-        String fallback = studentId == null ? "Etudiant inconnu" : ("Etudiant #" + studentId);
+        String fallback = studentId == null ? "Etudiant inconnu" : ("Etudiant " + studentId);
         return resolveUserDisplayName(studentId, fallback);
+    }
+
+    private String resolveUserEmail(Integer userId) {
+        if (userId == null) {
+            return null;
+        }
+        if (userEmailCache.containsKey(userId)) {
+            return userEmailCache.get(userId);
+        }
+
+        String resolved = null;
+        try {
+            String userTable = findExistingTable("user", "users");
+            if (userTable != null) {
+                String emailColumn = findExistingColumn(userTable, "email", "mail");
+                if (emailColumn != null) {
+                    Connection connection = MyConnection.getInstance().getConnection();
+                    String sql = "SELECT `" + emailColumn + "` AS user_email FROM `" + userTable + "` WHERE id = ? LIMIT 1";
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                        preparedStatement.setInt(1, userId);
+                        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                            if (resultSet.next()) {
+                                resolved = toNull(resultSet.getString("user_email"));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SQLException ignored) {
+            // Keep null when email lookup is unavailable.
+        }
+
+        userEmailCache.put(userId, resolved);
+        return resolved;
     }
 
     private String resolveUserDisplayName(Integer userId, String fallback) {
@@ -2309,7 +2567,7 @@ public class RendezVousController {
             return cached;
         }
 
-        String resolved = "Cours #" + courseId;
+        String resolved = "Cours " + courseId;
         try {
             String courseTable = findExistingTable("course", "courses");
             if (courseTable != null) {
@@ -2415,7 +2673,7 @@ public class RendezVousController {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     int courseId = resultSet.getInt("id");
-                    String title = normalizeDefault(resultSet.getString("course_title"), "Course #" + courseId);
+                    String title = normalizeDefault(resultSet.getString("course_title"), "Course " + courseId);
                     options.add(new CourseOption(courseId, title));
                 }
             }
@@ -2673,6 +2931,20 @@ public class RendezVousController {
         }
     }
 
+    private record ProfessorOption(Integer id, String name) {
+        @Override
+        public String toString() {
+            String displayName = name == null ? null : name.trim();
+            if (displayName == null || displayName.isBlank()) {
+                displayName = id == null ? "Professeur" : ("Professeur " + id);
+            }
+            if (id == null) {
+                return displayName;
+            }
+            return displayName + "  (ID " + id + ")";
+        }
+    }
+
     private record SlotOption(
             Integer id,
             Integer professorId,
@@ -2693,7 +2965,7 @@ public class RendezVousController {
         public String toString() {
             String idText = id == null ? "-" : id.toString();
             String titleText = title == null ? "" : title.trim();
-            return "#" + idText + "  " + (titleText.isEmpty() ? "-" : titleText);
+            return "Cours " + idText + "  " + (titleText.isEmpty() ? "-" : titleText);
         }
     }
 
@@ -2704,7 +2976,7 @@ public class RendezVousController {
         try {
             availabilitySlotService.updateBookedStatus(slotId, booked);
         } catch (SQLException exception) {
-            showWarning("Slot update", "Rendez-vous saved, but slot #" + slotId + " booking state could not be updated.");
+            showWarning("Slot update", "Rendez-vous saved, but slot " + slotId + " booking state could not be updated.");
         }
     }
 
@@ -2818,6 +3090,12 @@ public class RendezVousController {
                     updated.setMeetingLink(meetingLink);
                 }
                 updated.setRefusalReason(null);
+            } else if (isRefusedStatus(newStatus)) {
+                Optional<String> refusalReason = showRefusalReasonDialog();
+                if (refusalReason.isEmpty()) {
+                    return;
+                }
+                updated.setRefusalReason(refusalReason.get());
             }
 
             if (slot != null && slot.getProfessorId() != null) {
@@ -2835,18 +3113,179 @@ public class RendezVousController {
                 markSlotBookedState(updated.getSlotId(), true);
             }
             createStudentStatusNotification(updated);
+            sendStatusEmailToStudentAsync(updated, slot);
             boolean switchedFromPendingFilter = currentFilter == RendezVousFilter.PENDING;
             refreshRendezVous();
             if (switchedFromPendingFilter) {
                 setActiveFilter(RendezVousFilter.ALL);
             }
-            statusLabel.setText("Rendez-vous #" + safeNumber(updated.getId()) + " is now " + statusDisplay(newStatus)
+            statusLabel.setText("Rendez-vous " + safeNumber(updated.getId()) + " is now " + statusDisplay(newStatus)
                     + (switchedFromPendingFilter ? " (filtre: Tous)" : ""));
         } catch (IllegalArgumentException exception) {
             showWarning("Validation error", exception.getMessage());
         } catch (SQLException exception) {
             showError("Unable to update rendez-vous status", exception);
         }
+    }
+
+    private Optional<String> showRefusalReasonDialog() {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Refusal reason");
+        ButtonType confirmType = new ButtonType("Confirm", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(cancelType, confirmType);
+
+        Label reasonLabel = sectionLabel("Reason for refusal");
+        TextField reasonField = new TextField();
+        reasonField.setPromptText("Enter reason...");
+        styleTextField(reasonField);
+
+        Label inlineError = new Label();
+        inlineError.setManaged(false);
+        inlineError.setVisible(false);
+        inlineError.setWrapText(true);
+        inlineError.setStyle("-fx-background-color: #fdecee; -fx-border-color: #e9a8b2; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 8 10; -fx-text-fill: #c2414b; -fx-font-size: 12px; -fx-font-weight: 700;");
+
+        VBox content = new VBox(10, reasonLabel, reasonField, inlineError);
+        content.setStyle("-fx-background-color: #f7f9fd; -fx-padding: 16; -fx-border-color: #c6d3eb; -fx-border-radius: 12; -fx-background-radius: 12;");
+
+        DialogPane pane = dialog.getDialogPane();
+        styleDialog(pane);
+        pane.setContent(content);
+        styleDialogButtons(pane, confirmType, cancelType);
+
+        Button confirmButton = (Button) pane.lookupButton(confirmType);
+        if (confirmButton != null) {
+            confirmButton.addEventFilter(ActionEvent.ACTION, event -> {
+                try {
+                    validateRefusalReasonInput(reasonField.getText());
+                    clearInlineDialogError(inlineError);
+                } catch (IllegalArgumentException exception) {
+                    showInlineDialogError(inlineError, exception.getMessage());
+                    event.consume();
+                }
+            });
+        }
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isEmpty() || result.get() != confirmType) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(validateRefusalReasonInput(reasonField.getText()));
+        } catch (IllegalArgumentException exception) {
+            showWarning("Validation error", exception.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private String validateRefusalReasonInput(String rawInput) {
+        String reason = toNull(rawInput);
+        if (reason == null) {
+            throw new IllegalArgumentException("Refusal reason is required.");
+        }
+        if (reason.length() > MAX_REFUSAL_REASON_LENGTH) {
+            throw new IllegalArgumentException("Refusal reason is too long (max " + MAX_REFUSAL_REASON_LENGTH + " characters).");
+        }
+        return reason;
+    }
+
+    private void sendStatusEmailToStudentAsync(RendezVous rdv, AvailabilitySlot slot) {
+        if (rdv == null || rdv.getStudentId() == null) {
+            return;
+        }
+        if (!isConfirmedStatus(rdv.getStatut()) && !isRefusedStatus(rdv.getStatut())) {
+            return;
+        }
+
+        String studentEmail = resolveUserEmail(rdv.getStudentId());
+        if (studentEmail == null) {
+            showWarning("Email notification", "Student email not found. No email was sent.");
+            return;
+        }
+
+        String professorName = resolveProfessorName(rdv.getProfessorId());
+        String meetingDateTime = resolveRequestedMeetingDateTime(rdv, slot);
+        String meetingLocation = resolveMeetingLocationForEmail(rdv, slot);
+        String refusalReason = normalizeDefault(rdv.getRefusalReason(), "No reason provided.");
+        boolean confirmed = isConfirmedStatus(rdv.getStatut());
+
+        Thread worker = new Thread(() -> {
+            try {
+                if (confirmed) {
+                    rendezVousEmailService.sendAppointmentConfirmedEmail(
+                            studentEmail,
+                            professorName,
+                            meetingDateTime,
+                            meetingLocation
+                    );
+                } else {
+                    rendezVousEmailService.sendAppointmentDeclinedEmail(
+                            studentEmail,
+                            professorName,
+                            meetingDateTime,
+                            refusalReason
+                    );
+                }
+            } catch (Exception exception) {
+                Platform.runLater(() -> showWarning(
+                        "Email notification",
+                        "Rendez-vous updated, but email could not be sent: " + exception.getMessage()
+                ));
+            }
+        }, "rdv-email-notification");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private String resolveRequestedMeetingDateTime(RendezVous rdv, AvailabilitySlot slot) {
+        if (slot != null && (slot.getStartAt() != null || slot.getEndAt() != null)) {
+            String start = formatDateTime(slot.getStartAt());
+            String end = formatDateTime(slot.getEndAt());
+            if (!"-".equals(start) && !"-".equals(end)) {
+                return start + " -> " + end;
+            }
+            if (!"-".equals(start)) {
+                return start;
+            }
+            if (!"-".equals(end)) {
+                return end;
+            }
+        }
+        if (rdv != null && rdv.getCreatedAt() != null) {
+            return formatDateTime(rdv.getCreatedAt());
+        }
+        return "-";
+    }
+
+    private String resolveMeetingLocationForEmail(RendezVous rdv, AvailabilitySlot slot) {
+        if (rdv == null) {
+            return "-";
+        }
+        if (!isInPersonMeetingType(rdv.getMeetingType())) {
+            String link = toNull(rdv.getMeetingLink());
+            return link == null ? "Online meeting (link not provided)." : link;
+        }
+
+        String label = toNull(rdv.getLocationLabel());
+        if (label != null) {
+            return label;
+        }
+        String location = toNull(rdv.getLocation());
+        if (location != null) {
+            return location;
+        }
+        if (slot != null) {
+            String slotLabel = toNull(slot.getLocationLabel());
+            if (slotLabel != null) {
+                return slotLabel;
+            }
+            String coordinates = formatCoordinates(slot.getLocationLat(), slot.getLocationLng());
+            if (!"-".equals(coordinates)) {
+                return coordinates;
+            }
+        }
+        return "In-person meeting (location not specified).";
     }
 
     private String toNull(String raw) {
@@ -3090,7 +3529,7 @@ public class RendezVousController {
         Notification notification = new Notification();
         notification.setUserId(rdv.getProfessorId());
         notification.setTitle("Nouvelle demande de rendez-vous");
-        notification.setMessage("Nouvelle demande de l'étudiant #" + rdv.getStudentId() + " pour le rendez-vous #" + rdv.getId());
+        notification.setMessage("Nouvelle demande de l'étudiant " + rdv.getStudentId() + " pour le rendez-vous " + rdv.getId());
         notification.setLink("/rendezvous/" + rdv.getId());
         notification.setIsRead(false);
         notification.setCreatedAt(LocalDateTime.now());
@@ -3105,7 +3544,7 @@ public class RendezVousController {
         if (rdv == null || rdv.getStudentId() == null) {
             return;
         }
-        String message = "Votre rendez-vous #" + rdv.getId() + " a été " + statusDisplay(rdv.getStatut()).toLowerCase() + ".";
+        String message = "Votre rendez-vous " + rdv.getId() + " a été " + statusDisplay(rdv.getStatut()).toLowerCase() + ".";
         if (isConfirmedStatus(rdv.getStatut()) && toNull(rdv.getMeetingLink()) != null) {
             message += " Lien de réunion: " + rdv.getMeetingLink();
         }

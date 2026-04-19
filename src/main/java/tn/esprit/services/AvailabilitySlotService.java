@@ -58,6 +58,38 @@ public class AvailabilitySlotService {
         return slots;
     }
 
+    public List<AvailabilitySlot> getAllCreatedByProfessors() throws SQLException {
+        String sql = """
+                SELECT s.*
+                FROM availability_slots s
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM user_roles ur
+                    WHERE ur.user_id = s.professor_id
+                      AND (
+                          LOWER(ur.role) = 'professor'
+                          OR LOWER(ur.role) = 'teacher'
+                          OR LOWER(ur.role) = 'instructor'
+                          OR LOWER(ur.role) = 'prof'
+                          OR LOWER(ur.role) LIKE 'role_prof%'
+                          OR LOWER(ur.role) LIKE '%professor%'
+                          OR LOWER(ur.role) LIKE '%teacher%'
+                          OR LOWER(ur.role) LIKE '%instructor%'
+                      )
+                )
+                ORDER BY s.start_at DESC
+                """;
+
+        List<AvailabilitySlot> slots = new ArrayList<>();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                slots.add(mapResultSetToSlot(resultSet));
+            }
+        }
+        return slots;
+    }
+
     public AvailabilitySlot getById(int id) throws SQLException {
         String sql = "SELECT * FROM availability_slots WHERE id = ?";
 
