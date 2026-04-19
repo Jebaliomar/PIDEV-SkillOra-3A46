@@ -44,6 +44,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -3480,9 +3482,9 @@ public class RendezVousController {
         Label title = new Label(normalizeDefault(notification.getTitle(), "Notification"));
         title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 13px; -fx-font-weight: 900;");
         title.setWrapText(true);
-        Label message = new Label(resolveNotificationMessage(notification));
-        message.setStyle("-fx-text-fill: #4e6491; -fx-font-size: 12px; -fx-font-weight: 600;");
-        message.setWrapText(true);
+        TextFlow message = buildNotificationMessageFlow(resolveNotificationMessage(notification), 12, "#4e6491", 600, 800);
+        message.prefWidthProperty().bind(textBox.widthProperty());
+        message.maxWidthProperty().bind(textBox.widthProperty());
         Label time = new Label(formatNotificationDate(notification.getCreatedAt()));
         time.setStyle("-fx-text-fill: #6e83aa; -fx-font-size: 11px;");
         textBox.getChildren().addAll(title, message, time);
@@ -3755,9 +3757,9 @@ public class RendezVousController {
         title.setWrapText(true);
         title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 16px; -fx-font-weight: 900;");
 
-        Label message = new Label(resolveNotificationMessage(notification));
-        message.setWrapText(true);
-        message.setStyle("-fx-text-fill: #4e6491; -fx-font-size: 14px; -fx-font-weight: 600;");
+        TextFlow message = buildNotificationMessageFlow(resolveNotificationMessage(notification), 14, "#4e6491", 600, 800);
+        message.prefWidthProperty().bind(textBox.widthProperty());
+        message.maxWidthProperty().bind(textBox.widthProperty());
 
         Label time = new Label(formatNotificationDate(notification.getCreatedAt()));
         time.setStyle("-fx-text-fill: #6f84aa; -fx-font-size: 13px;");
@@ -3870,9 +3872,9 @@ public class RendezVousController {
 
         Label title = new Label(normalizeDefault(notification.getTitle(), "Notification"));
         title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 19px; -fx-font-weight: 900;");
-        Label message = new Label(resolveNotificationMessage(notification));
-        message.setWrapText(true);
-        message.setStyle("-fx-text-fill: #4e6491; -fx-font-size: 14px; -fx-font-weight: 600;");
+        TextFlow message = buildNotificationMessageFlow(resolveNotificationMessage(notification), 14, "#4e6491", 600, 800);
+        message.prefWidthProperty().bind(textBox.widthProperty());
+        message.maxWidthProperty().bind(textBox.widthProperty());
         Label time = new Label(formatNotificationDate(notification.getCreatedAt()));
         time.setStyle("-fx-text-fill: #6f84aa; -fx-font-size: 12px;");
         textBox.getChildren().addAll(title, message, time);
@@ -3913,9 +3915,9 @@ public class RendezVousController {
         title.setWrapText(true);
         title.setStyle("-fx-text-fill: #1d2f57; -fx-font-size: 25px; -fx-font-weight: 900;");
 
-        Label message = new Label(resolveNotificationMessage(notification));
-        message.setWrapText(true);
-        message.setStyle("-fx-text-fill: #334f80; -fx-font-size: 15px; -fx-font-weight: 600;");
+        TextFlow message = buildNotificationMessageFlow(resolveNotificationMessage(notification), 15, "#334f80", 600, 900);
+        message.setPrefWidth(640);
+        message.setMaxWidth(640);
 
         Label time = new Label("Reçue le " + formatNotificationDate(notification.getCreatedAt()));
         time.setStyle("-fx-text-fill: #6f84aa; -fx-font-size: 13px; -fx-font-weight: 600;");
@@ -3999,6 +4001,61 @@ public class RendezVousController {
                 .replaceAll("(?i)\\b(cours|course)\\s*#?\\s*\\d+\\b", courseName);
 
         return cleanupNotificationMessage(message);
+    }
+
+    private TextFlow buildNotificationMessageFlow(String rawMessage, double fontSize, String color, int normalWeight, int reasonWeight) {
+        String message = normalizeDefault(rawMessage, "-");
+        TextFlow flow = new TextFlow();
+        flow.setLineSpacing(1.4);
+
+        int reasonStart = findReasonStartIndex(message);
+        if (reasonStart <= 0 || reasonStart >= message.length()) {
+            Text full = new Text(message);
+            full.setStyle(textStyle(fontSize, color, normalWeight));
+            flow.getChildren().add(full);
+            return flow;
+        }
+
+        String prefix = message.substring(0, reasonStart);
+        String reason = message.substring(reasonStart).trim();
+        String prefixValue = prefix.endsWith(" ") ? prefix : prefix + " ";
+
+        Text prefixText = new Text(prefixValue);
+        prefixText.setStyle(textStyle(fontSize, color, normalWeight));
+        flow.getChildren().add(prefixText);
+
+        if (!reason.isEmpty()) {
+            Text reasonText = new Text(reason);
+            reasonText.setStyle(textStyle(fontSize, color, reasonWeight));
+            flow.getChildren().add(reasonText);
+        }
+        return flow;
+    }
+
+    private int findReasonStartIndex(String message) {
+        if (message == null || message.isBlank()) {
+            return -1;
+        }
+
+        String lower = message.toLowerCase(Locale.ROOT);
+        String[] markers = {"reason:", "motif:", "raison:"};
+        int found = -1;
+        int markerLength = 0;
+        for (String marker : markers) {
+            int index = lower.indexOf(marker);
+            if (index >= 0 && (found < 0 || index < found)) {
+                found = index;
+                markerLength = marker.length();
+            }
+        }
+        if (found < 0) {
+            return -1;
+        }
+        return found + markerLength;
+    }
+
+    private String textStyle(double fontSize, String color, int fontWeight) {
+        return "-fx-fill: " + color + "; -fx-font-size: " + fontSize + "px; -fx-font-weight: " + fontWeight + ";";
     }
 
     private String cleanupNotificationMessage(String message) {
