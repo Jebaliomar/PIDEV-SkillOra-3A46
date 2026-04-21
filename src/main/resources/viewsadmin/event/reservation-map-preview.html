@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation Map Preview</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin="" />
+    <style>
+        html, body, #map {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #eef4fb;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+<script>
+    const initialLat = 36.8065;
+    const initialLng = 10.1815;
+    const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([initialLat, initialLng], 12);
+    const marker = L.marker([initialLat, initialLng]).addTo(map);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    async function geocodeAddress(address) {
+        if (!address || !address.trim()) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(address)}`);
+            const results = await response.json();
+            if (!results || !results.length) {
+                return;
+            }
+
+            const result = results[0];
+            const lat = parseFloat(result.lat);
+            const lng = parseFloat(result.lon);
+            marker.setLatLng([lat, lng]);
+            map.setView([lat, lng], 13);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    window.previewMapApi = {
+        setAddress: geocodeAddress
+    };
+</script>
+</body>
+</html>
