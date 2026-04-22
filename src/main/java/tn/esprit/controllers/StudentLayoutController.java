@@ -11,7 +11,9 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
+import tn.esprit.services.SessionService;
 import tn.esprit.tools.AppIcons;
+import tn.esprit.tools.SessionStore;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
@@ -109,6 +111,9 @@ public class StudentLayoutController implements Initializable {
     @FXML
     public void handleLogout() {
         try {
+            String token = SessionStore.load();
+            if (token != null) new SessionService().deleteSession(token);
+            SessionStore.clear();
             currentUser = null;
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             Parent root = loader.load();

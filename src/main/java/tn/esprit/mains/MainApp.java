@@ -5,7 +5,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import tn.esprit.controllers.AdminPanelController;
+import tn.esprit.controllers.StudentLayoutController;
+import tn.esprit.entities.User;
+import tn.esprit.services.SessionService;
+import tn.esprit.services.UserService;
 import tn.esprit.tools.MyConnection;
+import tn.esprit.tools.SessionStore;
 import tn.esprit.tools.ThemeManager;
 
 public class MainApp extends Application {
@@ -15,21 +21,59 @@ public class MainApp extends Application {
         // Initialize database connection
         MyConnection.getInstance().getConnection();
 
+        primaryStage.setMinWidth(900);
+        primaryStage.setMinHeight(600);
+
+        if (tryRestoreSession(primaryStage)) {
+            return;
+        }
+
         // Load the Login screen
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
         Parent root = loader.load();
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
-
-        // Apply saved theme (dark/light) from user preferences
         ThemeManager.applyTheme(scene);
 
         primaryStage.setTitle("Sign In - SkillORA");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(900);
-        primaryStage.setMinHeight(600);
         primaryStage.show();
+    }
+
+    private boolean tryRestoreSession(Stage stage) {
+        String token = SessionStore.load();
+        if (token == null) return false;
+        User user = new SessionService().validate(token);
+        if (user == null) {
+            SessionStore.clear();
+            return false;
+        }
+        try {
+            String role = new UserService().getUserRole(user.getId());
+            String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
+            boolean isStudent = normalizedRole.equals("student");
+            String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
+            String title = isStudent ? "SkillORA" : "SkillORA - Admin Panel";
+
+            if (isStudent) StudentLayoutController.setCurrentUser(user);
+            else AdminPanelController.setCurrentUser(user);
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
+            ThemeManager.applyTheme(scene);
+
+            stage.setTitle(title);
+            stage.setScene(scene);
+            stage.show();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            SessionStore.clear();
+            return false;
+        }
     }
 
     public static void main(String[] args) {

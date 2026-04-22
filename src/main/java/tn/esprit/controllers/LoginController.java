@@ -10,10 +10,12 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.services.FaceIdService;
+import tn.esprit.services.SessionService;
 import tn.esprit.services.UserService;
 import tn.esprit.tools.FaceIdServer;
 import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
+import tn.esprit.tools.SessionStore;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
@@ -34,6 +36,8 @@ public class LoginController implements Initializable {
 
     private final UserService userService = new UserService();
     private final FaceIdService faceIdService = new FaceIdService();
+    private final SessionService sessionService = new SessionService();
+    private static final int REMEMBER_ME_DAYS = 30;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -92,6 +96,8 @@ public class LoginController implements Initializable {
                 } else {
                     AdminPanelController.setCurrentUser(user);
                 }
+
+                rememberIfChecked(user);
 
                 FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
                 Parent dashRoot = dashLoader.load();
@@ -157,6 +163,8 @@ public class LoginController implements Initializable {
             if (isStudent) StudentLayoutController.setCurrentUser(user);
             else AdminPanelController.setCurrentUser(user);
 
+            rememberIfChecked(user);
+
             FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent dashRoot = dashLoader.load();
             Scene dashScene = new Scene(dashRoot);
@@ -209,6 +217,19 @@ public class LoginController implements Initializable {
             stage.setScene(scene);
             stage.setTitle("Create Account - SkillORA");
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void rememberIfChecked(User user) {
+        if (rememberMeCheck == null || !rememberMeCheck.isSelected()) {
+            SessionStore.clear();
+            return;
+        }
+        try {
+            String token = sessionService.createSession(user.getId(), REMEMBER_ME_DAYS);
+            SessionStore.save(token);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
