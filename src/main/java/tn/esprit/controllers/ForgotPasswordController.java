@@ -30,6 +30,15 @@ public class ForgotPasswordController {
         emailField.sceneProperty().addListener((obs, o, n) -> { if (n != null) RightPanelAnimator.attach(n); });
     }
 
+    /** Called from LoginController — locks the form to the email the user typed on the login screen. */
+    public void setLoginEmail(String email) {
+        if (email == null) return;
+        emailField.setText(email);
+        emailField.setEditable(false);
+        emailField.setFocusTraversable(false);
+        if (sendBtn != null) sendBtn.requestFocus();
+    }
+
     @FXML
     public void handleSend() {
         hideError();

@@ -172,9 +172,18 @@ public class LoginController implements Initializable {
 
     @FXML
     public void goToForgotPassword() {
+        hideError();
+        String email = emailField.getText() == null ? "" : emailField.getText().trim();
+        if (email.isEmpty()) {
+            showError("Enter your login email first — the reset code will be sent only to that address.");
+            emailField.requestFocus();
+            return;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ForgotPassword.fxml"));
             Parent root = loader.load();
+            ForgotPasswordController controller = loader.getController();
+            controller.setLoginEmail(email);
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             ThemeManager.applyTheme(scene);
