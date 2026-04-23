@@ -67,8 +67,15 @@ public class UserExamPassController {
     @FXML
     public void initialize() {
         updatePdfPageLabel();
+
         if (selectedFileLabel != null) {
             selectedFileLabel.setText("Aucun fichier sélectionné");
+        }
+
+        if (examContentArea != null) {
+            examContentArea.setEditable(false);
+            examContentArea.setWrapText(true);
+            forceReadableExamTextAreaStyle();
         }
     }
 
@@ -179,22 +186,8 @@ public class UserExamPassController {
             return;
         }
 
-        String response = answerArea.getText() != null ? answerArea.getText().trim() : "";
-
         try {
-            userEvaluationService.submitExamResponse(userId, evaluation.getId(), response);
-
-            alreadySubmitted = true;
-            answerArea.setEditable(false);
-
-            if (submitButton != null) {
-                submitButton.setDisable(true);
-                submitButton.setText("Submitted");
-            }
-
-            showInfo("Temps écoulé", "Le temps est terminé. Votre réponse a été soumise automatiquement.");
-            goBackToAssessments();
-
+            submitExamInternal(true);
         } catch (Exception e) {
             showError("Erreur soumission automatique examen : " + e.getMessage());
         }
@@ -227,8 +220,11 @@ public class UserExamPassController {
                     renderCurrentPdfPage();
                     updatePdfPageLabel();
                     return;
-                } catch (Exception ignored) {
+                } catch (Exception e) {
+                    System.out.println("Impossible de charger le PDF, fallback texte : " + e.getMessage());
                 }
+            } else {
+                System.out.println("PDF introuvable : " + pdfPath);
             }
         }
 
@@ -244,7 +240,21 @@ public class UserExamPassController {
         String docxPath = evaluation.getDocxPath();
 
         if (docxPath == null || docxPath.trim().isEmpty()) {
-            showDocxFallback("Aucun fichier PDF ou DOCX trouvé pour cet examen.");
+            StringBuilder fallback = new StringBuilder();
+
+            if (evaluation.getTitle() != null && !evaluation.getTitle().isBlank()) {
+                fallback.append("Titre : ").append(evaluation.getTitle()).append("\n\n");
+            }
+
+            if (evaluation.getDescription() != null && !evaluation.getDescription().isBlank()) {
+                fallback.append("Description : ").append(evaluation.getDescription()).append("\n\n");
+            }
+
+            if (fallback.length() == 0) {
+                fallback.append("Aucun fichier PDF ou DOCX trouvé pour cet examen.");
+            }
+
+            showDocxFallback(fallback.toString());
             return;
         }
 
@@ -279,12 +289,30 @@ public class UserExamPassController {
     private void showDocxFallback(String content) {
         pdfScrollPane.setVisible(false);
         pdfScrollPane.setManaged(false);
+
         examContentArea.setVisible(true);
         examContentArea.setManaged(true);
-        examContentArea.setText(content);
+        examContentArea.setEditable(false);
+        examContentArea.setWrapText(true);
+        examContentArea.setText(content == null ? "" : content);
+
+        forceReadableExamTextAreaStyle();
+
         totalPdfPages = 0;
         currentPdfPageIndex = 0;
         updatePdfPageLabel();
+    }
+
+    private void forceReadableExamTextAreaStyle() {
+        examContentArea.setStyle(
+                "-fx-text-fill: #111111;" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-font-family: 'Segoe UI';" +
+                        "-fx-control-inner-background: white;" +
+                        "-fx-background-color: white;" +
+                        "-fx-highlight-fill: #dbeafe;" +
+                        "-fx-highlight-text-fill: #111111;"
+        );
     }
 
     private void renderCurrentPdfPage() {
@@ -374,6 +402,14 @@ public class UserExamPassController {
             return;
         }
 
+        try {
+            submitExamInternal(false);
+        } catch (Exception e) {
+            showError("Erreur soumission examen : " + e.getMessage());
+        }
+    }
+
+    private void submitExamInternal(boolean automaticMode) throws Exception {
         if (evaluation == null) {
             showError("Aucune évaluation sélectionnée.");
             return;
@@ -387,31 +423,53 @@ public class UserExamPassController {
         String response = answerArea.getText() != null ? answerArea.getText().trim() : "";
 
         if (response.isEmpty() && selectedFile == null) {
-            showWarning("Veuillez écrire une réponse ou ajouter un fichier avant de soumettre.");
-            return;
+            if (!automaticMode) {
+                showWarning("Veuillez écrire une réponse ou ajouter un fichier avant de soumettre.");
+                return;
+            }
         }
 
-        try {
-            userEvaluationService.submitExamResponse(userId, evaluation.getId(), response);
+        userEvaluationService.submitExamResponse(userId, evaluation.getId(), response);
 
-            alreadySubmitted = true;
-            answerArea.setEditable(false);
+        alreadySubmitted = true;
+        answerArea.setEditable(false);
 
-            if (submitButton != null) {
-                submitButton.setDisable(true);
-                submitButton.setText("Submitted");
-            }
-
-            if (timer != null) {
-                timer.stop();
-            }
-
-            showInfo("Soumission", "Votre réponse a été soumise avec succès.");
-            goBackToAssessments();
-
-        } catch (Exception e) {
-            showError("Erreur soumission examen : " + e.getMessage());
+        if (submitButton != null) {
+            submitButton.setDisable(true);
+            submitButton.setText("Submitted");
         }
+
+        if (timer != null) {
+            timer.stop();
+        }
+
+        if (automaticMode) {
+            showInfo("Temps écoulé", "Le temps est terminé. Votre réponse a été soumise et corrigée automatiquement.");
+        } else {
+            showInfo("Soumission", "Votre réponse a été soumise et corrigée automatiquement.");
+        }
+
+        goBackToAssessments();
+    }
+
+    private String extractAnswerFromPayload(String payload) {
+        return extractBlock(payload, "ANSWER:::", ":::END_ANSWER");
+    }
+
+    private String extractBlock(String payload, String startToken, String endToken) {
+        if (payload == null || payload.isBlank()) {
+            return "";
+        }
+
+        int start = payload.indexOf(startToken);
+        int end = payload.indexOf(endToken);
+
+        if (start == -1 || end == -1 || end <= start) {
+            return "";
+        }
+
+        start += startToken.length();
+        return payload.substring(start, end).trim();
     }
 
     @FXML
@@ -425,9 +483,17 @@ public class UserExamPassController {
 
     private void goBackToAssessments() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserAssessmentView.fxml"));
+            var url = getClass().getResource("/UserAssessmentView.fxml");
+
+            if (url == null) {
+                showError("FXML introuvable : /UserAssessmentView.fxml");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(url);
             Parent root = loader.load();
             titleLabel.getScene().setRoot(root);
+
         } catch (IOException e) {
             showError("Erreur retour page assessments : " + e.getMessage());
         }
@@ -483,24 +549,5 @@ public class UserExamPassController {
 
     private String safe(String value) {
         return value == null ? "" : value;
-    }
-
-    private String extractAnswerFromPayload(String payload) {
-        if (payload == null || payload.isBlank()) {
-            return "";
-        }
-
-        String startToken = "ANSWER:::";
-        String endToken = ":::END_ANSWER";
-
-        int start = payload.indexOf(startToken);
-        int end = payload.indexOf(endToken);
-
-        if (start == -1 || end == -1 || end <= start) {
-            return payload;
-        }
-
-        start += startToken.length();
-        return payload.substring(start, end).trim();
     }
 }

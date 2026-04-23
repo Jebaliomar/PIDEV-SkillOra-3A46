@@ -3,6 +3,7 @@ package tn.esprit.controllers;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -23,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
 
 public class UserExamResultController {
@@ -106,6 +108,7 @@ public class UserExamResultController {
                     updatePdfPageLabel();
                     return;
                 } catch (Exception ignored) {
+                    // fallback DOCX
                 }
             }
         }
@@ -114,6 +117,11 @@ public class UserExamResultController {
     }
 
     private void loadDocxFallback() {
+        if (evaluation == null) {
+            showDocxFallback("Aucune évaluation sélectionnée.");
+            return;
+        }
+
         String docxPath = evaluation.getDocxPath();
 
         if (docxPath == null || docxPath.trim().isEmpty()) {
@@ -155,6 +163,7 @@ public class UserExamResultController {
         examContentArea.setVisible(true);
         examContentArea.setManaged(true);
         examContentArea.setText(content);
+
         totalPdfPages = 0;
         currentPdfPageIndex = 0;
         updatePdfPageLabel();
@@ -171,6 +180,8 @@ public class UserExamResultController {
 
             if (pdfScrollPane.getViewportBounds().getWidth() > 0) {
                 pdfImageView.setFitWidth(pdfScrollPane.getViewportBounds().getWidth() - 40);
+            } else {
+                pdfImageView.setFitWidth(980);
             }
 
         } catch (Exception e) {
@@ -255,16 +266,28 @@ public class UserExamResultController {
     @FXML
     private void handleBack() {
         closePdfDocument();
+        openScene("/UserAssessmentView.fxml");
+    }
+
+    private void openScene(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserAssessmentView.fxml"));
+            URL url = getClass().getResource(fxmlPath);
+
+            if (url == null) {
+                showError("FXML introuvable : " + fxmlPath);
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(url);
             Parent root = loader.load();
             resultNode().getScene().setRoot(root);
+
         } catch (IOException e) {
             showError("Erreur retour résultat examen : " + e.getMessage());
         }
     }
 
-    private javafx.scene.Node resultNode() {
+    private Node resultNode() {
         if (titleLabel != null) return titleLabel;
         if (answerArea != null) return answerArea;
         if (feedbackArea != null) return feedbackArea;
@@ -295,18 +318,6 @@ public class UserExamResultController {
         }
     }
 
-    private void showError(String msg) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Erreur");
-        alert.setHeaderText(null);
-        alert.setContentText(msg);
-        alert.showAndWait();
-    }
-
-    private String safe(String value) {
-        return value == null ? "" : value;
-    }
-
     private String extractAnswer(String payload) {
         return extractBlock(payload, "ANSWER:::", ":::END_ANSWER");
     }
@@ -333,6 +344,10 @@ public class UserExamResultController {
 
     private int extractInt(String payload, String prefix) {
         try {
+            if (payload == null || payload.isBlank()) {
+                return 0;
+            }
+
             String[] lines = payload.split("\\R");
             for (String line : lines) {
                 if (line.startsWith(prefix)) {
@@ -345,6 +360,10 @@ public class UserExamResultController {
     }
 
     private boolean extractBoolean(String payload, String prefix) {
+        if (payload == null || payload.isBlank()) {
+            return false;
+        }
+
         String[] lines = payload.split("\\R");
         for (String line : lines) {
             if (line.startsWith(prefix)) {
@@ -352,5 +371,17 @@ public class UserExamResultController {
             }
         }
         return false;
+    }
+
+    private void showError(String msg) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Erreur");
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 }

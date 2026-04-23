@@ -8,11 +8,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class UserEvaluationService implements IUserEvaluationService {
 
     private final Connection cnx;
+    private final ExamAiCorrectionService examAiCorrectionService = new ExamAiCorrectionService();
 
     public UserEvaluationService() {
         cnx = MyConnection.getInstance().getConnection();
@@ -120,13 +122,41 @@ public class UserEvaluationService implements IUserEvaluationService {
         responseText = responseText.trim();
 
         Integer existingId = findUserEvaluationId(userId, evaluationId);
+        Evaluation evaluation = getEvaluationById(evaluationId);
+        String examText = buildExamText(evaluation);
 
-        int aiPercent = estimateAiUsagePercent(responseText);
-        int plagiarismPercent = computeMaxInternalPlagiarism(userId, evaluationId, responseText);
-        boolean fraudAttempt = aiPercent >= 70 || plagiarismPercent >= 60;
-        String fraudReason = buildFraudReason(aiPercent, plagiarismPercent);
-        int score = calculateScore(responseText, aiPercent, plagiarismPercent);
-        String feedback = buildFeedback(score, aiPercent, plagiarismPercent, fraudAttempt, fraudReason);
+        int aiPercent;
+        int plagiarismPercent;
+        boolean fraudAttempt;
+        String fraudReason;
+        int score;
+        String feedback;
+
+        try {
+            Map<String, Object> aiResult = examAiCorrectionService.analyzeExam(examText, responseText);
+
+            score = (Integer) aiResult.get("score");
+            feedback = (String) aiResult.get("feedback");
+            aiPercent = (Integer) aiResult.get("aiPercent");
+            plagiarismPercent = Math.max(
+                    (Integer) aiResult.get("plagiarismPercent"),
+                    computeMaxInternalPlagiarism(userId, evaluationId, responseText)
+            );
+            fraudAttempt = (Boolean) aiResult.get("fraudAttempt") || aiPercent >= 75 || plagiarismPercent >= 65;
+            fraudReason = (String) aiResult.get("fraudReason");
+
+            if (fraudAttempt && (fraudReason == null || fraudReason.isBlank())) {
+                fraudReason = buildFraudReason(aiPercent, plagiarismPercent);
+            }
+
+        } catch (Exception e) {
+            aiPercent = estimateAiUsagePercent(responseText);
+            plagiarismPercent = computeMaxInternalPlagiarism(userId, evaluationId, responseText);
+            fraudAttempt = aiPercent >= 70 || plagiarismPercent >= 60;
+            fraudReason = buildFraudReason(aiPercent, plagiarismPercent);
+            score = calculateScore(responseText, aiPercent, plagiarismPercent);
+            feedback = buildFeedback(score, aiPercent, plagiarismPercent, fraudAttempt, fraudReason);
+        }
 
         String payload = buildPayload(
                 responseText,
@@ -345,6 +375,67 @@ public class UserEvaluationService implements IUserEvaluationService {
         }
 
         return false;
+    }
+
+    private Evaluation getEvaluationById(int evaluationId) throws SQLException {
+        String sql = "SELECT * FROM evaluation WHERE id = ? LIMIT 1";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, evaluationId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Evaluation evaluation = new Evaluation();
+                    evaluation.setId(rs.getInt("id"));
+                    evaluation.setTitle(rs.getString("title"));
+                    evaluation.setDescription(rs.getString("description"));
+                    evaluation.setType(rs.getString("type"));
+
+                    int duration = rs.getInt("duration");
+                    if (!rs.wasNull()) {
+                        evaluation.setDuration(duration);
+                    }
+
+                    int totalScore = rs.getInt("total_score");
+                    if (!rs.wasNull()) {
+                        evaluation.setTotalScore(totalScore);
+                    }
+
+                    Timestamp createdAt = rs.getTimestamp("created_at");
+                    if (createdAt != null) {
+                        evaluation.setCreatedAt(createdAt.toLocalDateTime());
+                    }
+
+                    evaluation.setDocxPath(rs.getString("docx_path"));
+                    evaluation.setPdfPath(rs.getString("pdf_path"));
+                    return evaluation;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private String buildExamText(Evaluation evaluation) {
+        if (evaluation == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        if (evaluation.getTitle() != null) {
+            sb.append("Titre : ").append(evaluation.getTitle()).append("\n\n");
+        }
+
+        if (evaluation.getDescription() != null) {
+            sb.append("Description : ").append(evaluation.getDescription()).append("\n\n");
+        }
+
+        if (evaluation.getType() != null) {
+            sb.append("Type : ").append(evaluation.getType()).append("\n\n");
+        }
+
+        return sb.toString().trim();
     }
 
     private UserEvaluation mapUserEvaluation(ResultSet rs) throws SQLException {

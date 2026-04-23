@@ -70,6 +70,21 @@ public class UserAssessmentController {
         }
     }
 
+    @FXML
+    private void openHangmanAssessments() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HangmanAssessment.fxml"));
+            Parent root = loader.load();
+
+            HangmanAssessmentController controller = loader.getController();
+            controller.setUserId(connectedUserId);
+
+            evaluationContainer.getScene().setRoot(root);
+        } catch (IOException e) {
+            showError("Erreur ouverture Hangman : " + e.getMessage());
+        }
+    }
+
     public void setSelectedEvaluation(Evaluation evaluation) {
         this.selectedEvaluation = evaluation;
 

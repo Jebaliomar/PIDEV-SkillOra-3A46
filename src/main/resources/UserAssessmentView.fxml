@@ -30,7 +30,6 @@
                         <Insets top="16" right="16" bottom="16" left="16"/>
                     </padding>
 
-                    <!-- HEADER -->
                     <VBox spacing="12" styleClass="hero-section">
                         <children>
                             <Label text="LEARNING SPACE" styleClass="hero-badge"/>
@@ -45,12 +44,14 @@
                                     <Button text="Dashboard"
                                             styleClass="hero-button"
                                             onAction="#goToDashboard"/>
+                                    <Button text="Hangman Assessment"
+                                            styleClass="hero-button"
+                                            onAction="#openHangmanAssessments"/>
                                 </children>
                             </HBox>
                         </children>
                     </VBox>
 
-                    <!-- FILTERS -->
                     <VBox spacing="10" styleClass="filter-section">
                         <children>
                             <Label text="Assessment List" styleClass="section-title"/>
@@ -88,10 +89,8 @@
                         </children>
                     </VBox>
 
-                    <!-- LIST OF EVALUATIONS -->
                     <VBox fx:id="evaluationContainer" spacing="12"/>
 
-                    <!-- PAGINATION -->
                     <HBox spacing="10" alignment="CENTER" styleClass="pagination-box">
                         <children>
                             <Button fx:id="prevPageButton"

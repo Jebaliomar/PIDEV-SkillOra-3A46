@@ -137,17 +137,28 @@ public class UserResponsesController {
         TextArea textArea = new TextArea();
         textArea.setEditable(false);
         textArea.setWrapText(true);
-        textArea.setPrefWidth(720);
-        textArea.setPrefHeight(450);
+        textArea.setPrefWidth(760);
+        textArea.setPrefHeight(520);
+
+        String payload = ue.getAiFeedback();
 
         StringBuilder sb = new StringBuilder();
         sb.append("Utilisateur : ").append(getUserFullName(ue.getUserId())).append("\n");
         sb.append("Date de soumission : ")
                 .append(ue.getSubmittedAt() != null ? ue.getSubmittedAt().format(formatter) : "-")
                 .append("\n");
-        sb.append("Score : ").append(ue.getScore() != null ? ue.getScore() : 0).append("\n\n");
-        sb.append("Réponse soumise :\n\n");
-        sb.append(ue.getAiFeedback() != null ? ue.getAiFeedback() : "Aucune réponse");
+        sb.append("Score : ").append(ue.getScore() != null ? ue.getScore() : 0).append("\n");
+        sb.append("Usage IA : ").append(extractInt(payload, "AI_PERCENT:::")).append("%\n");
+        sb.append("Plagiat : ").append(extractInt(payload, "PLAGIARISM_PERCENT:::")).append("%\n");
+        sb.append("Fraude : ").append(extractBoolean(payload, "FRAUD_ATTEMPT:::") ? "Oui" : "Non").append("\n\n");
+
+        sb.append("Réponse soumise :\n");
+        sb.append("----------------------------------------\n");
+        sb.append(extractAnswer(payload)).append("\n\n");
+
+        sb.append("Correction IA :\n");
+        sb.append("----------------------------------------\n");
+        sb.append(extractFeedback(payload)).append("\n");
 
         textArea.setText(sb.toString());
         alert.getDialogPane().setContent(textArea);
@@ -252,6 +263,61 @@ public class UserResponsesController {
         alert.getDialogPane().setContent(textArea);
         alert.setResizable(true);
         alert.showAndWait();
+    }
+
+    private String extractAnswer(String payload) {
+        return extractBlock(payload, "ANSWER:::", ":::END_ANSWER");
+    }
+
+    private String extractFeedback(String payload) {
+        return extractBlock(payload, "FEEDBACK:::", ":::END_FEEDBACK");
+    }
+
+    private String extractBlock(String payload, String startToken, String endToken) {
+        if (payload == null || payload.isBlank()) {
+            return "";
+        }
+
+        int start = payload.indexOf(startToken);
+        int end = payload.indexOf(endToken);
+
+        if (start == -1 || end == -1 || end <= start) {
+            return "";
+        }
+
+        start += startToken.length();
+        return payload.substring(start, end).trim();
+    }
+
+    private int extractInt(String payload, String prefix) {
+        try {
+            if (payload == null || payload.isBlank()) {
+                return 0;
+            }
+
+            String[] lines = payload.split("\\R");
+            for (String line : lines) {
+                if (line.startsWith(prefix)) {
+                    return Integer.parseInt(line.substring(prefix.length()).trim());
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return 0;
+    }
+
+    private boolean extractBoolean(String payload, String prefix) {
+        if (payload == null || payload.isBlank()) {
+            return false;
+        }
+
+        String[] lines = payload.split("\\R");
+        for (String line : lines) {
+            if (line.startsWith(prefix)) {
+                return Boolean.parseBoolean(line.substring(prefix.length()).trim());
+            }
+        }
+        return false;
     }
 
     private Map<Integer, Integer> parseSelectedAnswers(String raw) {

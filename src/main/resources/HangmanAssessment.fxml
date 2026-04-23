@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="780.0" prefWidth="1200.0"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.HangmanAssessmentController"
+            style="-fx-background-color: #f4f5f7;">
+
+    <children>
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background: #f4f5f7; -fx-background-color: #f4f5f7;"
+                    AnchorPane.topAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0"
+                    AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0">
+
+            <content>
+                <VBox spacing="26" prefWidth="1180.0" style="-fx-background-color: #f4f5f7;">
+                    <padding>
+                        <Insets top="24" right="24" bottom="24" left="24"/>
+                    </padding>
+
+                    <children>
+                        <!-- Top blue mini-game block -->
+                        <VBox spacing="24"
+                              style="-fx-background-color: linear-gradient(to right, #0f1b3d, #2d5be3); -fx-background-radius: 28; -fx-padding: 28;">
+                            <children>
+                                <Label text="MINI GAME"
+                                       style="-fx-background-color: rgba(255,255,255,0.18); -fx-text-fill: white; -fx-padding: 8 14 8 14; -fx-background-radius: 20; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+
+                                <HBox spacing="24">
+                                    <children>
+                                        <VBox spacing="10">
+                                            <children>
+                                                <Label text="Hangman"
+                                                       style="-fx-text-fill: white; -fx-font-size: 42px; -fx-font-weight: bold;"/>
+
+                                                <Label text="Launch a new game by topic and difficulty, then continue your active sessions."
+                                                       wrapText="true"
+                                                       maxWidth="420"
+                                                       style="-fx-text-fill: white; -fx-font-size: 15px;"/>
+                                            </children>
+                                        </VBox>
+
+                                        <Region HBox.hgrow="ALWAYS"/>
+
+                                        <HBox spacing="14" alignment="CENTER_LEFT">
+                                            <children>
+                                                <ComboBox fx:id="topicComboBox"
+                                                          prefWidth="250"
+                                                          prefHeight="50"
+                                                          promptText="Select topic"/>
+
+                                                <ComboBox fx:id="levelComboBox"
+                                                          prefWidth="250"
+                                                          prefHeight="50"
+                                                          promptText="Select level"/>
+
+                                                <Button fx:id="btnNewGame"
+                                                        text="New Game"
+                                                        onAction="#handleNewGame"
+                                                        prefWidth="220"
+                                                        prefHeight="50"
+                                                        style="-fx-background-color: #2f6cff; -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-background-radius: 20;"/>
+
+                                                <Button text="Back"
+                                                        onAction="#handleBackToAssessments"
+                                                        prefWidth="140"
+                                                        prefHeight="50"
+                                                        style="-fx-background-color: white; -fx-text-fill: #1c2d5a; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 20;"/>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <!-- small info line -->
+                        <Label fx:id="lblInfo"
+                               text="Choose a topic and difficulty, then click New Game."
+                               style="-fx-font-size: 15px; -fx-text-fill: #5f6b7a;"/>
+
+                        <!-- Your Games header -->
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Your Games"
+                                       style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #16213e;"/>
+
+                                <Region HBox.hgrow="ALWAYS"/>
+
+                                <Label fx:id="lblSessionCount"
+                                       text="0 SESSION(S)"
+                                       style="-fx-background-color: #e9edf5; -fx-text-fill: #3b4a66; -fx-padding: 8 14 8 14; -fx-background-radius: 18; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                            </children>
+                        </HBox>
+
+                        <!-- Cards container -->
+                        <FlowPane fx:id="gamesFlowPane"
+                                  hgap="18"
+                                  vgap="18"
+                                  prefWrapLength="1080"
+                                  style="-fx-background-color: transparent;"/>
+
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</AnchorPane>

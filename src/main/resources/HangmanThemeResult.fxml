@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="650.0" prefWidth="1000.0"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.HangmanThemeResultController">
+
+    <children>
+        <VBox spacing="18"
+              alignment="CENTER"
+              AnchorPane.topAnchor="0.0"
+              AnchorPane.rightAnchor="0.0"
+              AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="0.0">
+            <padding>
+                <Insets top="30" right="30" bottom="30" left="30"/>
+            </padding>
+
+            <Label text="Theme Result"
+                   style="-fx-font-size: 30px; -fx-font-weight: bold;"/>
+
+            <Label fx:id="lblTopic"
+                   text="Topic : -"
+                   style="-fx-font-size: 18px;"/>
+
+            <Label fx:id="lblLevel"
+                   text="Level : -"
+                   style="-fx-font-size: 18px;"/>
+
+            <Label fx:id="lblSummary"
+                   text="Summary"
+                   wrapText="true"
+                   style="-fx-font-size: 18px;"/>
+
+            <Label fx:id="lblStars"
+                   text="★ ★ ★"
+                   style="-fx-font-size: 36px; -fx-text-fill: gold; -fx-font-weight: bold;"/>
+
+            <Button text="Replay Theme"
+                    onAction="#handleReplayTheme"
+                    prefWidth="200"/>
+
+            <Button text="Back to Themes"
+                    onAction="#handleBackThemes"
+                    prefWidth="200"/>
+
+            <Button text="Back to My Assessments"
+                    onAction="#handleBackToAssessments"
+                    prefWidth="200"/>
+        </VBox>
+    </children>
+</AnchorPane>

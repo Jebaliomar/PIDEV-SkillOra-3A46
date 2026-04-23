@@ -1,8 +1,11 @@
 .root {
     -fx-font-family: "Segoe UI", "Arial", sans-serif;
-    -fx-background-color: linear-gradient(to bottom right, #06152c, #0b2242);
+    -fx-background-color: linear-gradient(to bottom right, #f8fbff, #eef4fb);
 }
 
+/* =========================
+   GLOBAL SCROLL
+   ========================= */
 .main-scroll {
     -fx-background-color: transparent;
     -fx-background: transparent;
@@ -11,155 +14,6 @@
 
 .main-scroll > .viewport {
     -fx-background-color: transparent;
-}
-
-.pass-page {
-    -fx-background-color: linear-gradient(to bottom right, #06152c, #0b2242);
-}
-
-.pass-header {
-    -fx-background-color: linear-gradient(to right, rgba(18,41,77,0.96), rgba(15,32,62,0.94));
-    -fx-background-radius: 22;
-    -fx-border-color: rgba(255,255,255,0.08);
-    -fx-border-radius: 22;
-    -fx-padding: 18 22 18 22;
-}
-
-.pass-title {
-    -fx-text-fill: white;
-    -fx-font-size: 26px;
-    -fx-font-weight: 800;
-}
-
-.pass-subtitle {
-    -fx-text-fill: rgba(226,235,252,0.92);
-    -fx-font-size: 14px;
-}
-
-.section-label {
-    -fx-text-fill: white;
-    -fx-font-size: 15px;
-    -fx-font-weight: 800;
-}
-
-.result-stat {
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-}
-
-.document-card,
-.submission-card,
-.result-card {
-    -fx-background-color: rgba(255,255,255,0.045);
-    -fx-background-radius: 18;
-    -fx-border-color: rgba(255,255,255,0.12);
-    -fx-border-radius: 18;
-}
-
-.pdf-toolbar {
-    -fx-background-color: rgba(255,255,255,0.03);
-    -fx-background-radius: 14;
-    -fx-padding: 8 10 8 10;
-    -fx-border-color: rgba(255,255,255,0.08);
-    -fx-border-radius: 14;
-}
-
-.pdf-surface {
-    -fx-background-color: #eef2f7;
-    -fx-background-radius: 14;
-    -fx-padding: 8;
-}
-
-.pdf-page-indicator {
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-}
-
-.pdf-scroll {
-    -fx-background-color: transparent;
-    -fx-background: transparent;
-    -fx-border-color: transparent;
-}
-
-.pdf-scroll > .viewport {
-    -fx-background-color: #eef2f7;
-}
-
-.submission-toolbar {
-    -fx-background-color: rgba(255,255,255,0.03);
-    -fx-background-radius: 14;
-    -fx-border-color: rgba(255,255,255,0.08);
-    -fx-border-radius: 14;
-}
-
-.upload-card {
-    -fx-background-color: rgba(255,255,255,0.03);
-    -fx-border-color: rgba(255,255,255,0.20);
-    -fx-border-style: segments(8, 6);
-    -fx-border-radius: 16;
-    -fx-background-radius: 16;
-    -fx-alignment: center;
-}
-
-.upload-title {
-    -fx-text-fill: white;
-    -fx-font-size: 18px;
-    -fx-font-weight: 800;
-}
-
-.upload-subtitle {
-    -fx-text-fill: rgba(226,235,252,0.80);
-    -fx-font-size: 12px;
-}
-
-.text-area {
-    -fx-background-color: transparent;
-    -fx-control-inner-background: rgba(255,255,255,0.065);
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-border-color: rgba(255,255,255,0.12);
-    -fx-text-fill: white;
-    -fx-prompt-text-fill: rgba(255,255,255,0.42);
-    -fx-font-size: 14px;
-    -fx-padding: 4;
-}
-
-.text-area .content {
-    -fx-background-color: rgba(255,255,255,0.065);
-    -fx-background-radius: 12;
-}
-
-.exam-doc-area {
-    -fx-font-size: 14px;
-}
-
-.answer-area {
-    -fx-font-size: 15px;
-}
-
-.feedback-area {
-    -fx-font-size: 14px;
-}
-
-.button {
-    -fx-cursor: hand;
-}
-
-.secondary-button {
-    -fx-background-color: rgba(255,255,255,0.09);
-    -fx-text-fill: white;
-    -fx-font-size: 13px;
-    -fx-font-weight: 700;
-    -fx-background-radius: 14;
-    -fx-border-radius: 14;
-    -fx-padding: 8 14 8 14;
-    -fx-border-color: rgba(255,255,255,0.12);
-}
-
-.secondary-button:hover {
-    -fx-background-color: rgba(255,255,255,0.16);
 }
 
 .scroll-pane {
@@ -172,6 +26,323 @@
     -fx-background-color: transparent;
 }
 
+/* =========================
+   PAGE
+   ========================= */
+.quiz-page,
+.pass-page {
+    -fx-background-color: linear-gradient(to bottom right, #f8fbff, #eef4fb);
+}
+
+/* =========================
+   HEADER
+   ========================= */
+.quiz-header,
+.pass-header {
+    -fx-background-color: linear-gradient(to right, #dbeafe, #eff6ff);
+    -fx-background-radius: 22;
+    -fx-border-color: #dbe4f0;
+    -fx-border-radius: 22;
+    -fx-padding: 18 22 18 22;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.08), 14, 0.18, 0, 4);
+}
+
+.quiz-title,
+.pass-title {
+    -fx-text-fill: #1e293b;
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+}
+
+.quiz-subtitle,
+.pass-subtitle {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 14px;
+}
+
+.timer-label {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #2563eb;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 999;
+    -fx-border-color: #bfdbfe;
+    -fx-border-radius: 999;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.10), 8, 0.18, 0, 2);
+}
+
+/* =========================
+   LABELS
+   ========================= */
+.section-label {
+    -fx-text-fill: #1e293b;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.result-stat {
+    -fx-text-fill: #334155;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+}
+
 .label {
+    -fx-text-fill: #1e293b;
+}
+
+/* =========================
+   GENERIC CARDS
+   ========================= */
+.document-card,
+.submission-card,
+.result-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 18;
+    -fx-border-color: #dbe4f0;
+    -fx-border-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.08), 12, 0.14, 0, 3);
+}
+
+/* =========================
+   QUIZ QUESTION CARD
+   ========================= */
+.question-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 18;
+    -fx-border-color: #dbe4f0;
+    -fx-border-radius: 18;
+    -fx-padding: 18;
+    -fx-spacing: 12;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 10, 0.14, 0, 3);
+}
+
+.question-card:hover {
+    -fx-background-color: #fbfdff;
+    -fx-border-color: #cbd5e1;
+}
+
+.question-label {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-line-spacing: 2px;
+}
+
+/* =========================
+   OPTION CARD
+   ========================= */
+.option-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+    -fx-padding: 12 14 12 14;
+    -fx-background-color: #f8fbff;
+    -fx-background-radius: 14;
+    -fx-border-color: #dbe4f0;
+    -fx-border-radius: 14;
+}
+
+.option-row:hover {
+    -fx-background-color: #eff6ff;
+    -fx-border-color: #bfdbfe;
+}
+
+/* radio button داخل cadre */
+.option-row .radio-button {
+    -fx-font-size: 14px;
+    -fx-text-fill: #1e293b;
+    -fx-font-weight: 600;
+    -fx-padding: 4 6 4 6;
+}
+
+.option-row .radio-button .radio {
+    -fx-background-color: white;
+    -fx-border-color: #94a3b8;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 4;
+}
+
+.option-row .radio-button:selected .radio {
+    -fx-background-color: #2563eb;
+    -fx-border-color: #2563eb;
+}
+
+.option-row .radio-button:selected {
+    -fx-text-fill: #1d4ed8;
+}
+
+/* =========================
+   AUDIO BUTTONS
+   ========================= */
+.audio-button {
+    -fx-background-color: #eff6ff;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #bfdbfe;
+    -fx-padding: 6 10 6 10;
+    -fx-cursor: hand;
+}
+
+.audio-button:hover {
+    -fx-background-color: #dbeafe;
+}
+
+.audio-button:disabled {
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #94a3b8;
+    -fx-border-color: #d1d5db;
+    -fx-opacity: 1;
+}
+
+/* =========================
+   TEXT AREAS
+   ========================= */
+.text-area {
+    -fx-background-color: #ffffff;
+    -fx-control-inner-background: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #cbd5e1;
+    -fx-text-fill: #1e293b;
+    -fx-prompt-text-fill: #94a3b8;
+    -fx-font-size: 14px;
+    -fx-padding: 6;
+}
+
+.text-area .content {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+}
+
+.answer-area {
+    -fx-font-size: 15px;
+    -fx-text-fill: #1e293b;
+}
+
+.feedback-area {
+    -fx-font-size: 14px;
+}
+
+.exam-doc-area {
+    -fx-text-fill: #111111;
+    -fx-font-size: 14px;
+    -fx-control-inner-background: white;
+    -fx-background-color: white;
+    -fx-border-color: #d0d7e2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.exam-doc-area .content {
+    -fx-background-color: white;
+}
+
+.exam-doc-area .viewport {
+    -fx-background-color: white;
+}
+
+/* =========================
+   UPLOAD / SUBMISSION
+   ========================= */
+.submission-toolbar {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 14;
+    -fx-border-color: #dbe4f0;
+    -fx-border-radius: 14;
+}
+
+.upload-card {
+    -fx-background-color: #f8fbff;
+    -fx-border-color: #cbd5e1;
+    -fx-border-style: segments(8, 6);
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+    -fx-alignment: center;
+}
+
+.upload-title {
+    -fx-text-fill: #1e293b;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.upload-subtitle {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 12px;
+}
+
+/* =========================
+   PDF
+   ========================= */
+.pdf-toolbar {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 14;
+    -fx-padding: 8 10 8 10;
+    -fx-border-color: #dbe4f0;
+    -fx-border-radius: 14;
+}
+
+.pdf-surface {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 8;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 14;
+}
+
+.pdf-page-indicator {
+    -fx-text-fill: #334155;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+}
+
+.pdf-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.pdf-scroll > .viewport {
+    -fx-background-color: #ffffff;
+}
+
+/* =========================
+   BUTTONS
+   ========================= */
+.button {
+    -fx-cursor: hand;
+}
+
+.primary-button {
+    -fx-background-color: linear-gradient(to right, #2563eb, #1d4ed8);
     -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-padding: 9 16 9 16;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.16), 8, 0.16, 0, 2);
+}
+
+.primary-button:hover {
+    -fx-background-color: linear-gradient(to right, #3b82f6, #2563eb);
+}
+
+.secondary-button {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #1e293b;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-padding: 8 14 8 14;
+    -fx-border-color: #cbd5e1;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #e2e8f0;
 }
