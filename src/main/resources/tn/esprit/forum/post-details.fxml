@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.forum.PostDetailsController"
+            stylesheets="@forum.css"
+            styleClass="root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="header">
+            <padding>
+                <Insets top="18" right="28" bottom="18" left="28"/>
+            </padding>
+            <Button text="← Back to Posts" onAction="#handleBack" styleClass="btn-secondary"/>
+            <VBox spacing="3">
+                <Label text="Post Details" styleClass="label-title-large"/>
+                <Label text="View the full post and join the conversation below."
+                       style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <content>
+                <VBox spacing="20" alignment="TOP_CENTER">
+                    <padding>
+                        <Insets top="32" right="40" bottom="40" left="40"/>
+                    </padding>
+
+                    <!-- Post Card -->
+                    <VBox spacing="0" maxWidth="720" styleClass="card">
+                        <padding>
+                            <Insets top="28" right="28" bottom="28" left="28"/>
+                        </padding>
+
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label fx:id="titleValueLabel" wrapText="true" styleClass="label-post-title" HBox.hgrow="ALWAYS"/>
+                            <HBox fx:id="postActionsContainer" spacing="8" managed="false" visible="false">
+                                <Button fx:id="editPostButton" text="Edit Post" onAction="#handleEditPost" managed="false" visible="false" styleClass="btn-edit"/>
+                                <Button fx:id="deletePostButton" text="Delete Post" onAction="#handleDeletePost" managed="false" visible="false" styleClass="btn-delete"/>
+                            </HBox>
+                        </HBox>
+
+                        <Region style="-fx-pref-height: 16;"/>
+
+                        <!-- Meta grid -->
+                        <HBox spacing="32">
+                            <VBox spacing="4">
+                                <Label text="ID" styleClass="label-meta"/>
+                                <Label fx:id="idValueLabel" wrapText="true" styleClass="label-meta-value"/>
+                            </VBox>
+                            <VBox spacing="4">
+                                <Label text="TYPE" styleClass="label-meta"/>
+                                <Label fx:id="typeValueLabel" wrapText="true" styleClass="label-meta-value"/>
+                            </VBox>
+                            <VBox spacing="4">
+                                <Label text="TOPIC"
+                                       style="-fx-text-fill: #94a3b8; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                                <Label fx:id="topicValueLabel" wrapText="true"
+                                       style="-fx-text-fill: #3b82f6; -fx-font-size: 13px; -fx-font-weight: 600;"/>
+                            </VBox>
+                        </HBox>
+
+                        <Region styleClass="spacer-large"/>
+                        <Region styleClass="divider"/>
+                        <Region styleClass="spacer-large"/>
+
+                        <!-- Content -->
+                        <Label text="CONTENT"
+                               style="-fx-text-fill: #94a3b8; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                        <Region style="-fx-pref-height: 6;"/>
+                        <Label fx:id="contentValueLabel" wrapText="true" styleClass="label-content"/>
+
+                        <Region styleClass="spacer-large"/>
+                        <Region styleClass="divider"/>
+                        <Region styleClass="spacer-large"/>
+
+                        <!-- Footer meta -->
+                        <HBox spacing="32">
+                            <VBox spacing="4">
+                                <Label text="AUTHOR"
+                                       style="-fx-text-fill: #94a3b8; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                                <Label fx:id="userValueLabel" wrapText="true"
+                                       style="-fx-text-fill: #1e293b; -fx-font-size: 13px; -fx-font-weight: 600;"/>
+                            </VBox>
+                            <VBox spacing="4">
+                                <Label text="CREATED"
+                                       style="-fx-text-fill: #94a3b8; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                                <Label fx:id="createdAtValueLabel" wrapText="true"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+                            </VBox>
+                            <VBox spacing="4">
+                                <Label text="UPDATED"
+                                       style="-fx-text-fill: #94a3b8; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                                <Label fx:id="updatedAtValueLabel" wrapText="true"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Replies Section Header -->
+                    <VBox spacing="14" maxWidth="720">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="Replies"
+                                   style="-fx-text-fill: #0f172a; -fx-font-weight: 700; -fx-font-size: 18px;"/>
+                        </HBox>
+                        <VBox fx:id="repliesContainer" spacing="10"/>
+                    </VBox>
+
+                    <!-- Add Reply Card -->
+                    <VBox spacing="16" maxWidth="720"
+                          style="-fx-background-color: white;
+                                 -fx-background-radius: 16;
+                                 -fx-border-color: #e2e8f0;
+                                 -fx-border-radius: 16;
+                                 -fx-border-width: 1;
+                                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.07), 16, 0, 0, 4);">
+                        <padding>
+                            <Insets top="24" right="24" bottom="24" left="24"/>
+                        </padding>
+
+                        <Label text="Add a Reply"
+                               style="-fx-text-fill: #0f172a; -fx-font-weight: 700; -fx-font-size: 16px;"/>
+
+                        <VBox spacing="5">
+                            <Label text="REPLYING AS"
+                                   style="-fx-text-fill: #94a3b8; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                            <Label fx:id="currentReplyUserLabel"
+                                   style="-fx-text-fill: #3b82f6; -fx-font-weight: 700; -fx-font-size: 13px;"/>
+                        </VBox>
+
+                        <VBox spacing="7">
+                            <Label text="Your Reply"
+                                   style="-fx-text-fill: #374151; -fx-font-weight: 600; -fx-font-size: 13px;"/>
+                            <TextArea fx:id="replyContentArea" promptText="Share your thoughts..." prefRowCount="5"
+                                      style="-fx-background-color: #f8fafc;
+                                             -fx-border-color: #e2e8f0;
+                                             -fx-border-radius: 9;
+                                             -fx-background-radius: 9;
+                                             -fx-border-width: 1.5;
+                                             -fx-padding: 10 14 10 14;
+                                             -fx-font-size: 14px;
+                                             -fx-text-fill: #1e293b;
+                                             -fx-prompt-text-fill: #94a3b8;"/>
+                        </VBox>
+
+                        <Label fx:id="replyErrorLabel" managed="false" visible="false" wrapText="true"
+                               style="-fx-text-fill: #dc2626; -fx-font-size: 13px; -fx-font-weight: 600;"/>
+
+                        <HBox alignment="CENTER_RIGHT">
+                            <Button text="Post Reply" onAction="#handleAddReply" styleClass="btn-primary"/>
+                        </HBox>
+                    </VBox>
+
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

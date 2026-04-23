@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.FaceIdDialogController"
+      prefWidth="420" spacing="14" alignment="CENTER"
+      style="-fx-background-color: linear-gradient(to bottom right, #0a0a1a, #1a0a2e);">
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+
+    <Label fx:id="titleLabel" text="Register your face"
+           style="-fx-text-fill: #e5e7eb; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <Label fx:id="subtitleLabel" text="Scan this QR code with your phone, then take a selfie."
+           wrapText="true" textAlignment="CENTER"
+           style="-fx-text-fill: #9ca3af; -fx-font-size: 12px;"/>
+
+    <StackPane style="-fx-background-color: white; -fx-background-radius: 14; -fx-padding: 14;">
+        <ImageView fx:id="qrImage" fitWidth="260" fitHeight="260" preserveRatio="true"/>
+    </StackPane>
+
+    <Label fx:id="urlLabel" text="" wrapText="true" textAlignment="CENTER"
+           style="-fx-text-fill: #6b7280; -fx-font-size: 10px;"/>
+
+    <HBox alignment="CENTER" spacing="8"
+          style="-fx-background-color: rgba(124,58,237,0.15); -fx-padding: 10; -fx-background-radius: 10;">
+        <Label fx:id="statusLabel" text="Waiting for phone…"
+               style="-fx-text-fill: #c4b5fd; -fx-font-size: 13px;"/>
+    </HBox>
+
+    <Label text="On your phone you may see a 'Not secure' warning - tap Advanced then Proceed. This is normal for a self-signed local connection."
+           wrapText="true" textAlignment="CENTER"
+           style="-fx-text-fill: #6b7280; -fx-font-size: 10px;"/>
+
+    <Button text="Cancel" onAction="#handleCancel"
+            style="-fx-background-color: #374151; -fx-text-fill: white; -fx-padding: 8 22 8 22; -fx-background-radius: 8; -fx-cursor: hand;"/>
+</VBox>

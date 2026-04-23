@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.UserManagementController"
+            fitToWidth="true" hbarPolicy="NEVER"
+            style="-fx-background-color: transparent; -fx-background: transparent;">
+
+    <VBox spacing="20" styleClass="content-padding">
+        <padding><Insets top="30" bottom="30" left="30" right="30"/></padding>
+
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="16">
+            <VBox spacing="4">
+                <Label text="User Management" styleClass="dashboard-title"/>
+                <Label text="Manage users, assign roles, and monitor platform activity." styleClass="dashboard-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="+ Create User" onAction="#showCreateUserDialog" styleClass="btn-primary"/>
+        </HBox>
+
+        <!-- Stat Bars -->
+        <HBox spacing="12">
+            <HBox styleClass="stat-bar, stat-bar-blue" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="12">
+                <padding><Insets top="14" bottom="14" left="16" right="16"/></padding>
+                <VBox>
+                    <Label text="Total Users" style="-fx-text-fill:rgba(255,255,255,0.8); -fx-font-size:11px;"/>
+                    <Label fx:id="totalLabel" text="0" style="-fx-text-fill:white; -fx-font-size:22px; -fx-font-weight:bold;"/>
+                </VBox>
+            </HBox>
+            <HBox styleClass="stat-bar, stat-bar-orange" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="12">
+                <padding><Insets top="14" bottom="14" left="16" right="16"/></padding>
+                <VBox>
+                    <Label text="Admins" style="-fx-text-fill:rgba(255,255,255,0.8); -fx-font-size:11px;"/>
+                    <Label fx:id="adminsLabel" text="0" style="-fx-text-fill:white; -fx-font-size:22px; -fx-font-weight:bold;"/>
+                </VBox>
+            </HBox>
+            <HBox styleClass="stat-bar, stat-bar-purple" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="12">
+                <padding><Insets top="14" bottom="14" left="16" right="16"/></padding>
+                <VBox>
+                    <Label text="Students" style="-fx-text-fill:rgba(255,255,255,0.8); -fx-font-size:11px;"/>
+                    <Label fx:id="studentsLabel" text="0" style="-fx-text-fill:white; -fx-font-size:22px; -fx-font-weight:bold;"/>
+                </VBox>
+            </HBox>
+            <HBox styleClass="stat-bar, stat-bar-red" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="12">
+                <padding><Insets top="14" bottom="14" left="16" right="16"/></padding>
+                <VBox>
+                    <Label text="Banned" style="-fx-text-fill:rgba(255,255,255,0.8); -fx-font-size:11px;"/>
+                    <Label fx:id="bannedLabel" text="0" style="-fx-text-fill:white; -fx-font-size:22px; -fx-font-weight:bold;"/>
+                </VBox>
+            </HBox>
+        </HBox>
+
+        <!-- Search & Filter Bar -->
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <TextField fx:id="searchField" promptText="Search by name, email..." styleClass="custom-text-field"
+                       prefHeight="40" prefWidth="280"/>
+            <ComboBox fx:id="roleFilter" prefHeight="40" prefWidth="150" promptText="All Roles"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <HBox spacing="6">
+                <Button text="All Users" fx:id="filterAll" onAction="#filterAll" styleClass="filter-btn, filter-btn-active"/>
+                <Button text="Active" fx:id="filterActive" onAction="#filterActive" styleClass="filter-btn"/>
+                <Button text="Banned" fx:id="filterBanned" onAction="#filterBanned" styleClass="filter-btn"/>
+            </HBox>
+        </HBox>
+
+        <!-- User Cards Grid -->
+        <FlowPane fx:id="userCardsPane" hgap="16" vgap="16"/>
+
+    </VBox>
+</ScrollPane>

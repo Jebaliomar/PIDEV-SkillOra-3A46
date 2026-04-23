@@ -1,5 +1,7 @@
 package tn.esprit.tools;
 
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -31,7 +33,17 @@ public class MyConnection {
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load database configuration", e);
         } catch (SQLException e) {
-            throw new IllegalStateException("Unable to connect to the database", e);
+            String url = properties.getProperty("db.url");
+
+            if (e instanceof CommunicationsException) {
+                throw new IllegalStateException(
+                        "Unable to connect to the database at " + url
+                                + ". Check that MySQL is running and that the host/port in db.properties are correct.",
+                        e
+                );
+            }
+
+            throw new IllegalStateException("Unable to connect to the database at " + url, e);
         }
     }
 

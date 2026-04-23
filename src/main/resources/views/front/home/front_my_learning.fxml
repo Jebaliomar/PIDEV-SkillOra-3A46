@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxWidth="1240.0" spacing="20.0" styleClass="module-page"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.front.home.FrontMyLearningController">
+    <VBox spacing="6.0">
+        <Label styleClass="page-title" text="My Learning"/>
+        <Label fx:id="subtitleLabel" styleClass="page-subtitle" text="Courses connected to your account." wrapText="true"/>
+    </VBox>
+
+    <HBox alignment="CENTER_LEFT">
+        <Label fx:id="resultsLabel" styleClass="results-label" text="0 courses"/>
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="front-scroll-pane" VBox.vgrow="ALWAYS">
+        <content>
+            <FlowPane fx:id="coursesPane" prefWrapLength="1040.0"/>
+        </content>
+    </ScrollPane>
+</VBox>

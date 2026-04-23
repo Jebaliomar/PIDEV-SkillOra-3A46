@@ -113,6 +113,52 @@ public class EventService {
         }
     }
 
+    public List<Event> searchAndFilter(String titleQuery, String eventType) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT * FROM event WHERE 1=1");
+        List<Object> parameters = new ArrayList<>();
+
+        if (titleQuery != null && !titleQuery.isBlank()) {
+            sql.append(" AND LOWER(title) LIKE ?");
+            parameters.add("%" + titleQuery.trim().toLowerCase() + "%");
+        }
+
+        if (eventType != null && !eventType.isBlank()) {
+            sql.append(" AND event_type = ?");
+            parameters.add(eventType.trim());
+        }
+
+        sql.append(" ORDER BY start_date DESC");
+
+        List<Event> events = new ArrayList<>();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < parameters.size(); i++) {
+                preparedStatement.setObject(i + 1, parameters.get(i));
+            }
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    events.add(mapResultSetToEvent(resultSet));
+                }
+            }
+        }
+
+        return events;
+    }
+
+    public List<String> getDistinctEventTypes() throws SQLException {
+        String sql = "SELECT DISTINCT event_type FROM event WHERE event_type IS NOT NULL AND event_type <> '' ORDER BY event_type";
+        List<String> types = new ArrayList<>();
+
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+            while (resultSet.next()) {
+                types.add(resultSet.getString("event_type"));
+            }
+        }
+
+        return types;
+    }
+
     private Event mapResultSetToEvent(ResultSet resultSet) throws SQLException {
         Event event = new Event();
         event.setId(resultSet.getInt("id"));

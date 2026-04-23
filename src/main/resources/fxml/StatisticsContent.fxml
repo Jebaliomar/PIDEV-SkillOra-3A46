@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.StatisticsController"
+            fitToWidth="true" hbarPolicy="NEVER"
+            style="-fx-background-color: transparent; -fx-background: transparent;">
+
+    <VBox spacing="24" styleClass="content-padding">
+        <padding><Insets top="30" bottom="30" left="30" right="30"/></padding>
+
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="16">
+            <VBox spacing="4">
+                <Label text="Platform Analytics" styleClass="dashboard-title"/>
+                <Label text="Deep insights into your platform's performance and user behavior." styleClass="dashboard-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Export CSV" onAction="#exportCsv" styleClass="btn-primary"/>
+        </HBox>
+
+        <!-- Stat Cards Row -->
+        <HBox spacing="16">
+            <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS" spacing="8">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Total Users" styleClass="stat-card-label"/>
+                <Label fx:id="statTotal" text="0" styleClass="stat-card-value"/>
+                <Label text="All registered accounts" styleClass="stat-card-desc"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-green" HBox.hgrow="ALWAYS" spacing="8">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Active Users" styleClass="stat-card-label"/>
+                <Label fx:id="statActive" text="0" styleClass="stat-card-value"/>
+                <Label fx:id="statActivePercent" text="0% activity rate" styleClass="stat-card-desc"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-purple" HBox.hgrow="ALWAYS" spacing="8">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="New This Week" styleClass="stat-card-label"/>
+                <Label fx:id="statNew" text="0" styleClass="stat-card-value"/>
+                <Label text="Strong growth trend" styleClass="stat-card-desc"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-orange" HBox.hgrow="ALWAYS" spacing="8">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Engagement Score" styleClass="stat-card-label"/>
+                <Label fx:id="statEngagement" text="94.5" styleClass="stat-card-value"/>
+                <Label text="Above industry average" styleClass="stat-card-desc"/>
+            </VBox>
+        </HBox>
+
+        <!-- Charts Row -->
+        <HBox spacing="16">
+            <!-- Growth Trajectory -->
+            <VBox HBox.hgrow="ALWAYS" styleClass="chart-card" spacing="8">
+                <padding><Insets top="16" bottom="16" left="16" right="16"/></padding>
+                <Label text="User Growth Trajectory" styleClass="chart-title"/>
+                <Label text="Daily registrations over the last 30 days" styleClass="chart-subtitle"/>
+                <AreaChart fx:id="growthAreaChart" prefHeight="280" animated="false" styleClass="custom-chart">
+                    <xAxis><CategoryAxis fx:id="areaXAxis"/></xAxis>
+                    <yAxis><NumberAxis fx:id="areaYAxis"/></yAxis>
+                </AreaChart>
+            </VBox>
+
+            <!-- User Status Pie -->
+            <VBox prefWidth="300" styleClass="chart-card" spacing="8" alignment="CENTER">
+                <padding><Insets top="16" bottom="16" left="16" right="16"/></padding>
+                <Label text="User Status" styleClass="chart-title"/>
+                <PieChart fx:id="statusPie" prefHeight="250" labelsVisible="true"
+                          legendVisible="true" animated="false" styleClass="custom-chart"/>
+                <Label fx:id="activeRateLabel" text="0% Active" styleClass="stat-highlight"/>
+            </VBox>
+        </HBox>
+
+        <!-- Metrics Row -->
+        <HBox spacing="16">
+            <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="6" alignment="CENTER">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Growth Rate" styleClass="metric-label"/>
+                <Label fx:id="growthRateLabel" text="+0%" styleClass="metric-value-green"/>
+            </VBox>
+            <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="6" alignment="CENTER">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Avg. Daily Signups" styleClass="metric-label"/>
+                <Label fx:id="avgSignupsLabel" text="0" styleClass="metric-value"/>
+            </VBox>
+            <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="6" alignment="CENTER">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Ban Rate" styleClass="metric-label"/>
+                <Label fx:id="banRateLabel" text="0%" styleClass="metric-value-red"/>
+            </VBox>
+            <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="6" alignment="CENTER">
+                <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+                <Label text="Retention" styleClass="metric-label"/>
+                <Label text="89%" styleClass="metric-value-green"/>
+            </VBox>
+        </HBox>
+    </VBox>
+</ScrollPane>

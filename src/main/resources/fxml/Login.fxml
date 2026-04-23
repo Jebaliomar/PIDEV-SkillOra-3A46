@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<HBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.LoginController"
+      prefWidth="1000" prefHeight="620" styleClass="split-container">
+
+    <!-- Left Panel - Login Form -->
+    <VBox HBox.hgrow="ALWAYS" styleClass="left-panel" spacing="0" alignment="TOP_LEFT">
+
+        <!-- Logo Header + Theme Toggle -->
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <StackPane styleClass="logo-box">
+                <Label text="S" styleClass="logo-icon"/>
+            </StackPane>
+            <Label text="SkillORA" styleClass="logo-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="themeToggleBtn" onAction="#toggleTheme" styleClass="theme-toggle"
+                    prefWidth="38" prefHeight="38"/>
+        </HBox>
+
+        <!-- Spacer -->
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- Center Form -->
+        <VBox alignment="CENTER_LEFT" spacing="6" maxWidth="380">
+            <padding><Insets left="20"/></padding>
+
+            <!-- Title -->
+            <Label text="Welcome back" styleClass="page-title"/>
+            <Label text="Sign in to continue learning" styleClass="page-subtitle"/>
+
+            <Region prefHeight="24"/>
+
+            <!-- Error Message -->
+            <HBox fx:id="errorBox" styleClass="error-box" spacing="8" managed="false" visible="false" alignment="CENTER_LEFT">
+                <Label text="!" style="-fx-font-weight:bold; -fx-text-fill:#DC2626; -fx-font-size:16;"/>
+                <VBox spacing="2">
+                    <Label text="Login Failed" styleClass="error-title"/>
+                    <Label fx:id="errorLabel" styleClass="error-text" wrapText="true"/>
+                </VBox>
+            </HBox>
+
+            <!-- Email Field -->
+            <VBox spacing="6">
+                <Label text="Email" styleClass="input-label"/>
+                <TextField fx:id="emailField" promptText="you@example.com" styleClass="custom-text-field" prefHeight="42"/>
+            </VBox>
+
+            <!-- Password Field -->
+            <VBox spacing="4">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Password" styleClass="input-label"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Hyperlink text="Forgot?" onAction="#goToForgotPassword" styleClass="forgot-link"/>
+                </HBox>
+                <StackPane>
+                    <PasswordField fx:id="passwordField" promptText="Enter your password" styleClass="password-field" prefHeight="42" style="-fx-padding: 0 42 0 12;"/>
+                    <TextField fx:id="passwordShowField" promptText="Enter your password" styleClass="custom-text-field" prefHeight="42" style="-fx-padding: 0 42 0 12;"/>
+                    <Button fx:id="passwordEyeBtn" StackPane.alignment="CENTER_RIGHT" focusTraversable="false"
+                            style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 0 12 0 12;"/>
+                </StackPane>
+            </VBox>
+
+            <Region prefHeight="4"/>
+
+            <!-- Remember Me -->
+            <CheckBox text="Keep me signed in" fx:id="rememberMeCheck"/>
+
+            <Region prefHeight="8"/>
+
+            <!-- Sign In Button -->
+            <Button text="Sign in" onAction="#handleLogin" styleClass="btn-primary" maxWidth="Infinity" prefHeight="44"/>
+
+            <Region prefHeight="6"/>
+
+            <!-- Face ID Sign In (optional) -->
+            <Button text="Sign in with Face ID" onAction="#handleFaceIdLogin" maxWidth="Infinity" prefHeight="42"
+                    style="-fx-background-color: transparent; -fx-border-color: #7c3aed; -fx-border-width: 1.5; -fx-border-radius: 10; -fx-background-radius: 10; -fx-text-fill: #7c3aed; -fx-font-weight: bold; -fx-cursor: hand;"/>
+
+            <Region prefHeight="10"/>
+
+            <!-- Register Link -->
+            <HBox alignment="CENTER" spacing="4">
+                <Label text="Don't have an account?" styleClass="link-text"/>
+                <Hyperlink text="Create one" fx:id="signUpLink" onAction="#goToSignUp" styleClass="link-button"/>
+            </HBox>
+        </VBox>
+
+        <!-- Spacer -->
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- Footer -->
+        <HBox alignment="CENTER">
+            <Label text="Secure 256-bit SSL encryption" styleClass="footer-text"/>
+        </HBox>
+    </VBox>
+
+    <!-- Right Panel - Decorative -->
+    <VBox HBox.hgrow="ALWAYS" styleClass="right-panel" alignment="CENTER" spacing="20">
+        <!-- Decorative circles -->
+        <StackPane>
+            <Circle radius="120" styleClass="decorative-circle"/>
+            <Circle radius="80" style="-fx-fill: linear-gradient(to bottom right, #22d3ee, #7C3AED); -fx-opacity: 0.1;"/>
+            <VBox alignment="CENTER" spacing="16" maxWidth="320">
+                <Label text="Start Your Learning Journey" styleClass="right-panel-title" wrapText="true"/>
+                <Label text="Access thousands of courses, connect with experts, and build the skills that matter." styleClass="right-panel-subtitle" wrapText="true"/>
+            </VBox>
+        </StackPane>
+
+        <!-- Decorative dots -->
+        <HBox alignment="CENTER" spacing="8">
+            <Circle radius="4" style="-fx-fill: #0891b2; -fx-opacity: 0.8;"/>
+            <Circle radius="4" style="-fx-fill: #22d3ee; -fx-opacity: 0.5;"/>
+            <Circle radius="4" style="-fx-fill: #7C3AED; -fx-opacity: 0.3;"/>
+        </HBox>
+    </VBox>
+</HBox>

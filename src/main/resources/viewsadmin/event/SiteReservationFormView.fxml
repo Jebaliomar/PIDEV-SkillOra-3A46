@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+<?import javafx.scene.control.ScrollPane?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controlles.SiteReservationFormController"
+            prefWidth="1440" prefHeight="900" styleClass="site-root">
+
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="18" styleClass="site-header">
+            <padding>
+                <Insets top="12" right="24" bottom="12" left="24"/>
+            </padding>
+
+            <StackPane prefWidth="40" prefHeight="40" styleClass="site-logo-wrap">
+                <Label text="⚓" styleClass="site-logo-text"/>
+            </StackPane>
+            <Label text="SkillHarbor" styleClass="site-brand"/>
+
+            <Button text="Browse" styleClass="site-nav-button"/>
+            <Button text="My Learning" styleClass="site-nav-button"/>
+            <Button text="Community" styleClass="site-nav-button"/>
+            <Button text="Events" styleClass="site-nav-button site-nav-button-active"/>
+            <Button text="Rendez-vous" styleClass="site-nav-button"/>
+            <Button text="Teach" styleClass="site-nav-button"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button text="Admin" styleClass="site-admin-chip"/>
+            <Button fx:id="themeToggleButton" text="☀" onAction="#onToggleTheme" styleClass="site-icon-button"/>
+            <Button text="🔔" styleClass="site-icon-button"/>
+            <StackPane prefWidth="52" prefHeight="44" styleClass="site-avatar">
+                <Label text="AS" styleClass="site-avatar-text"/>
+            </StackPane>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="site-scroll">
+            <content>
+                <StackPane styleClass="site-form-page-shell">
+                    <VBox maxWidth="690" spacing="18">
+                        <VBox spacing="8">
+                            <Label fx:id="pageTitleLabel" text="Reservation" styleClass="site-page-title"/>
+                            <Label fx:id="pageSubtitleLabel" text="Reserve your seat for an event." styleClass="site-page-subtitle"/>
+                        </VBox>
+
+                        <Label fx:id="successFlashLabel" managed="false" visible="false" text="" styleClass="site-success-flash" maxWidth="1.7976931348623157E308"/>
+
+                        <VBox spacing="0" styleClass="site-reservation-card">
+                            <padding>
+                                <Insets top="34" right="22" bottom="22" left="22"/>
+                            </padding>
+
+                            <GridPane hgap="14" vgap="18">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                    <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                                </columnConstraints>
+
+                                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                    <Label text="Event" styleClass="site-form-label"/>
+                                    <TextField fx:id="eventField" editable="false" styleClass="site-form-input"/>
+                                </VBox>
+                                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                    <Label text="Salle" styleClass="site-form-label"/>
+                                    <TextField fx:id="salleField" editable="false" styleClass="site-form-input"/>
+                                </VBox>
+
+                                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                    <Label text="First Name" styleClass="site-form-label"/>
+                                    <TextField fx:id="firstNameField" promptText="Ex: Mohamed" styleClass="site-form-input"/>
+                                    <Label fx:id="firstNameErrorLabel" text="" managed="false" visible="false" styleClass="site-form-error"/>
+                                </VBox>
+                                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <Label text="Last Name" styleClass="site-form-label"/>
+                                    <TextField fx:id="lastNameField" promptText="Ex: Ben Ali" styleClass="site-form-input"/>
+                                    <Label fx:id="lastNameErrorLabel" text="" managed="false" visible="false" styleClass="site-form-error"/>
+                                </VBox>
+
+                                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                    <Label text="Phone" styleClass="site-form-label"/>
+                                    <TextField fx:id="phoneField" promptText="Ex: 55123456" styleClass="site-form-input"/>
+                                    <Label fx:id="phoneErrorLabel" text="" managed="false" visible="false" styleClass="site-form-error"/>
+                                </VBox>
+                                <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <Label text="Seats" styleClass="site-form-label"/>
+                                    <TextField fx:id="seatsField" editable="false" styleClass="site-form-input"/>
+                                    <Label fx:id="maxSeatsHelperLabel" text="Max seats: 0" styleClass="site-form-helper"/>
+                                </VBox>
+
+                                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="2">
+                                    <Label text="Address" styleClass="site-form-label"/>
+                                    <TextField fx:id="addressField" editable="false" styleClass="site-form-input"/>
+                                </VBox>
+
+                                <VBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2">
+                                    <StackPane fx:id="mapPreviewPane" prefHeight="216" styleClass="site-map-preview">
+                                        <WebView fx:id="mapWebView" prefHeight="216" prefWidth="646"/>
+                                    </StackPane>
+                                    <Label fx:id="addressHelperLabel" text="Address is locked to the salle location." styleClass="site-form-helper"/>
+                                </VBox>
+
+                                <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="2">
+                                    <Label text="Reservation Date" styleClass="site-form-label"/>
+                                    <TextField fx:id="reservationDateField" editable="false" styleClass="site-form-input"/>
+                                    <Label fx:id="reservationDateHelperLabel" text="Set automatically to the current time." styleClass="site-form-helper"/>
+                                </VBox>
+                            </GridPane>
+
+                            <HBox alignment="CENTER_LEFT" spacing="14" styleClass="site-form-actions">
+                                <padding>
+                                    <Insets top="18" right="0" bottom="0" left="0"/>
+                                </padding>
+                                <Button text="Submit Reservation" onAction="#onSubmitReservation" styleClass="site-submit-button"/>
+                                <Button text="Cancel" onAction="#onCancel" styleClass="site-cancel-button"/>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                </StackPane>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

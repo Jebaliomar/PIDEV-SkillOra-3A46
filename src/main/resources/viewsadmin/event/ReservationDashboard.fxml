@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controlles.ReservationDashboardController"
+            prefWidth="1440" prefHeight="900" styleClass="root-bg">
+
+    <top>
+        <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="top-bar">
+            <padding>
+                <Insets top="14" right="24" bottom="14" left="24"/>
+            </padding>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="themeToggleButton" text="☀" onAction="#onToggleTheme" styleClass="theme-icon-button"/>
+            <Button text="← Back to Site" onAction="#onBackToSite" styleClass="topbar-link-button"/>
+            <StackPane prefWidth="40" prefHeight="40" styleClass="avatar-chip">
+                <Label text="A" styleClass="avatar-text"/>
+            </StackPane>
+        </HBox>
+    </top>
+
+    <left>
+        <VBox prefWidth="270" spacing="16" styleClass="admin-sidebar">
+            <padding>
+                <Insets top="20" right="14" bottom="20" left="14"/>
+            </padding>
+            <HBox spacing="12" styleClass="brand-box">
+                <VBox alignment="CENTER" prefWidth="42" prefHeight="42" styleClass="brand-icon-wrap">
+                    <Label text="S" styleClass="brand-icon"/>
+                </VBox>
+                <VBox spacing="2">
+                    <Label text="SkillHarbor" styleClass="brand-title"/>
+                    <Label text="Admin Panel" styleClass="brand-subtitle"/>
+                </VBox>
+            </HBox>
+            <Separator/>
+            <VBox spacing="6" styleClass="sidebar-nav-group">
+                <Button fx:id="dashboardNavButton" maxWidth="1.7976931348623157E308" text="Dashboard" onAction="#onOpenDashboard" styleClass="sidebar-nav-item"/>
+                <Button fx:id="usersNavButton" maxWidth="1.7976931348623157E308" text="User Management" onAction="#onOpenUsers" styleClass="sidebar-nav-item"/>
+                <Button fx:id="eventsNavButton" maxWidth="1.7976931348623157E308" text="Events" onAction="#onOpenEvents" styleClass="sidebar-nav-item"/>
+                <Button fx:id="sallesNavButton" maxWidth="1.7976931348623157E308" text="Salles" onAction="#onOpenSalles" styleClass="sidebar-nav-item"/>
+                <Button fx:id="reservationsNavButton" maxWidth="1.7976931348623157E308" text="Reservations" styleClass="sidebar-nav-item sidebar-nav-item-active"/>
+                <Button fx:id="coursesNavButton" maxWidth="1.7976931348623157E308" text="Courses Admin" onAction="#onOpenCourses" styleClass="sidebar-nav-item"/>
+                <Button fx:id="statisticsNavButton" maxWidth="1.7976931348623157E308" text="Statistics" onAction="#onOpenStatistics" styleClass="sidebar-nav-item"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
+            <content>
+                <VBox spacing="18" styleClass="main-content-wrap">
+                    <padding>
+                        <Insets top="22" right="24" bottom="20" left="24"/>
+                    </padding>
+
+                    <HBox alignment="CENTER_LEFT">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Reservations" styleClass="page-title"/>
+                            <Label text="Manage event reservations." styleClass="page-subtitle"/>
+                        </VBox>
+                        <Button text="Export TXT" onAction="#onExportTxt" styleClass="light-inline-button"/>
+                    </HBox>
+
+                    <Label fx:id="deleteFlashLabel" managed="false" visible="false" text="" styleClass="delete-success-flash" maxWidth="1.7976931348623157E308"/>
+
+                    <GridPane hgap="14" vgap="14">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="33.333"/>
+                            <ColumnConstraints percentWidth="33.333"/>
+                            <ColumnConstraints percentWidth="33.333"/>
+                        </columnConstraints>
+
+                        <VBox spacing="10" styleClass="reservation-metric-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <padding><Insets top="18" right="18" bottom="18" left="18"/></padding>
+                            <Label text="Total Places" styleClass="reservation-card-title"/>
+                            <Label text="Global seats reserved across all events." styleClass="reservation-card-copy"/>
+                            <Region VBox.vgrow="ALWAYS"/>
+                            <Label fx:id="totalPlacesValueLabel" text="0" styleClass="reservation-metric-value"/>
+                            <Label fx:id="totalPlacesSubtitleLabel" text="From 0 reservations" styleClass="reservation-card-copy"/>
+                        </VBox>
+
+                        <VBox spacing="10" styleClass="reservation-metric-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="2">
+                            <padding><Insets top="18" right="18" bottom="18" left="18"/></padding>
+                            <Label text="Places by Event" styleClass="reservation-card-title"/>
+                            <Label text="Top events by reserved places." styleClass="reservation-card-copy"/>
+                            <VBox fx:id="placesByEventBox" spacing="8"/>
+                        </VBox>
+
+                        <VBox spacing="12" styleClass="reservation-chart-card" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="3">
+                            <padding><Insets top="18" right="18" bottom="18" left="18"/></padding>
+                            <Label text="Share by Event" styleClass="reservation-chart-title"/>
+                            <Label text="Visual split of reserved places." styleClass="reservation-card-copy"/>
+                            <PieChart fx:id="shareByEventChart" prefHeight="260" styleClass="reservation-pie-chart"/>
+                        </VBox>
+
+                        <VBox spacing="10" styleClass="reservation-metric-card" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="3">
+                            <padding><Insets top="18" right="18" bottom="18" left="18"/></padding>
+                            <Label text="Totals" styleClass="reservation-card-title"/>
+                            <Label text="Quick view of overall volume." styleClass="reservation-card-copy"/>
+                            <GridPane hgap="12" vgap="12">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="50"/>
+                                    <ColumnConstraints percentWidth="50"/>
+                                </columnConstraints>
+                                <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                    <Label text="Reservations" styleClass="reservation-total-key"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="totalReservationsValueLabel" text="0" styleClass="reservation-total-value"/>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                    <Label text="Total Places" styleClass="reservation-total-key"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="totalReservationPlacesValueLabel" text="0" styleClass="reservation-total-value"/>
+                                </HBox>
+                            </GridPane>
+                            <Label text="Updated live from reservations list." styleClass="reservation-card-copy"/>
+                        </VBox>
+                    </GridPane>
+
+                    <VBox spacing="14" styleClass="list-card reservation-list-card">
+                        <padding>
+                            <Insets top="16" right="16" bottom="16" left="16"/>
+                        </padding>
+                        <HBox alignment="CENTER_LEFT" spacing="14" styleClass="reservation-table-toolbar">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label fx:id="totalRowsLabel" text="All Reservations (0)" styleClass="reservation-table-title"/>
+                                <Label text="Search by name and sort by places." styleClass="reservation-card-copy"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Search" styleClass="field-caption"/>
+                                <TextField fx:id="searchField" prefWidth="180" promptText="Search by first or last name" styleClass="form-input"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Sort by" styleClass="field-caption"/>
+                                <ComboBox fx:id="sortCombo" prefWidth="145" styleClass="type-combo"/>
+                            </VBox>
+                        </HBox>
+
+                        <VBox spacing="10" styleClass="reservation-table-shell">
+                        <HBox spacing="10" styleClass="table-head-row reservation-table-head">
+                            <Label text="EVENT" styleClass="reservation-th reservation-th-event"/>
+                            <Label text="SALLE" styleClass="reservation-th reservation-th-salle"/>
+                            <Label text="NAME" styleClass="reservation-th reservation-th-name"/>
+                            <Label text="PHONE" styleClass="reservation-th reservation-th-phone"/>
+                            <Label text="PLACES" styleClass="reservation-th reservation-th-seats"/>
+                            <Label text="DATE" styleClass="reservation-th reservation-th-date"/>
+                            <Label text="ACTIONS" styleClass="reservation-th reservation-th-actions"/>
+                        </HBox>
+
+                        <VBox fx:id="reservationRowsContainer" spacing="10" styleClass="reservation-rows-list"/>
+                        </VBox>
+                    </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

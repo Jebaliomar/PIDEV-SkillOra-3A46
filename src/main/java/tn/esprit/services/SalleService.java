@@ -48,7 +48,7 @@ public class SalleService {
     }
 
     public List<Salle> getAll() throws SQLException {
-        String sql = "SELECT * FROM salle";
+        String sql = "SELECT * FROM salle ORDER BY id DESC";
         List<Salle> salles = new ArrayList<>();
 
         try (Statement statement = connection.createStatement();

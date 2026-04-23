@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.forum.PostOverviewController"
+            stylesheets="@forum.css"
+            styleClass="root-alt">
+
+    <top>
+        <VBox spacing="0">
+
+            <!-- Top gradient accent bar -->
+            <Region style="-fx-background-color: linear-gradient(to right, #6366f1, #3b82f6, #0ea5e9);
+                           -fx-pref-height: 4; -fx-min-height: 4;"/>
+
+            <!-- Header row -->
+            <HBox alignment="CENTER_LEFT" spacing="20"
+                  styleClass="header-alt">
+                <padding>
+                    <Insets top="20" right="32" bottom="20" left="32"/>
+                </padding>
+
+                <VBox spacing="3">
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="●" styleClass="label-user-alt2"/>
+                        <Label text="Community Forum" styleClass="label-title-large"/>
+                    </HBox>
+                    <Label text="Browse discussions and share your thoughts with the community." styleClass="label-subtitle"/>
+                    <Label fx:id="currentUserLabel" styleClass="label-user-alt2"/>
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button fx:id="adminPostsButton" text="Admin Posts" onAction="#handleOpenAdminPosts" managed="false" visible="false" styleClass="btn-admin"/>
+
+                <Button text="+ New Post" onAction="#handleCreatePost" styleClass="btn-primary-alt"/>
+            </HBox>
+
+            <!-- Search and Filter bar -->
+            <HBox spacing="10" alignment="CENTER_LEFT"
+                  style="-fx-background-color: #f8faff;
+                         -fx-border-color: transparent transparent #e8edf5 transparent;
+                         -fx-border-width: 0 0 1 0;">
+                <padding>
+                    <Insets top="14" right="32" bottom="14" left="32"/>
+                </padding>
+
+                <TextField fx:id="searchField" promptText="Search by title, topic, or content..." onAction="#handleSearch" styleClass="search-field" HBox.hgrow="ALWAYS"/>
+
+                <ComboBox fx:id="typeFilterComboBox" onAction="#handleSearch" styleClass="combo-box" prefWidth="150"/>
+
+                <ComboBox fx:id="topicFilterComboBox" onAction="#handleSearch" styleClass="combo-box" prefWidth="150"/>
+
+                <Button text="Search" onAction="#handleSearch" styleClass="btn-search"/>
+
+                <Button text="Reset" onAction="#handleResetFilters" styleClass="btn-reset"/>
+            </HBox>
+
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <content>
+                <VBox fx:id="postsContainer" spacing="16" alignment="TOP_CENTER">
+                    <padding>
+                        <Insets top="28" right="48" bottom="48" left="48"/>
+                    </padding>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

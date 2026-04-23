@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<ScrollPane fitToWidth="true" styleClass="scroll-pane"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.HomeController">
+    <VBox spacing="36">
+        <padding><Insets top="40" right="60" bottom="60" left="60"/></padding>
+
+        <!-- Hero -->
+        <VBox styleClass="hero-card" spacing="18" alignment="CENTER_LEFT">
+            <padding><Insets top="60" right="60" bottom="60" left="60"/></padding>
+            <Label text="Welcome back" styleClass="hero-eyebrow"/>
+            <Label fx:id="heroTitle" text="Learn deeply. Grow visibly." styleClass="hero-title" wrapText="true"/>
+            <Label text="Master new skills with courses built by top instructors. Track your progress, earn certificates, and grow your career." styleClass="hero-subtitle" wrapText="true"/>
+            <HBox spacing="16">
+                <Button text="Browse Courses" onAction="#goToBrowseCourses" styleClass="btn-primary"/>
+                <Button text="View My Profile" onAction="#goToProfile" styleClass="btn-outline"/>
+            </HBox>
+        </VBox>
+
+        <!-- Quick stats -->
+        <HBox spacing="24">
+            <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="Courses" styleClass="metric-label"/>
+                <Label text="10K+" styleClass="metric-value"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-green" HBox.hgrow="ALWAYS">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="Students" styleClass="metric-label"/>
+                <Label text="500K+" styleClass="metric-value"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-purple" HBox.hgrow="ALWAYS">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="Instructors" styleClass="metric-label"/>
+                <Label text="2K+" styleClass="metric-value"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-orange" HBox.hgrow="ALWAYS">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="Rating" styleClass="metric-label"/>
+                <Label text="4.8" styleClass="metric-value"/>
+            </VBox>
+        </HBox>
+
+        <!-- Featured categories -->
+        <VBox spacing="18">
+            <Label text="Featured Categories" styleClass="dashboard-title"/>
+            <Label text="Explore skills across every domain" styleClass="dashboard-subtitle"/>
+            <FlowPane hgap="18" vgap="18">
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="Development" styleClass="chart-title"/>
+                    <Label text="1200+ courses" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="Design" styleClass="chart-title"/>
+                    <Label text="850+ courses" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="Business" styleClass="chart-title"/>
+                    <Label text="960+ courses" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="Marketing" styleClass="chart-title"/>
+                    <Label text="720+ courses" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="Data Science" styleClass="chart-title"/>
+                    <Label text="540+ courses" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="Photography" styleClass="chart-title"/>
+                    <Label text="380+ courses" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="Music" styleClass="chart-title"/>
+                    <Label text="290+ courses" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="Languages" styleClass="chart-title"/>
+                    <Label text="410+ courses" styleClass="chart-subtitle"/>
+                </VBox>
+            </FlowPane>
+        </VBox>
+
+        <!-- Testimonial-style CTA -->
+        <VBox styleClass="cta-card" spacing="12" alignment="CENTER">
+            <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
+            <Label text="Ready to level up?" styleClass="hero-title"/>
+            <Label text="Complete your profile to get personalized recommendations." styleClass="hero-subtitle"/>
+            <Button text="Go to Settings" onAction="#goToSettings" styleClass="btn-primary"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

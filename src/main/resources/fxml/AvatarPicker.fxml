@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.controllers.AvatarPickerController"
+      styleClass="admin-root" prefWidth="920" prefHeight="640" spacing="16">
+    <padding><Insets top="24" right="32" bottom="24" left="32"/></padding>
+
+    <VBox spacing="4">
+        <Label text="Choose Your 3D Avatar" styleClass="dashboard-title"/>
+        <Label text="Pick a character that represents you. It will spin on your profile." styleClass="dashboard-subtitle"/>
+    </VBox>
+
+    <HBox spacing="10">
+        <Button fx:id="tabAll" text="All" onAction="#showAll" styleClass="filter-btn"/>
+        <Button fx:id="tabMale" text="Male" onAction="#showMale" styleClass="filter-btn"/>
+        <Button fx:id="tabFemale" text="Female" onAction="#showFemale" styleClass="filter-btn"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" styleClass="scroll-pane" VBox.vgrow="ALWAYS">
+        <FlowPane fx:id="grid" hgap="16" vgap="16">
+            <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+        </FlowPane>
+    </ScrollPane>
+
+    <HBox spacing="12" alignment="CENTER_RIGHT">
+        <Label fx:id="selectedLabel" styleClass="profile-meta"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Cancel" onAction="#handleCancel" styleClass="btn-outline"/>
+        <Button fx:id="confirmBtn" text="Confirm Selection" onAction="#handleConfirm" styleClass="btn-primary" disable="true"/>
+    </HBox>
+</VBox>
