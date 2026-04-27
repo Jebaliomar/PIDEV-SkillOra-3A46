@@ -4,6 +4,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -30,7 +32,10 @@
         </VBox>
     </top>
     <center>
-        <HBox maxWidth="1320.0" spacing="20.0">
+        <HBox maxWidth="1420.0" spacing="28.0" styleClass="front-consume-shell">
+            <BorderPane.margin>
+                <Insets top="26.0" right="10.0" bottom="0.0" left="10.0"/>
+            </BorderPane.margin>
             <VBox prefWidth="304.0" spacing="14.0" styleClass="front-consume-sidebar front-consume-curriculum">
                 <VBox spacing="6.0">
                     <Label styleClass="section-title" text="Course Lessons"/>
@@ -51,15 +56,42 @@
                     </content>
                 </ScrollPane>
             </VBox>
-            <VBox spacing="16.0" HBox.hgrow="ALWAYS" styleClass="front-consume-main">
-                <StackPane fx:id="contentContainer" minHeight="420.0" prefHeight="560.0" VBox.vgrow="ALWAYS" styleClass="front-consume-preview"/>
-                <Label fx:id="previewStatusLabel" managed="false" styleClass="detail-body front-consume-meta" text="" visible="false" wrapText="true"/>
-                <HBox fx:id="previewActionsBox" alignment="CENTER_LEFT" managed="false" spacing="12.0" visible="false"/>
-                <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="front-consume-nav">
-                    <Button fx:id="previousButton" mnemonicParsing="false" onAction="#handlePrevious" styleClass="secondary-button" text="Previous"/>
-                    <Button fx:id="nextButton" mnemonicParsing="false" onAction="#handleNext" styleClass="primary-button" text="Next"/>
-                </HBox>
-            </VBox>
+            <ScrollPane fx:id="mainScrollPane" fitToWidth="true" hbarPolicy="NEVER" HBox.hgrow="ALWAYS" styleClass="front-scroll-pane front-consume-main-scroll">
+                <content>
+                    <VBox spacing="22.0" styleClass="front-consume-main">
+                        <VBox fx:id="aiSummaryCard" managed="false" spacing="18.0" styleClass="ai-summary-card" visible="false">
+                            <HBox alignment="CENTER_LEFT" spacing="18.0">
+                                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                                    <Label styleClass="ai-summary-kicker" text="AI ASSISTANT"/>
+                                    <Label styleClass="ai-summary-title" text="Lesson Summary"/>
+                                    <Label fx:id="aiSummarySubtitleLabel" styleClass="ai-summary-subtitle" text="Create a quick study digest from this lesson." wrapText="true"/>
+                                </VBox>
+                                <Button fx:id="generateSummaryButton" mnemonicParsing="false" onAction="#handleGenerateSummary" styleClass="ai-summary-button" text="Summarize with AI"/>
+                            </HBox>
+
+                            <VBox fx:id="summaryStatusBox" managed="false" spacing="8.0" styleClass="ai-summary-status" visible="false">
+                                <Label styleClass="ai-summary-loading" text="Analyzing lesson content and preparing your summary..."/>
+                            </VBox>
+
+                            <VBox fx:id="summaryResultBox" managed="false" spacing="14.0" styleClass="ai-summary-result" visible="false">
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <Label styleClass="ai-summary-result-title" text="Generated Summary"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button fx:id="summaryToggleButton" mnemonicParsing="false" onAction="#handleToggleSummary" styleClass="secondary-button ai-summary-toggle" text="Hide"/>
+                                </HBox>
+                                <TextArea fx:id="summaryTextArea" editable="false" focusTraversable="false" prefHeight="240.0" wrapText="true" styleClass="ai-summary-output"/>
+                            </VBox>
+                        </VBox>
+                        <StackPane fx:id="contentContainer" minHeight="520.0" prefHeight="620.0" styleClass="front-consume-preview"/>
+                        <Label fx:id="previewStatusLabel" managed="false" styleClass="detail-body front-consume-meta" text="" visible="false" wrapText="true"/>
+                        <HBox fx:id="previewActionsBox" alignment="CENTER_LEFT" managed="false" spacing="12.0" visible="false"/>
+                        <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="front-consume-nav">
+                            <Button fx:id="previousButton" mnemonicParsing="false" onAction="#handlePrevious" styleClass="secondary-button" text="Previous"/>
+                            <Button fx:id="nextButton" mnemonicParsing="false" onAction="#handleNext" styleClass="primary-button" text="Next"/>
+                        </HBox>
+                    </VBox>
+                </content>
+            </ScrollPane>
         </HBox>
     </center>
 </BorderPane>

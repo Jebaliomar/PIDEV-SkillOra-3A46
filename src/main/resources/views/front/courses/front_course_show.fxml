@@ -46,6 +46,46 @@
                 </VBox>
                 <VBox fx:id="sectionsAccordion" spacing="12.0" styleClass="front-sections-list"/>
             </VBox>
+
+            <VBox spacing="20.0" styleClass="course-insights-shell">
+                <HBox alignment="CENTER_LEFT" spacing="18.0">
+                    <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                        <Label styleClass="course-insights-kicker" text="HELPFUL SIGNALS"/>
+                        <Label styleClass="course-insights-title" text="Why choose this course?"/>
+                        <Label styleClass="course-insights-subtitle" text="Clear and simple indicators showing how practical and supported this topic is." wrapText="true"/>
+                    </VBox>
+                    <Button fx:id="loadInsightsButton" focusTraversable="false" mnemonicParsing="false" onAction="#handleLoadInsights" styleClass="course-insights-button" text="Show Insights"/>
+                </HBox>
+
+                <VBox fx:id="insightsLoadingBox" managed="false" spacing="12.0" styleClass="course-insights-loading" visible="false">
+                    <HBox spacing="12.0">
+                        <Region styleClass="insight-skeleton-line" HBox.hgrow="ALWAYS"/>
+                        <Region prefWidth="160.0" styleClass="insight-skeleton-line"/>
+                    </HBox>
+                    <HBox spacing="12.0">
+                        <Region styleClass="insight-skeleton-card" HBox.hgrow="ALWAYS"/>
+                        <Region styleClass="insight-skeleton-card" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </VBox>
+
+                <Label fx:id="insightsErrorLabel" managed="false" styleClass="course-insights-error" visible="false" wrapText="true"/>
+
+                <VBox fx:id="insightsResultBox" managed="false" spacing="18.0" visible="false">
+                    <VBox spacing="4.0" styleClass="course-insights-keyword-card">
+                        <Label styleClass="course-insights-card-kicker" text="MAIN TOPIC DETECTED"/>
+                        <Label fx:id="insightsKeywordLabel" styleClass="course-insights-keyword" text="N/A"/>
+                    </VBox>
+                    <VBox fx:id="insightsCardsBox" spacing="14.0"/>
+                    <VBox spacing="14.0" styleClass="course-insights-chart-card">
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label styleClass="course-insights-chart-title" text="Topic Strength Snapshot"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label styleClass="course-insights-chart-meta" text="easy 0-100 scale"/>
+                        </HBox>
+                        <VBox fx:id="insightsChartBox" spacing="10.0"/>
+                    </VBox>
+                </VBox>
+            </VBox>
         </VBox>
     </content>
 </ScrollPane>

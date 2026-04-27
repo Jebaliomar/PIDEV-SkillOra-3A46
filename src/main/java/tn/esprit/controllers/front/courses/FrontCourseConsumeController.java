@@ -2,13 +2,16 @@ package tn.esprit.controllers.front.courses;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
@@ -36,6 +39,7 @@ import tn.esprit.services.CourseSectionService;
 import tn.esprit.services.CourseProgressService;
 import tn.esprit.services.EnrollmentService;
 import tn.esprit.services.LessonService;
+import tn.esprit.services.LessonSummaryService;
 import tn.esprit.tools.AuthSession;
 
 import java.awt.Desktop;
@@ -93,6 +97,9 @@ public class FrontCourseConsumeController implements FrontShellAware {
     private BorderPane rootPane;
 
     @FXML
+    private ScrollPane mainScrollPane;
+
+    @FXML
     private Label progressLabel;
 
     @FXML
@@ -104,12 +111,34 @@ public class FrontCourseConsumeController implements FrontShellAware {
     @FXML
     private Button certificateButton;
 
+    @FXML
+    private VBox aiSummaryCard;
+
+    @FXML
+    private Label aiSummarySubtitleLabel;
+
+    @FXML
+    private Button generateSummaryButton;
+
+    @FXML
+    private VBox summaryStatusBox;
+
+    @FXML
+    private VBox summaryResultBox;
+
+    @FXML
+    private Button summaryToggleButton;
+
+    @FXML
+    private TextArea summaryTextArea;
+
     private FrontShellController shellController;
     private CourseSectionService courseSectionService;
     private LessonService lessonService;
     private EnrollmentService enrollmentService;
     private CourseProgressService courseProgressService;
     private CertificateService certificateService;
+    private LessonSummaryService lessonSummaryService;
     private Course course;
     private Lesson initialLesson;
     private MediaPlayer mediaPlayer;
@@ -121,6 +150,8 @@ public class FrontCourseConsumeController implements FrontShellAware {
     private Lesson currentLesson;
     private Enrollment enrollment;
     private Certificate certificate;
+    private boolean summaryExpanded = true;
+    private long summaryCooldownUntil;
 
     @FXML
     public void initialize() {
@@ -190,6 +221,69 @@ public class FrontCourseConsumeController implements FrontShellAware {
         } catch (Exception e) {
             showError("Unable to open the certificate.", e);
         }
+    }
+
+    @FXML
+    private void handleGenerateSummary() {
+        if (currentLesson == null || !isSummarySupported(currentLesson)) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (now < summaryCooldownUntil) {
+            return;
+        }
+
+        double scrollAnchor = mainScrollPane == null ? 0 : mainScrollPane.getVvalue();
+        setSummaryLoading(true);
+        summaryResultBox.setVisible(false);
+        summaryResultBox.setManaged(false);
+        summaryTextArea.clear();
+        restoreMainScroll(scrollAnchor);
+
+        Lesson lessonForSummary = currentLesson;
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                return getLessonSummaryService().summarizeLesson(lessonForSummary);
+            }
+        };
+
+        task.setOnSucceeded(event -> {
+            setSummaryLoading(false);
+            summaryTextArea.setText(task.getValue());
+            summaryExpanded = true;
+            syncSummaryExpandedState();
+            summaryResultBox.setVisible(true);
+            summaryResultBox.setManaged(true);
+            restoreMainScroll(scrollAnchor);
+            startSummaryCooldown(6);
+        });
+
+        task.setOnFailed(event -> {
+            setSummaryLoading(false);
+            Throwable exception = task.getException();
+            String message = exception == null || exception.getMessage() == null
+                    ? "Failed to generate summary."
+                    : exception.getMessage();
+            summaryTextArea.setText(message);
+            summaryExpanded = true;
+            syncSummaryExpandedState();
+            summaryResultBox.setVisible(true);
+            summaryResultBox.setManaged(true);
+            restoreMainScroll(scrollAnchor);
+            startSummaryCooldown(message.toLowerCase().contains("busy") ? 15 : 5);
+        });
+
+        Thread worker = new Thread(task, "skillora-lesson-summary");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    @FXML
+    private void handleToggleSummary() {
+        summaryExpanded = !summaryExpanded;
+        syncSummaryExpandedState();
     }
 
     private void initializeEnrollment() {
@@ -337,6 +431,7 @@ public class FrontCourseConsumeController implements FrontShellAware {
         currentLesson = lesson;
         lessonTitleLabel.setText(safeValue(lesson.getTitle(), "Lesson"));
         lessonTypeLabel.setText(typeLabel(lesson.getType()));
+        configureSummaryCard();
         markCurrentLessonComplete();
         highlightCurrentLesson();
         expandCurrentSection();
@@ -462,6 +557,73 @@ public class FrontCourseConsumeController implements FrontShellAware {
         } catch (IllegalStateException | MediaException exception) {
             contentContainer.getChildren().setAll(buildMessagePreview("Preview unavailable.", exception.getMessage()));
         }
+    }
+
+    private void configureSummaryCard() {
+        boolean supported = currentLesson != null && isSummarySupported(currentLesson);
+        aiSummaryCard.setVisible(supported);
+        aiSummaryCard.setManaged(supported);
+        if (!supported) {
+            setSummaryLoading(false);
+            summaryResultBox.setVisible(false);
+            summaryResultBox.setManaged(false);
+            return;
+        }
+
+        String type = currentLesson.getType() == null ? "lesson" : currentLesson.getType().toLowerCase();
+        aiSummarySubtitleLabel.setText("Create a quick study digest from this " + ("pdf".equals(type) ? "PDF document." : "lesson text."));
+        setSummaryLoading(false);
+        summaryResultBox.setVisible(false);
+        summaryResultBox.setManaged(false);
+        summaryTextArea.clear();
+        summaryExpanded = true;
+        syncSummaryExpandedState();
+    }
+
+    private boolean isSummarySupported(Lesson lesson) {
+        String type = lesson.getType() == null ? "" : lesson.getType().trim().toLowerCase();
+        return "text".equals(type) || "pdf".equals(type);
+    }
+
+    private void setSummaryLoading(boolean loading) {
+        generateSummaryButton.setDisable(loading);
+        generateSummaryButton.setText(loading ? "Generating..." : "Summarize with AI");
+        summaryStatusBox.setVisible(loading);
+        summaryStatusBox.setManaged(loading);
+    }
+
+    private void syncSummaryExpandedState() {
+        summaryTextArea.setVisible(summaryExpanded);
+        summaryTextArea.setManaged(summaryExpanded);
+        summaryToggleButton.setText(summaryExpanded ? "Hide" : "Show");
+    }
+
+    private void startSummaryCooldown(int seconds) {
+        summaryCooldownUntil = System.currentTimeMillis() + seconds * 1000L;
+        updateCooldownLabel();
+    }
+
+    private void updateCooldownLabel() {
+        long remainingMs = summaryCooldownUntil - System.currentTimeMillis();
+        if (remainingMs <= 0) {
+            generateSummaryButton.setDisable(false);
+            generateSummaryButton.setText("Summarize with AI");
+            return;
+        }
+
+        int remainingSeconds = (int) Math.ceil(remainingMs / 1000.0);
+        generateSummaryButton.setDisable(true);
+        generateSummaryButton.setText("Try again in " + remainingSeconds + "s");
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(250));
+        pause.setOnFinished(event -> updateCooldownLabel());
+        pause.play();
+    }
+
+    private void restoreMainScroll(double scrollAnchor) {
+        if (mainScrollPane == null) {
+            return;
+        }
+        Platform.runLater(() -> mainScrollPane.setVvalue(scrollAnchor));
     }
 
     private Node buildTextPreview() {
@@ -870,6 +1032,13 @@ public class FrontCourseConsumeController implements FrontShellAware {
             certificateService = new CertificateService();
         }
         return certificateService;
+    }
+
+    private LessonSummaryService getLessonSummaryService() {
+        if (lessonSummaryService == null) {
+            lessonSummaryService = new LessonSummaryService();
+        }
+        return lessonSummaryService;
     }
 
     private void showError(String message, Exception exception) {

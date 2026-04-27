@@ -2201,3 +2201,110 @@
     -fx-background-radius: 999;
     -fx-background-insets: 0;
 }
+
+.ai-summary-card {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, rgba(236,248,255,0.96), rgba(255,255,255,0.99));
+    -fx-background-radius: 22;
+    -fx-border-color: #dbe3ef;
+    -fx-border-radius: 22;
+    -fx-border-width: 1;
+    -fx-padding: 32 34 30 34;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.05), 18, 0.10, 0, 8);
+}
+
+.front-consume-main-scroll {
+    -fx-fit-to-width: true;
+}
+
+.front-consume-main {
+    -fx-padding: 34 34 34 34;
+}
+
+.front-consume-shell {
+    -fx-padding: 0 10 0 10;
+}
+
+.ai-summary-kicker {
+    -fx-font-family: "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 11px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.ai-summary-title {
+    -fx-font-family: "SF Pro Display", "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 23px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.ai-summary-subtitle {
+    -fx-font-family: "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: -skillora-navy-600;
+}
+
+.ai-summary-button {
+    -fx-background-color: linear-gradient(to right, #0ea5e9, #0284c7 48%, #10b981);
+    -fx-background-radius: 16;
+    -fx-text-fill: white;
+    -fx-font-family: "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
+    -fx-padding: 14 22 14 22;
+    -fx-effect: dropshadow(gaussian, rgba(2,132,199,0.28), 18, 0.20, 0, 8);
+    -fx-cursor: hand;
+}
+
+.ai-summary-button:hover {
+    -fx-background-color: linear-gradient(to right, #0284c7, #0369a1 48%, #059669);
+}
+
+.ai-summary-button:disabled {
+    -fx-opacity: 0.72;
+}
+
+.ai-summary-status,
+.ai-summary-result {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-color: #dbe3ef;
+    -fx-border-radius: 16;
+    -fx-padding: 24 26 26 26;
+}
+
+.ai-summary-loading {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-700;
+}
+
+.ai-summary-result-title {
+    -fx-font-family: "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.ai-summary-toggle {
+    -fx-padding: 7 13 7 13;
+    -fx-min-width: 70px;
+}
+
+.ai-summary-output {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 14;
+    -fx-border-color: #dbe3ef;
+    -fx-border-radius: 14;
+    -fx-font-family: "SFMono-Regular", "Consolas", monospace;
+    -fx-font-size: 12.5px;
+    -fx-text-fill: -skillora-navy-900;
+    -fx-highlight-fill: -skillora-harbor-100;
+    -fx-highlight-text-fill: -skillora-navy-900;
+}
+
+.ai-summary-output .content {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 14;
+    -fx-padding: 14 16 14 16;
+}

@@ -1,5 +1,6 @@
 package tn.esprit.controllers.front.courses;
 
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -12,6 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
@@ -22,6 +24,7 @@ import tn.esprit.entities.Enrollment;
 import tn.esprit.entities.Lesson;
 import tn.esprit.entities.User;
 import tn.esprit.services.CertificateService;
+import tn.esprit.services.CourseInsightsService;
 import tn.esprit.services.CourseSectionService;
 import tn.esprit.services.CourseProgressService;
 import tn.esprit.services.EnrollmentService;
@@ -30,10 +33,12 @@ import tn.esprit.tools.AuthSession;
 
 import java.awt.Desktop;
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -77,16 +82,39 @@ public class FrontCourseShowController implements FrontShellAware {
     @FXML
     private Button certificateButton;
 
+    @FXML
+    private Button loadInsightsButton;
+
+    @FXML
+    private VBox insightsLoadingBox;
+
+    @FXML
+    private Label insightsErrorLabel;
+
+    @FXML
+    private VBox insightsResultBox;
+
+    @FXML
+    private Label insightsKeywordLabel;
+
+    @FXML
+    private VBox insightsCardsBox;
+
+    @FXML
+    private VBox insightsChartBox;
+
     private FrontShellController shellController;
     private CourseSectionService courseSectionService;
     private LessonService lessonService;
     private EnrollmentService enrollmentService;
     private CourseProgressService courseProgressService;
     private CertificateService certificateService;
+    private CourseInsightsService courseInsightsService;
     private Course course;
     private Enrollment enrollment;
     private Certificate certificate;
     private Set<Integer> completedLessonIds = Set.of();
+    private CourseInsightsService.CourseInsights loadedInsights;
 
     @Override
     public void setShellController(FrontShellController shellController) {
@@ -98,6 +126,7 @@ public class FrontCourseShowController implements FrontShellAware {
         populateCourseHeader();
         loadLearningState();
         loadCurriculum();
+        resetInsightsUi();
     }
 
     private void populateCourseHeader() {
@@ -141,6 +170,46 @@ public class FrontCourseShowController implements FrontShellAware {
         } catch (Exception e) {
             showError("Unable to open the certificate.", e);
         }
+    }
+
+    @FXML
+    private void handleLoadInsights() {
+        if (course == null) {
+            return;
+        }
+        if (loadedInsights != null) {
+            renderInsights(loadedInsights);
+            return;
+        }
+
+        setInsightsLoading(true);
+        insightsErrorLabel.setVisible(false);
+        insightsErrorLabel.setManaged(false);
+        insightsResultBox.setVisible(false);
+        insightsResultBox.setManaged(false);
+
+        Task<CourseInsightsService.CourseInsights> task = new Task<>() {
+            @Override
+            protected CourseInsightsService.CourseInsights call() {
+                return getCourseInsightsService().getInsightsForCourse(course);
+            }
+        };
+        task.setOnSucceeded(event -> {
+            loadedInsights = task.getValue();
+            setInsightsLoading(false);
+            renderInsights(loadedInsights);
+        });
+        task.setOnFailed(event -> {
+            setInsightsLoading(false);
+            Throwable error = task.getException();
+            showInsightsError(error == null || error.getMessage() == null
+                    ? "Unable to load insights right now. Please try again."
+                    : error.getMessage());
+        });
+
+        Thread thread = new Thread(task, "course-insights-loader");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private void loadLearningState() {
@@ -309,6 +378,171 @@ public class FrontCourseShowController implements FrontShellAware {
         certificateButton.setManaged(hasCertificate);
     }
 
+    private void resetInsightsUi() {
+        loadedInsights = null;
+        if (loadInsightsButton != null) {
+            loadInsightsButton.setDisable(false);
+            loadInsightsButton.setText("Show Insights");
+        }
+        setManagedVisible(insightsLoadingBox, false);
+        setManagedVisible(insightsResultBox, false);
+        if (insightsErrorLabel != null) {
+            insightsErrorLabel.setText("");
+            insightsErrorLabel.setVisible(false);
+            insightsErrorLabel.setManaged(false);
+        }
+        if (insightsCardsBox != null) {
+            insightsCardsBox.getChildren().clear();
+        }
+        if (insightsChartBox != null) {
+            insightsChartBox.getChildren().clear();
+        }
+    }
+
+    private void setInsightsLoading(boolean loading) {
+        if (loadInsightsButton != null) {
+            loadInsightsButton.setDisable(loading);
+            loadInsightsButton.setText(loading ? "Loading..." : "Show Insights");
+        }
+        setManagedVisible(insightsLoadingBox, loading);
+    }
+
+    private void showInsightsError(String message) {
+        if (insightsErrorLabel == null) {
+            return;
+        }
+        insightsErrorLabel.setText(message == null || message.isBlank() ? "Unable to load insights right now. Please try again." : message);
+        insightsErrorLabel.setVisible(true);
+        insightsErrorLabel.setManaged(true);
+    }
+
+    private void renderInsights(CourseInsightsService.CourseInsights insights) {
+        if (insights == null) {
+            return;
+        }
+
+        insightsKeywordLabel.setText(insights.keyword());
+        insightsCardsBox.getChildren().setAll(buildReasonRows(insights.reasons()));
+        renderStrengthChart(insights.chart());
+        setManagedVisible(insightsResultBox, true);
+    }
+
+    private List<HBox> buildReasonRows(List<CourseInsightsService.InsightReason> reasons) {
+        List<HBox> rows = new java.util.ArrayList<>();
+        for (int index = 0; index < reasons.size(); index += 2) {
+            HBox row = new HBox(14);
+            row.getStyleClass().add("course-insights-card-row");
+
+            VBox first = buildReasonCard(reasons.get(index));
+            HBox.setHgrow(first, Priority.ALWAYS);
+            row.getChildren().add(first);
+
+            if (index + 1 < reasons.size()) {
+                VBox second = buildReasonCard(reasons.get(index + 1));
+                HBox.setHgrow(second, Priority.ALWAYS);
+                row.getChildren().add(second);
+            }
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    private VBox buildReasonCard(CourseInsightsService.InsightReason reason) {
+        Label title = new Label(safeValue(reason.title(), "Insight").toUpperCase(Locale.ROOT));
+        title.getStyleClass().add("course-insights-card-kicker");
+
+        Label value = new Label(safeValue(reason.value(), "Unavailable"));
+        value.getStyleClass().add("course-insights-card-value");
+        value.setWrapText(true);
+
+        Label detail = new Label(safeValue(reason.detail(), "No detail available."));
+        detail.getStyleClass().add("course-insights-card-detail");
+        detail.setWrapText(true);
+
+        VBox card = new VBox(8, title, value, detail);
+        card.getStyleClass().add("course-insights-reason-card");
+        card.setMaxWidth(Double.MAX_VALUE);
+
+        String link = reason.link();
+        if (link != null && !link.isBlank()) {
+            Button linkButton = new Button("Learn more");
+            linkButton.setFocusTraversable(false);
+            linkButton.getStyleClass().add("course-insights-link");
+            linkButton.setOnAction(event -> openExternalLink(link));
+            card.getChildren().add(linkButton);
+        }
+        return card;
+    }
+
+    private void renderStrengthChart(CourseInsightsService.InsightChart chart) {
+        insightsChartBox.getChildren().clear();
+        if (chart == null || chart.labels().isEmpty()) {
+            Label empty = new Label("No chart data available yet.");
+            empty.getStyleClass().add("front-section-empty");
+            insightsChartBox.getChildren().add(empty);
+            return;
+        }
+
+        for (int index = 0; index < chart.labels().size(); index++) {
+            String labelText = chart.labels().get(index);
+            int normalized = safeInt(chart.normalized(), index);
+            int raw = safeInt(chart.values(), index);
+
+            Label label = new Label(labelText);
+            label.getStyleClass().add("course-insights-bar-label");
+
+            Label value = new Label(formatNumber(raw));
+            value.getStyleClass().add("course-insights-bar-value");
+
+            Region track = new Region();
+            track.getStyleClass().add("course-insights-bar-track");
+            track.setMinHeight(12);
+            track.setPrefHeight(12);
+            track.setMaxHeight(12);
+            track.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(track, Priority.ALWAYS);
+
+            Region fill = new Region();
+            fill.getStyleClass().addAll("course-insights-bar-fill", "course-insights-bar-fill-" + ((index % 4) + 1));
+            fill.setMinHeight(12);
+            fill.setPrefHeight(12);
+            fill.setMaxHeight(12);
+            fill.setMaxWidth(Region.USE_PREF_SIZE);
+            fill.prefWidthProperty().bind(track.widthProperty().multiply(Math.max(0, Math.min(100, normalized)) / 100.0));
+
+            StackPane bar = new StackPane();
+            bar.getStyleClass().add("course-insights-bar-shell");
+            bar.setMaxWidth(Double.MAX_VALUE);
+            StackPane.setAlignment(fill, javafx.geometry.Pos.CENTER_LEFT);
+            bar.getChildren().addAll(track, fill);
+
+            HBox header = new HBox(10, label, new Region(), value);
+            HBox.setHgrow(header.getChildren().get(1), Priority.ALWAYS);
+            header.getStyleClass().add("course-insights-bar-header");
+
+            VBox row = new VBox(6, header, bar);
+            row.getStyleClass().add("course-insights-bar-row");
+            insightsChartBox.getChildren().add(row);
+        }
+    }
+
+    private void openExternalLink(String link) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(URI.create(link));
+            }
+        } catch (Exception ignored) {
+            // External links are helpful, but the insights remain useful if the OS blocks opening them.
+        }
+    }
+
+    private void setManagedVisible(javafx.scene.Node node, boolean visible) {
+        if (node != null) {
+            node.setVisible(visible);
+            node.setManaged(visible);
+        }
+    }
+
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setHeaderText(title);
@@ -354,6 +588,14 @@ public class FrontCourseShowController implements FrontShellAware {
         return value == null || value.isBlank() ? fallback : value;
     }
 
+    private int safeInt(List<Integer> values, int index) {
+        return values == null || index < 0 || index >= values.size() || values.get(index) == null ? 0 : values.get(index);
+    }
+
+    private String formatNumber(int value) {
+        return String.format(Locale.US, "%,d", value);
+    }
+
     private CourseSectionService getCourseSectionService() {
         if (courseSectionService == null) {
             courseSectionService = new CourseSectionService();
@@ -387,5 +629,12 @@ public class FrontCourseShowController implements FrontShellAware {
             certificateService = new CertificateService();
         }
         return certificateService;
+    }
+
+    private CourseInsightsService getCourseInsightsService() {
+        if (courseInsightsService == null) {
+            courseInsightsService = new CourseInsightsService();
+        }
+        return courseInsightsService;
     }
 }
