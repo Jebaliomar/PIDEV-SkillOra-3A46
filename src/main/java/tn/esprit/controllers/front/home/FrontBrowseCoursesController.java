@@ -1,6 +1,7 @@
 package tn.esprit.controllers.front.home;
 
 import javafx.collections.FXCollections;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -89,7 +90,10 @@ public class FrontBrowseCoursesController implements FrontShellAware {
     @FXML
     public void initialize() {
         sortChoiceBox.setItems(FXCollections.observableArrayList("Newest", "Oldest", "A-Z", "Z-A"));
-        sortChoiceBox.getSelectionModel().select("Newest");
+        sortChoiceBox.setMinWidth(210);
+        sortChoiceBox.setPrefWidth(220);
+        sortChoiceBox.setValue("Newest");
+        Platform.runLater(() -> sortChoiceBox.setValue(sortChoiceBox.getValue() == null ? "Newest" : sortChoiceBox.getValue()));
         sortChoiceBox.valueProperty().addListener((observable, oldValue, newValue) -> refreshCourses());
         searchField.textProperty().addListener((observable, oldValue, newValue) -> refreshCourses());
 
@@ -231,6 +235,9 @@ public class FrontBrowseCoursesController implements FrontShellAware {
             imageView.setPreserveRatio(false);
             imageView.setSmooth(true);
             imageView.setCache(true);
+            imageView.setManaged(false);
+            imageView.setMouseTransparent(true);
+            imageView.setClip(new Rectangle(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT));
             thumbnailPane.getChildren().add(imageView);
         } else {
             Label placeholderLabel = new Label("No Thumbnail");

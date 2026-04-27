@@ -7,6 +7,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TitledPane;
 import javafx.scene.Node;
@@ -24,11 +25,18 @@ import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
+import tn.esprit.entities.Certificate;
 import tn.esprit.entities.Course;
 import tn.esprit.entities.CourseSection;
+import tn.esprit.entities.Enrollment;
 import tn.esprit.entities.Lesson;
+import tn.esprit.entities.User;
+import tn.esprit.services.CertificateService;
 import tn.esprit.services.CourseSectionService;
+import tn.esprit.services.CourseProgressService;
+import tn.esprit.services.EnrollmentService;
 import tn.esprit.services.LessonService;
+import tn.esprit.tools.AuthSession;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -41,8 +49,10 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class FrontCourseConsumeController implements FrontShellAware {
 
@@ -82,9 +92,24 @@ public class FrontCourseConsumeController implements FrontShellAware {
     @FXML
     private BorderPane rootPane;
 
+    @FXML
+    private Label progressLabel;
+
+    @FXML
+    private Label completedLessonsLabel;
+
+    @FXML
+    private ProgressBar courseProgressBar;
+
+    @FXML
+    private Button certificateButton;
+
     private FrontShellController shellController;
     private CourseSectionService courseSectionService;
     private LessonService lessonService;
+    private EnrollmentService enrollmentService;
+    private CourseProgressService courseProgressService;
+    private CertificateService certificateService;
     private Course course;
     private Lesson initialLesson;
     private MediaPlayer mediaPlayer;
@@ -92,7 +117,10 @@ public class FrontCourseConsumeController implements FrontShellAware {
     private final List<Lesson> orderedLessons = new ArrayList<>();
     private final Map<Integer, CourseSection> sectionsById = new HashMap<>();
     private final Map<Integer, Button> lessonButtons = new HashMap<>();
+    private Set<Integer> completedLessonIds = new HashSet<>();
     private Lesson currentLesson;
+    private Enrollment enrollment;
+    private Certificate certificate;
 
     @FXML
     public void initialize() {
@@ -116,6 +144,7 @@ public class FrontCourseConsumeController implements FrontShellAware {
     public void setCourse(Course course) {
         this.course = course;
         courseTitleLabel.setText(course == null ? "Course" : course.getTitle());
+        initializeEnrollment();
         loadCurriculum();
     }
 
@@ -147,6 +176,46 @@ public class FrontCourseConsumeController implements FrontShellAware {
         int index = orderedLessons.indexOf(currentLesson);
         if (index >= 0 && index < orderedLessons.size() - 1) {
             selectLesson(orderedLessons.get(index + 1));
+        }
+    }
+
+    @FXML
+    private void handleOpenCertificate() {
+        if (certificate == null) {
+            return;
+        }
+        try {
+            Path pdfPath = getCertificateService().ensurePdfGenerated(certificate);
+            Desktop.getDesktop().open(pdfPath.toFile());
+        } catch (Exception e) {
+            showError("Unable to open the certificate.", e);
+        }
+    }
+
+    private void initializeEnrollment() {
+        enrollment = null;
+        certificate = null;
+        completedLessonIds = new HashSet<>();
+        updateProgressUi(0, 0, 0);
+        updateCertificateButton();
+
+        if (course == null || course.getId() == null) {
+            return;
+        }
+
+        User user = AuthSession.getCurrentUser();
+        if (user == null || user.getId() == null) {
+            previewStatusLabel.setText("Please sign in to track progress.");
+            previewStatusLabel.setVisible(true);
+            previewStatusLabel.setManaged(true);
+            return;
+        }
+
+        try {
+            enrollment = getEnrollmentService().enrollIfMissing(user.getId(), course.getId());
+            refreshProgressState(false);
+        } catch (Exception e) {
+            showError("Unable to initialize course progress.", e);
         }
     }
 
@@ -243,6 +312,9 @@ public class FrontCourseConsumeController implements FrontShellAware {
         button.setGraphic(content);
         button.setMaxWidth(Double.MAX_VALUE);
         button.getStyleClass().add("front-lesson-item");
+        if (lesson.getId() != null && completedLessonIds.contains(lesson.getId())) {
+            button.getStyleClass().add("front-lesson-item-completed");
+        }
         button.setOnAction(event -> selectLesson(lesson));
         lessonButtons.put(lesson.getId(), button);
         return button;
@@ -265,6 +337,7 @@ public class FrontCourseConsumeController implements FrontShellAware {
         currentLesson = lesson;
         lessonTitleLabel.setText(safeValue(lesson.getTitle(), "Lesson"));
         lessonTypeLabel.setText(typeLabel(lesson.getType()));
+        markCurrentLessonComplete();
         highlightCurrentLesson();
         expandCurrentSection();
         renderLessonContent();
@@ -312,6 +385,64 @@ public class FrontCourseConsumeController implements FrontShellAware {
         int currentIndex = orderedLessons.indexOf(currentLesson);
         previousButton.setDisable(currentIndex <= 0);
         nextButton.setDisable(currentIndex < 0 || currentIndex >= orderedLessons.size() - 1);
+    }
+
+    private void markCurrentLessonComplete() {
+        if (enrollment == null || currentLesson == null) {
+            return;
+        }
+
+        try {
+            getCourseProgressService().markLessonCompleted(enrollment, currentLesson);
+            refreshProgressState(true);
+            refreshLessonCompletionStyles();
+        } catch (Exception e) {
+            previewStatusLabel.setText("Progress could not be saved: " + e.getMessage());
+            previewStatusLabel.setVisible(true);
+            previewStatusLabel.setManaged(true);
+        }
+    }
+
+    private void refreshProgressState(boolean issueCertificate) throws Exception {
+        if (enrollment == null) {
+            updateProgressUi(0, 0, getCourseProgressService().getTotalLessons(course));
+            return;
+        }
+
+        enrollment = getCourseProgressService().recalculateEnrollmentProgress(enrollment, course);
+        completedLessonIds = getCourseProgressService().findCompletedLessonIds(enrollment);
+        int totalLessons = getCourseProgressService().getTotalLessons(course);
+        int completedLessons = getCourseProgressService().getCompletedLessons(enrollment);
+        if (issueCertificate) {
+            certificate = getCertificateService().issueIfEligible(enrollment, AuthSession.getCurrentUser(), course, totalLessons);
+        } else {
+            certificate = getCertificateService().findOneByEnrollment(enrollment.getId());
+        }
+        updateProgressUi(enrollment.getProgressPercent(), completedLessons, totalLessons);
+        updateCertificateButton();
+    }
+
+    private void refreshLessonCompletionStyles() {
+        lessonButtons.forEach((lessonId, button) -> {
+            boolean completed = completedLessonIds.contains(lessonId);
+            button.getStyleClass().remove("front-lesson-item-completed");
+            if (completed) {
+                button.getStyleClass().add("front-lesson-item-completed");
+            }
+        });
+    }
+
+    private void updateProgressUi(Number progressValue, int completedLessons, int totalLessons) {
+        int progress = progressValue == null ? 0 : Math.max(0, Math.min(100, progressValue.intValue()));
+        progressLabel.setText(progress + "% complete");
+        completedLessonsLabel.setText(completedLessons + " / " + totalLessons);
+        courseProgressBar.setProgress(progress / 100.0);
+    }
+
+    private void updateCertificateButton() {
+        boolean hasCertificate = certificate != null;
+        certificateButton.setVisible(hasCertificate);
+        certificateButton.setManaged(hasCertificate);
     }
 
     private void renderLessonContent() {
@@ -720,10 +851,31 @@ public class FrontCourseConsumeController implements FrontShellAware {
         return lessonService;
     }
 
+    private EnrollmentService getEnrollmentService() {
+        if (enrollmentService == null) {
+            enrollmentService = new EnrollmentService();
+        }
+        return enrollmentService;
+    }
+
+    private CourseProgressService getCourseProgressService() {
+        if (courseProgressService == null) {
+            courseProgressService = new CourseProgressService();
+        }
+        return courseProgressService;
+    }
+
+    private CertificateService getCertificateService() {
+        if (certificateService == null) {
+            certificateService = new CertificateService();
+        }
+        return certificateService;
+    }
+
     private void showError(String message, Exception exception) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText(message);
-        alert.setContentText(exception.getMessage());
+        alert.setContentText(exception == null || exception.getMessage() == null ? "Unexpected error." : exception.getMessage());
         alert.showAndWait();
     }
 }

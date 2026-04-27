@@ -71,6 +71,56 @@ public class EnrollmentService {
         return null;
     }
 
+    public Enrollment findOneByUserAndCourse(int userId, int courseId) throws SQLException {
+        String sql = "SELECT * FROM `enrollment` WHERE `user_id` = ? AND `course_id` = ? LIMIT 1";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setInt(2, courseId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapResultSetToEnrollment(resultSet);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public List<Enrollment> findByUser(int userId) throws SQLException {
+        String sql = "SELECT * FROM `enrollment` WHERE `user_id` = ? ORDER BY `enrolled_at` DESC, `id` DESC";
+        List<Enrollment> enrollments = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    enrollments.add(mapResultSetToEnrollment(resultSet));
+                }
+            }
+        }
+
+        return enrollments;
+    }
+
+    public Enrollment enrollIfMissing(int userId, int courseId) throws SQLException {
+        Enrollment existing = findOneByUserAndCourse(userId, courseId);
+        if (existing != null) {
+            return existing;
+        }
+
+        Enrollment enrollment = new Enrollment();
+        enrollment.setUserId(userId);
+        enrollment.setCourseId(courseId);
+        enrollment.setEnrolledAt(java.time.LocalDateTime.now());
+        enrollment.setProgressPercent((short) 0);
+        enrollment.setStatus("active");
+        add(enrollment);
+        return enrollment;
+    }
+
     public boolean update(Enrollment enrollment) throws SQLException {
         String sql = "UPDATE `enrollment` SET `enrolled_at` = ?, `completed_at` = ?, `progress_percent` = ?, "
                 + "`status` = ?, `user_id` = ?, `course_id` = ? WHERE `id` = ?";

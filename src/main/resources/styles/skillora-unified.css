@@ -1914,6 +1914,7 @@
 .front-sort-box {
     -fx-min-height: 44px;
     -fx-pref-height: 44px;
+    -fx-padding: 0 10 0 14;
 }
 
 .front-sort-box > .list-cell,
@@ -1924,6 +1925,7 @@
     -fx-fill: -skillora-navy-900;
     -fx-font-size: 13px;
     -fx-font-weight: 800;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .front-sort-box > .arrow-button {
@@ -2038,4 +2040,164 @@
     -fx-background-radius: 16;
     -fx-border-radius: 16;
     -fx-overflow: hidden;
+}
+
+.front-course-progress-panel {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(219,234,254,0.24);
+    -fx-border-radius: 16;
+    -fx-padding: 13 15 14 15;
+}
+
+.front-course-progress-value {
+    -fx-font-size: 13px;
+    -fx-font-weight: 900;
+    -fx-text-fill: white;
+}
+
+.front-course-progress-meta {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #cbd5e1;
+}
+
+.front-course-progress-panel .progress-bar {
+    -fx-pref-height: 9px;
+}
+
+.front-course-progress-panel .progress-bar > .track {
+    -fx-background-color: rgba(226,232,240,0.24);
+    -fx-background-radius: 999;
+}
+
+.front-course-progress-panel .progress-bar > .bar {
+    -fx-background-color: #38bdf8;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+}
+
+.front-consume-progress-panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 16;
+    -fx-border-color: #dbeafe;
+    -fx-border-radius: 16;
+    -fx-padding: 14 15 15 15;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.05), 14, 0.10, 0, 5);
+}
+
+.front-consume-progress-panel .front-course-progress-value {
+    -fx-text-fill: -skillora-navy-900;
+    -fx-font-size: 14px;
+    -fx-font-weight: 900;
+}
+
+.front-consume-progress-panel .front-course-progress-meta {
+    -fx-text-fill: -skillora-navy-500;
+    -fx-font-size: 13px;
+    -fx-font-weight: 900;
+}
+
+.front-consume-progress-panel .progress-bar {
+    -fx-pref-height: 10px;
+}
+
+.front-consume-progress-panel .progress-bar > .track {
+    -fx-background-color: #e2e8f0;
+    -fx-background-radius: 999;
+}
+
+.front-consume-progress-panel .progress-bar > .bar {
+    -fx-background-color: -skillora-harbor-600;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+}
+
+.front-lesson-row-completed,
+.front-lesson-item-completed {
+    -fx-border-color: -skillora-navy-200;
+    -fx-background-color: #f8fbff;
+}
+
+.front-lesson-row-completed .front-lesson-action,
+.front-lesson-item-completed .label {
+    -fx-text-fill: -skillora-navy-700;
+}
+
+.front-lesson-item-active .label,
+.front-lesson-item-active .front-consume-lesson-title,
+.front-lesson-item-active.front-lesson-item-completed .label,
+.front-lesson-item-active.front-lesson-item-completed .front-consume-lesson-title {
+    -fx-text-fill: white;
+}
+
+.front-lesson-item-active .front-lesson-icon,
+.front-lesson-item-active.front-lesson-item-completed .front-lesson-icon {
+    -fx-background-color: rgba(255,255,255,0.92);
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.front-certificate-button {
+    -fx-font-weight: 900;
+}
+
+.learning-stats-row {
+    -fx-fill-height: true;
+}
+
+.learning-stat-card,
+.learning-course-card {
+    -fx-background-color: white;
+    -fx-background-radius: 18;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 18, 0.10, 0, 8);
+}
+
+.learning-stat-card {
+    -fx-padding: 18 20 18 20;
+}
+
+.learning-stat-label,
+.learning-card-meta {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-500;
+}
+
+.learning-stat-value {
+    -fx-font-size: 28px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.learning-course-card {
+    -fx-padding: 20 20 20 20;
+}
+
+.learning-card-title {
+    -fx-font-size: 19px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.learning-progress-value {
+    -fx-font-size: 22px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.learning-progress-bar {
+    -fx-pref-height: 10px;
+}
+
+.learning-progress-bar > .track {
+    -fx-background-color: #e2e8f0;
+    -fx-background-radius: 999;
+}
+
+.learning-progress-bar > .bar {
+    -fx-background-color: -skillora-harbor-600;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
 }

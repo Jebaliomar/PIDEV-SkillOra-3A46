@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="front-scroll-pane"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.front.home.FrontMyLearningController">
+    <content>
+        <VBox maxWidth="1180.0" spacing="24.0" styleClass="module-page front-my-learning-page">
+            <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="front-page-heading">
+                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                    <Label styleClass="page-title" text="My Learning"/>
+                    <Label styleClass="page-subtitle" text="Track enrolled courses, continue lessons, and open earned certificates." wrapText="true"/>
+                </VBox>
+                <Button mnemonicParsing="false" onAction="#handleBrowseCourses" styleClass="primary-button" text="Browse Courses"/>
+            </HBox>
+
+            <HBox spacing="14.0" styleClass="learning-stats-row">
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS" styleClass="learning-stat-card">
+                    <Label styleClass="learning-stat-label" text="Enrolled"/>
+                    <Label fx:id="enrolledCountLabel" styleClass="learning-stat-value" text="0"/>
+                </VBox>
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS" styleClass="learning-stat-card">
+                    <Label styleClass="learning-stat-label" text="Completed"/>
+                    <Label fx:id="completedCountLabel" styleClass="learning-stat-value" text="0"/>
+                </VBox>
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS" styleClass="learning-stat-card">
+                    <Label styleClass="learning-stat-label" text="Average Progress"/>
+                    <Label fx:id="averageProgressLabel" styleClass="learning-stat-value" text="0%"/>
+                </VBox>
+            </HBox>
+
+            <VBox spacing="18.0" styleClass="front-section-card learning-list-panel">
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                        <Label styleClass="section-title" text="Enrolled Courses"/>
+                        <Label fx:id="summaryLabel" styleClass="front-section-subtitle" text="Courses you started appear here." wrapText="true"/>
+                    </VBox>
+                </HBox>
+                <FlowPane fx:id="enrolledCoursesPane" hgap="18.0" vgap="18.0">
+                    <padding>
+                        <Insets top="4.0" right="0.0" bottom="4.0" left="0.0"/>
+                    </padding>
+                </FlowPane>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>

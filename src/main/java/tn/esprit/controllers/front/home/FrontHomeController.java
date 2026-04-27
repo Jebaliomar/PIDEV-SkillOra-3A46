@@ -138,6 +138,9 @@ public class FrontHomeController implements FrontShellAware {
             imageView.setPreserveRatio(false);
             imageView.setSmooth(true);
             imageView.setCache(true);
+            imageView.setManaged(false);
+            imageView.setMouseTransparent(true);
+            imageView.setClip(new Rectangle(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT));
             thumbnailPane.getChildren().add(imageView);
         } else {
             Label placeholderLabel = new Label("No Thumbnail");

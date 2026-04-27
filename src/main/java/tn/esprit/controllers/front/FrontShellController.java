@@ -74,7 +74,8 @@ public class FrontShellController {
     @FXML
     private void handleMyLearning() {
         setActiveModule(myLearningNavButton);
-        showPlaceholder("My Learning", "This area is reserved for enrolled courses and progress tracking.");
+        loadContent("/views/front/home/front_my_learning.fxml", controller -> {
+        });
     }
 
     @FXML

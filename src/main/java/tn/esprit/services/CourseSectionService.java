@@ -70,6 +70,23 @@ public class CourseSectionService {
         return null;
     }
 
+    public List<CourseSection> findByCourse(int courseId) throws SQLException {
+        String sql = "SELECT * FROM `course_section` WHERE `course_id` = ? ORDER BY `position` ASC, `id` ASC";
+        List<CourseSection> courseSections = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, courseId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    courseSections.add(mapResultSetToCourseSection(resultSet));
+                }
+            }
+        }
+
+        return courseSections;
+    }
+
     public boolean update(CourseSection courseSection) throws SQLException {
         String sql = "UPDATE `course_section` SET `title` = ?, `position` = ?, `created_at` = ?, `updated_at` = ?, "
                 + "`course_id` = ? WHERE `id` = ?";

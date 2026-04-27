@@ -67,6 +67,64 @@ public class LessonCompletionService {
         return null;
     }
 
+    public boolean existsForEnrollmentAndLesson(int enrollmentId, int lessonId) throws SQLException {
+        String sql = "SELECT 1 FROM `lesson_completion` WHERE `enrollment_id` = ? AND `lesson_id` = ? LIMIT 1";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, enrollmentId);
+            preparedStatement.setInt(2, lessonId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        }
+    }
+
+    public int countByEnrollment(int enrollmentId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM `lesson_completion` WHERE `enrollment_id` = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, enrollmentId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() ? resultSet.getInt(1) : 0;
+            }
+        }
+    }
+
+    public List<Integer> findCompletedLessonIdsForEnrollment(int enrollmentId) throws SQLException {
+        String sql = "SELECT `lesson_id` FROM `lesson_completion` WHERE `enrollment_id` = ?";
+        List<Integer> lessonIds = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, enrollmentId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Integer lessonId = getInteger(resultSet, "lesson_id");
+                    if (lessonId != null) {
+                        lessonIds.add(lessonId);
+                    }
+                }
+            }
+        }
+
+        return lessonIds;
+    }
+
+    public LessonCompletion markCompletedIfMissing(int enrollmentId, int lessonId) throws SQLException {
+        if (existsForEnrollmentAndLesson(enrollmentId, lessonId)) {
+            return null;
+        }
+
+        LessonCompletion lessonCompletion = new LessonCompletion();
+        lessonCompletion.setEnrollmentId(enrollmentId);
+        lessonCompletion.setLessonId(lessonId);
+        lessonCompletion.setCompletedAt(java.time.LocalDateTime.now());
+        add(lessonCompletion);
+        return lessonCompletion;
+    }
+
     public boolean update(LessonCompletion lessonCompletion) throws SQLException {
         String sql = "UPDATE `lesson_completion` SET `completed_at` = ?, `enrollment_id` = ?, `lesson_id` = ? WHERE `id` = ?";
 

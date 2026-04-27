@@ -73,6 +73,61 @@ public class LessonService {
         return null;
     }
 
+    public List<Lesson> findBySection(int sectionId) throws SQLException {
+        String sql = "SELECT * FROM `lesson` WHERE `section_id` = ? ORDER BY `position` ASC, `id` ASC";
+        List<Lesson> lessons = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, sectionId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    lessons.add(mapResultSetToLesson(resultSet));
+                }
+            }
+        }
+
+        return lessons;
+    }
+
+    public List<Lesson> findByCourse(int courseId) throws SQLException {
+        String sql = """
+                SELECT l.* FROM `lesson` l
+                INNER JOIN `course_section` s ON s.`id` = l.`section_id`
+                WHERE s.`course_id` = ?
+                ORDER BY s.`position` ASC, s.`id` ASC, l.`position` ASC, l.`id` ASC
+                """;
+        List<Lesson> lessons = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, courseId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    lessons.add(mapResultSetToLesson(resultSet));
+                }
+            }
+        }
+
+        return lessons;
+    }
+
+    public int countByCourse(int courseId) throws SQLException {
+        String sql = """
+                SELECT COUNT(*) FROM `lesson` l
+                INNER JOIN `course_section` s ON s.`id` = l.`section_id`
+                WHERE s.`course_id` = ?
+                """;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, courseId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() ? resultSet.getInt(1) : 0;
+            }
+        }
+    }
+
     public boolean update(Lesson lesson) throws SQLException {
         String sql = "UPDATE `lesson` SET `title` = ?, `type` = ?, `content` = ?, `file_path` = ?, `position` = ?, "
                 + "`created_at` = ?, `updated_at` = ?, `section_id` = ? WHERE `id` = ?";
