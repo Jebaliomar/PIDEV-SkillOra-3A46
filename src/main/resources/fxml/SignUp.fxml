@@ -123,6 +123,16 @@
                     </HBox>
                 </VBox>
 
+                <!-- Google Sign-In (optional) -->
+                <VBox spacing="6">
+                    <Label text="Continue with Google (optional)" styleClass="input-label"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button fx:id="googleBtn" text="Continue with Google" onAction="#handleGoogleSignIn"
+                                style="-fx-background-color: white; -fx-text-fill: #3c4043; -fx-font-weight: bold; -fx-padding: 10 16 10 16; -fx-background-radius: 10; -fx-cursor: hand; -fx-border-color: #dadce0; -fx-border-radius: 10; -fx-border-width: 1;"/>
+                        <Label fx:id="googleStatus" text="Not connected" style="-fx-text-fill: #6b7280; -fx-font-size: 12px;"/>
+                    </HBox>
+                </VBox>
+
                 <Region prefHeight="10"/>
 
                 <!-- Sign Up Button -->

@@ -13,6 +13,7 @@ import tn.esprit.entities.User;
 import tn.esprit.services.FaceIdService;
 import tn.esprit.services.UserService;
 import tn.esprit.tools.FaceIdServer;
+import tn.esprit.tools.GoogleOAuthService;
 import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
 import tn.esprit.tools.ThemeIcon;
@@ -43,6 +44,8 @@ public class SignUpController implements Initializable {
     @FXML private Button themeToggleBtn;
     @FXML private Button faceIdBtn;
     @FXML private Label faceIdStatus;
+    @FXML private Button googleBtn;
+    @FXML private Label googleStatus;
 
     private final UserService userService = new UserService();
     private final FaceIdService faceIdService = new FaceIdService();
@@ -220,6 +223,34 @@ public class SignUpController implements Initializable {
             faceIdStatus.setText("Face captured");
             faceIdStatus.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 12px; -fx-font-weight: bold;");
         }
+    }
+
+    @FXML
+    public void handleGoogleSignIn() {
+        hideError();
+        hideSuccess();
+        if (googleStatus != null) googleStatus.setStyle("-fx-text-fill: #6b7280; -fx-font-size: 12px;");
+        if (googleStatus != null) googleStatus.setText("Opening Google…");
+        new Thread(() -> {
+            try {
+                GoogleOAuthService.GoogleUser g = new GoogleOAuthService().signIn();
+                javafx.application.Platform.runLater(() -> {
+                    if (g.firstName != null) firstNameField.setText(g.firstName);
+                    if (g.lastName != null) lastNameField.setText(g.lastName);
+                    if (g.email != null) emailField.setText(g.email);
+                    if (googleStatus != null) {
+                        googleStatus.setText("Connected as " + (g.email != null ? g.email : "Google user"));
+                        googleStatus.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 12px; -fx-font-weight: bold;");
+                    }
+                    showSuccess("Google connected. Pick a role and a password to finish creating your account.");
+                });
+            } catch (Exception ex) {
+                javafx.application.Platform.runLater(() -> {
+                    if (googleStatus != null) googleStatus.setText("Not connected");
+                    showError("Google sign-in failed: " + ex.getMessage());
+                });
+            }
+        }, "google-oauth").start();
     }
 
     @FXML

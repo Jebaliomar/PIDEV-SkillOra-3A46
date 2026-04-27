@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import tn.esprit.controllers.AdminPanelController;
+import tn.esprit.controllers.ProfessorLayoutController;
 import tn.esprit.controllers.StudentLayoutController;
 import tn.esprit.entities.User;
 import tn.esprit.services.SessionService;
@@ -53,11 +54,19 @@ public class MainApp extends Application {
             String role = new UserService().getUserRole(user.getId());
             String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
             boolean isStudent = normalizedRole.equals("student");
-            String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
-            String title = isStudent ? "SkillORA" : "SkillORA - Admin Panel";
-
-            if (isStudent) StudentLayoutController.setCurrentUser(user);
-            else AdminPanelController.setCurrentUser(user);
+            boolean isProfessor = normalizedRole.equals("professor");
+            String fxmlPath;
+            String title;
+            if (isStudent) {
+                fxmlPath = "/fxml/StudentLayout.fxml"; title = "SkillORA";
+                StudentLayoutController.setCurrentUser(user);
+            } else if (isProfessor) {
+                fxmlPath = "/fxml/ProfessorLayout.fxml"; title = "SkillORA - Faculty";
+                ProfessorLayoutController.setCurrentUser(user);
+            } else {
+                fxmlPath = "/fxml/AdminPanel.fxml"; title = "SkillORA - Admin Panel";
+                AdminPanelController.setCurrentUser(user);
+            }
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.Circle?>
+
+<ScrollPane fitToWidth="true" styleClass="scroll-pane pf-scroll"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.ProfessorProfileController">
+    <VBox styleClass="pf-root" spacing="0">
+        <padding><Insets top="56" right="96" bottom="88" left="96"/></padding>
+
+        <!-- Eyebrow -->
+        <HBox alignment="CENTER_LEFT" spacing="18">
+            <Label text="PROFILE" styleClass="pf-eyebrow"/>
+            <Region styleClass="pf-eyebrow-rule" prefHeight="1" maxHeight="1" HBox.hgrow="ALWAYS"/>
+            <Label text="FACULTY" styleClass="pf-eyebrow"/>
+            <Region styleClass="pf-eyebrow-rule" prefHeight="1" maxHeight="1" prefWidth="80" maxWidth="80"/>
+            <Label text="SKILLORA — PROFESSOR RECORD" styleClass="pf-eyebrow"/>
+        </HBox>
+
+        <Region prefHeight="56"/>
+
+        <!-- Hero -->
+        <HBox spacing="48" alignment="TOP_LEFT">
+            <VBox spacing="18" alignment="TOP_LEFT">
+                <StackPane fx:id="avatarHolder" prefWidth="200" prefHeight="240"
+                           minWidth="200" minHeight="240" styleClass="pf-avatar-frame">
+                    <Circle fx:id="avatarRing" radius="78" styleClass="pf-avatar-ring"/>
+                    <Label fx:id="avatarInitials" styleClass="pf-avatar-initials"/>
+                </StackPane>
+                <HBox alignment="CENTER_LEFT">
+                    <Label fx:id="roleBadge" text="Professor" styleClass="pf-role"/>
+                </HBox>
+            </VBox>
+
+            <VBox HBox.hgrow="ALWAYS" spacing="18">
+                <padding><Insets top="6"/></padding>
+                <Label fx:id="fullNameLabel" text="Full Name" styleClass="pf-name" wrapText="true"/>
+                <HBox spacing="16" alignment="CENTER_LEFT">
+                    <Region styleClass="pf-accent-mark" prefWidth="32" prefHeight="2"
+                            maxWidth="32" maxHeight="2" minHeight="2"/>
+                    <Label fx:id="headlineLabel" text="Field of expertise" styleClass="pf-field"/>
+                </HBox>
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <Label fx:id="universityLabel" text="Institution" styleClass="pf-origin"/>
+                    <Label text="·" styleClass="pf-origin"/>
+                    <Label fx:id="countryLabel" text="Country" styleClass="pf-origin"/>
+                </HBox>
+                <Region prefHeight="14"/>
+                <HBox alignment="CENTER_LEFT" spacing="14">
+                    <Button text="EDIT PROFILE" onAction="#goToSettings" styleClass="pf-btn"/>
+                    <Button fx:id="linkedInButton" text="VIEW ON LINKEDIN" onAction="#openLinkedIn" styleClass="set-btn-outline"/>
+                </HBox>
+            </VBox>
+
+        </HBox>
+
+        <Region prefHeight="80"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- About + ledger -->
+        <HBox spacing="96" alignment="TOP_LEFT">
+            <VBox spacing="0" prefWidth="360" minWidth="360">
+                <Label text="I. INDEX" styleClass="pf-section-label"/>
+                <Region prefHeight="24"/>
+                <VBox fx:id="indexBox" spacing="0"/>
+            </VBox>
+
+            <VBox HBox.hgrow="ALWAYS" spacing="0">
+                <Label text="II. ABOUT" styleClass="pf-section-label"/>
+                <Region prefHeight="18"/>
+                <HBox spacing="20" alignment="TOP_LEFT">
+                    <Label text="“" styleClass="pf-quote-mark" translateY="-28.0"/>
+                    <Label fx:id="bioLabel" text="No bio yet." styleClass="pf-quote"
+                           wrapText="true" HBox.hgrow="ALWAYS"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="80"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="44"/>
+
+        <!-- Contact -->
+        <Label text="III. CONTACT" styleClass="pf-section-label"/>
+        <Region prefHeight="24"/>
+        <GridPane hgap="56" vgap="20" styleClass="pf-colophon">
+            <columnConstraints>
+                <ColumnConstraints minWidth="72"/>
+                <ColumnConstraints minWidth="240"/>
+                <ColumnConstraints minWidth="72"/>
+                <ColumnConstraints minWidth="240"/>
+            </columnConstraints>
+            <Label text="Email"  styleClass="pf-colophon-key" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <Label fx:id="emailLabel"        styleClass="pf-colophon-val" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <Label text="Since"  styleClass="pf-colophon-key" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+            <Label fx:id="memberSinceLabel"  styleClass="pf-colophon-val" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+            <Label text="Phone"  styleClass="pf-colophon-key" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Label fx:id="phoneLabel"        styleClass="pf-colophon-val" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <Label text="LinkedIn" styleClass="pf-colophon-key" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+            <Label fx:id="linkedInLabel"     styleClass="pf-colophon-val" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+        </GridPane>
+
+        <Region prefHeight="64"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="44"/>
+
+        <!-- Experience (LinkedIn) -->
+        <VBox fx:id="experienceSection" spacing="22" managed="false" visible="false">
+            <Label text="IV. EXPERIENCE" styleClass="pf-section-label"/>
+            <VBox fx:id="experienceList" spacing="20"/>
+            <Region prefHeight="40"/>
+            <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+            <Region prefHeight="40"/>
+        </VBox>
+
+        <!-- Education (LinkedIn) -->
+        <VBox fx:id="educationSection" spacing="22" managed="false" visible="false">
+            <Label text="V. EDUCATION" styleClass="pf-section-label"/>
+            <VBox fx:id="educationList" spacing="20"/>
+            <Region prefHeight="40"/>
+            <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+            <Region prefHeight="40"/>
+        </VBox>
+
+        <!-- Expertise + Languages -->
+        <HBox spacing="96" alignment="TOP_LEFT">
+            <VBox HBox.hgrow="ALWAYS" spacing="22">
+                <Label text="VI. EXPERTISE" styleClass="pf-section-label"/>
+                <FlowPane fx:id="expertiseTags" hgap="10" vgap="10"/>
+            </VBox>
+
+            <VBox prefWidth="420" minWidth="420" spacing="22">
+                <Label text="VII. LANGUAGES &amp; CERTIFICATIONS" styleClass="pf-section-label"/>
+                <FlowPane fx:id="extrasTags" hgap="10" vgap="10"/>
+            </VBox>
+        </HBox>
+
+    </VBox>
+</ScrollPane>
