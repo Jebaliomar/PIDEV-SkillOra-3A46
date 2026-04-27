@@ -57,7 +57,7 @@ public class SectionNewController implements AdminShellAware {
             section.setUpdatedAt(LocalDateTime.now());
             getCourseSectionService().add(section);
             if (shellController != null) {
-                shellController.showSectionIndex(course);
+                shellController.showCourseShow(course);
             }
         } catch (SQLException e) {
             showError("Unable to create the section.", e);
@@ -97,7 +97,7 @@ public class SectionNewController implements AdminShellAware {
     @FXML
     private void handleCancel() {
         if (shellController != null && course != null) {
-            shellController.showSectionIndex(course);
+            shellController.showCourseShow(course);
         }
     }
 

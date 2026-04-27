@@ -29,7 +29,11 @@ public class ThemeManager {
     }
 
     public static void applyTheme(Scene scene) {
+        String unifiedCss = ThemeManager.class.getResource("/styles/skillora-unified.css").toExternalForm();
         String darkCss = ThemeManager.class.getResource("/styles/dark-theme.css").toExternalForm();
+        if (!scene.getStylesheets().contains(unifiedCss)) {
+            scene.getStylesheets().add(unifiedCss);
+        }
         if (isDark) {
             if (!scene.getStylesheets().contains(darkCss)) {
                 scene.getStylesheets().add(darkCss);

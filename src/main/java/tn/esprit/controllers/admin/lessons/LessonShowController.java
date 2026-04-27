@@ -135,7 +135,11 @@ public class LessonShowController implements AdminShellAware {
         if (lesson == null) {
             return;
         }
-        if (!confirmDelete()) {
+        if (!confirmDeletion(
+                "Delete lesson",
+                "Delete \"" + (lesson.getTitle() == null || lesson.getTitle().isBlank() ? "this lesson" : lesson.getTitle()) + "\"?",
+                "This action permanently deletes the lesson."
+        )) {
             return;
         }
         try {
@@ -171,15 +175,15 @@ public class LessonShowController implements AdminShellAware {
         }
     }
 
-    private TextArea buildTextPreview() {
-        TextArea textArea = new TextArea(lesson.getContent() == null ? "" : lesson.getContent());
-        textArea.setWrapText(true);
-        textArea.setEditable(false);
-        textArea.setFocusTraversable(false);
-        textArea.setPrefRowCount(16);
-        textArea.setMaxWidth(Double.MAX_VALUE);
-        textArea.setMaxHeight(Double.MAX_VALUE);
-        return textArea;
+    private WebView buildTextPreview() {
+        WebView webView = new WebView();
+        webView.setContextMenuEnabled(false);
+        webView.setMaxWidth(Double.MAX_VALUE);
+        webView.setMaxHeight(Double.MAX_VALUE);
+        webView.prefWidthProperty().bind(contentContainer.widthProperty().subtract(20));
+        webView.prefHeightProperty().bind(contentContainer.heightProperty().subtract(20));
+        webView.getEngine().loadContent(buildTextPreviewHtml(lesson.getContent()));
+        return webView;
     }
 
     private WebView buildPdfPreview() {
@@ -470,6 +474,59 @@ public class LessonShowController implements AdminShellAware {
                 .replace("\"", "&quot;");
     }
 
+    private String buildTextPreviewHtml(String content) {
+        String body = content == null || content.isBlank()
+                ? "<p class=\"muted\">This text lesson does not have content yet.</p>"
+                : prepareTextBody(content);
+        return """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        html, body {
+                            margin: 0;
+                            background: #f8fafc;
+                            color: #0f172a;
+                            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                            font-size: 16px;
+                            line-height: 1.7;
+                        }
+                        body { padding: 28px 34px; box-sizing: border-box; }
+                        article {
+                            max-width: 980px;
+                            margin: 0 auto;
+                            background: white;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 18px;
+                            padding: 28px 34px;
+                            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+                        }
+                        h1, h2, h3 { margin: 0 0 14px; line-height: 1.2; }
+                        p { margin: 0 0 16px; }
+                        a { color: #2563eb; font-weight: 700; }
+                        code, pre {
+                            background: #f1f5f9;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 10px;
+                        }
+                        code { padding: 2px 6px; }
+                        pre { padding: 16px; overflow: auto; }
+                        .muted { color: #64748b; }
+                    </style>
+                </head>
+                <body><article>%s</article></body>
+                </html>
+                """.formatted(body);
+    }
+
+    private String prepareTextBody(String content) {
+        if (content.contains("<") && content.contains(">")) {
+            return content;
+        }
+        return "<p>" + escapeForHtml(content).replace("\n", "<br>") + "</p>";
+    }
+
     private void resetPreviewMeta() {
         previewStatusLabel.setText("");
         previewStatusLabel.setVisible(false);
@@ -540,15 +597,12 @@ public class LessonShowController implements AdminShellAware {
         alert.showAndWait();
     }
 
-    private boolean confirmDelete() {
-        Alert alert = new Alert(
-                Alert.AlertType.CONFIRMATION,
-                "Delete lesson \"" + (lesson == null || lesson.getTitle() == null ? "Untitled lesson" : lesson.getTitle()) + "\" and its completion history?",
-                ButtonType.YES,
-                ButtonType.CANCEL
-        );
-        alert.setHeaderText("Confirm lesson deletion");
+    private boolean confirmDeletion(String title, String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
         Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.YES;
+        return result.isPresent() && result.get() == ButtonType.OK;
     }
 }

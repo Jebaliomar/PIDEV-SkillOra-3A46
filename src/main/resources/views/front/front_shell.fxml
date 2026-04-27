@@ -10,12 +10,9 @@
 <StackPane prefHeight="860.0" prefWidth="1440.0" styleClass="app-shell-root"
            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="tn.esprit.controllers.front.FrontShellController">
-    <BorderPane styleClass="app-shell">
+    <BorderPane fx:id="shellPane" styleClass="app-shell">
         <left>
-            <StackPane prefWidth="286.0" maxWidth="286.0" styleClass="sidebar-shell">
-                <BorderPane.margin>
-                    <Insets top="20.0" right="14.0" bottom="20.0" left="20.0"/>
-                </BorderPane.margin>
+            <StackPane fx:id="sidebarContainer" prefWidth="286.0" maxWidth="286.0" styleClass="sidebar-shell">
                 <VBox spacing="22.0" styleClass="front-sidebar">
                     <padding>
                         <Insets top="30.0" right="20.0" bottom="28.0" left="20.0"/>
@@ -23,11 +20,6 @@
                     <VBox spacing="4.0">
                         <Label styleClass="front-brand-title" text="SkillORA"/>
                         <Label styleClass="front-brand-subtitle" text="Learning Desktop"/>
-                    </VBox>
-
-                    <VBox spacing="4.0" styleClass="front-session-card">
-                        <Label fx:id="userSummaryLabel" styleClass="front-session-title" text="Connected User"/>
-                        <Label fx:id="sessionSummaryLabel" styleClass="front-session-subtitle" text="Course workspace" wrapText="true"/>
                     </VBox>
 
                     <VBox spacing="6.0" styleClass="sidebar-nav-group">
@@ -39,11 +31,11 @@
                         <Button fx:id="rendezVousNavButton" mnemonicParsing="false" onAction="#handleRendezVous" styleClass="sidebar-item" text="Rendez-vous"/>
                     </VBox>
 
-                    <VBox fx:id="dashboardCard" spacing="10.0" styleClass="front-spotlight-card">
-                        <Label styleClass="front-spotlight-title" text="Cross Navigation" />
-                        <Label styleClass="front-spotlight-body" text="Move back to the student users front or, when allowed, jump into the admin dashboard from the same sidebar block." wrapText="true"/>
-                        <Button fx:id="userFrontButton" mnemonicParsing="false" onAction="#handleUserFront" styleClass="secondary-button sidebar-utility-button" text="Users Front"/>
-                        <Button fx:id="dashboardButton" mnemonicParsing="false" onAction="#handleDashboard" styleClass="secondary-button sidebar-utility-button" text="Dashboard"/>
+                    <VBox spacing="10.0" styleClass="front-spotlight-card">
+                        <Label styleClass="front-spotlight-title" text="Ready to manage?" />
+                        <Label styleClass="front-spotlight-body" text="Jump back to the admin dashboard any time from here." wrapText="true"/>
+                        <Button fx:id="dashboardButton" mnemonicParsing="false" onAction="#handleDashboard" styleClass="secondary-button" text="Dashboard"/>
+                        <Button fx:id="logoutButton" mnemonicParsing="false" onAction="#handleLogout" styleClass="ghost-button" text="Sign out"/>
                     </VBox>
                 </VBox>
             </StackPane>

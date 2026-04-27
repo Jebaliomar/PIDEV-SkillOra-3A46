@@ -51,7 +51,7 @@ public class AdminShellController {
     private Button frontHomeButton;
 
     @FXML
-    private Button usersAdminButton;
+    private Button logoutButton;
 
     @FXML
     public void initialize() {
@@ -67,7 +67,8 @@ public class AdminShellController {
 
     @FXML
     private void handleUsersModule() {
-        AppNavigator.showUserAdmin(usersModuleButton);
+        setActiveModule(usersModuleButton);
+        showPlaceholder("Users", "This module is not implemented yet in the desktop shell.");
     }
 
     @FXML
@@ -100,8 +101,8 @@ public class AdminShellController {
     }
 
     @FXML
-    private void handleUsersAdmin() {
-        AppNavigator.showUserAdmin(usersAdminButton != null ? usersAdminButton : usersModuleButton);
+    private void handleLogout() {
+        AppNavigator.showLogin(logoutButton);
     }
 
     public void showCoursesIndex() {

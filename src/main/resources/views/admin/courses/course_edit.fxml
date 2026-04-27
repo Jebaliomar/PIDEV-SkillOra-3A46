@@ -26,6 +26,9 @@
     </top>
     <center>
         <HBox spacing="22.0">
+            <BorderPane.margin>
+                <Insets top="24.0"/>
+            </BorderPane.margin>
             <VBox spacing="16.0" styleClass="form-card" HBox.hgrow="ALWAYS">
                 <VBox spacing="8.0">
                     <Label styleClass="field-label" text="Title"/>

@@ -26,6 +26,7 @@ import tn.esprit.controllers.admin.AdminShellAware;
 import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.Course;
 import tn.esprit.services.CourseService;
+import tn.esprit.tools.AppIcons;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -45,6 +46,9 @@ public class CourseIndexController implements AdminShellAware {
 
     @FXML
     private Button openButton;
+
+    @FXML
+    private Button addCourseButton;
     
     @FXML
     private TableView<Course> courseTable;
@@ -83,6 +87,7 @@ public class CourseIndexController implements AdminShellAware {
     }
 
     private void configureTable() {
+        courseTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("category"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -144,6 +149,7 @@ public class CourseIndexController implements AdminShellAware {
                 }
                 Label label = new Label(normalizeStatus(item));
                 label.getStyleClass().add("table-status-pill");
+                label.getStyleClass().add(statusStyleClass(item));
                 setGraphic(label);
                 setText(null);
                 setAlignment(Pos.CENTER);
@@ -159,8 +165,8 @@ public class CourseIndexController implements AdminShellAware {
         });
         actionsColumn.setCellFactory(column -> new TableCell<>() {
             private final Button manageButton = createActionButton("Manage", "manage-action-button");
-            private final Button editButton = createActionButton("✎", "icon-action-button");
-            private final Button deleteButton = createActionButton("🗑", "icon-action-button", "danger-icon-action-button");
+            private final Button editButton = createActionButton("Edit", "icon-action-button");
+            private final Button deleteButton = createActionButton("Delete", "icon-action-danger");
             private final HBox actionsBox = new HBox(12, manageButton, editButton, deleteButton);
 
             {
@@ -195,7 +201,11 @@ public class CourseIndexController implements AdminShellAware {
                 if (course == null) {
                     return;
                 }
-                if (!confirmDelete(course)) {
+                if (!confirmDeletion(
+                        "Delete course",
+                        "Delete \"" + safe(course.getTitle()) + "\"?",
+                        "This will permanently delete the course, its sections, and their lessons."
+                )) {
                     return;
                 }
                 try {
@@ -212,7 +222,9 @@ public class CourseIndexController implements AdminShellAware {
         courseTable.setRowFactory(table -> {
             TableRow<Course> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
-                if (!row.isEmpty() && event.getClickCount() == 1) {
+                if (!row.isEmpty() && event.getClickCount() == 2 && shellController != null) {
+                    shellController.showCourseShow(row.getItem());
+                } else if (!row.isEmpty() && event.getClickCount() == 1) {
                     courseTable.getSelectionModel().select(row.getItem());
                 }
             });
@@ -243,6 +255,7 @@ public class CourseIndexController implements AdminShellAware {
     }
 
     private void configureActions() {
+        setButtonIcon(addCourseButton, AppIcons.plus());
         if (openButton != null) {
             openButton.disableProperty().bind(Bindings.isNull(courseTable.getSelectionModel().selectedItemProperty()));
         }
@@ -289,22 +302,33 @@ public class CourseIndexController implements AdminShellAware {
         return courseService;
     }
 
-    private Button createActionButton(String text, String... styleClasses) {
+    private Button createActionButton(String text, String styleClass) {
         Button button = new Button(text);
-        button.getStyleClass().addAll(styleClasses);
+        button.getStyleClass().add(styleClass);
+        button.setGraphic(switch (text) {
+            case "Manage" -> AppIcons.open();
+            case "Edit" -> AppIcons.edit();
+            case "Delete" -> AppIcons.trash();
+            default -> null;
+        });
+        setGraphicScale(button, 0.78);
+        button.setGraphicTextGap(7);
         return button;
     }
 
-    private boolean confirmDelete(Course course) {
-        Alert alert = new Alert(
-                Alert.AlertType.CONFIRMATION,
-                "Delete \"" + safe(course.getTitle()) + "\" and all its sections, lessons, enrollments, and lesson completions?",
-                ButtonType.YES,
-                ButtonType.CANCEL
-        );
-        alert.setHeaderText("Confirm course deletion");
-        Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.YES;
+    private void setButtonIcon(Button button, javafx.scene.Node icon) {
+        if (button != null) {
+            button.setGraphic(icon);
+            setGraphicScale(button, 0.88);
+            button.setGraphicTextGap(8);
+        }
+    }
+
+    private void setGraphicScale(Button button, double scale) {
+        if (button != null && button.getGraphic() != null) {
+            button.getGraphic().setScaleX(scale);
+            button.getGraphic().setScaleY(scale);
+        }
     }
 
     private String firstLetter(String value) {
@@ -313,6 +337,15 @@ public class CourseIndexController implements AdminShellAware {
 
     private String normalizeStatus(String value) {
         return safe(value).isBlank() ? "DRAFT" : safe(value).toUpperCase();
+    }
+
+    private String statusStyleClass(String value) {
+        String status = safe(value).trim().toLowerCase();
+        return switch (status) {
+            case "published" -> "status-published";
+            case "archived" -> "status-archived";
+            default -> "status-draft";
+        };
     }
 
     private String formatDateTime(LocalDateTime value) {
@@ -328,6 +361,15 @@ public class CourseIndexController implements AdminShellAware {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private boolean confirmDeletion(String title, String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
     }
 
     private void showError(String message, Exception exception) {

@@ -2,15 +2,18 @@ package tn.esprit.controllers.front.home;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
 import tn.esprit.entities.Course;
@@ -23,6 +26,9 @@ import java.util.List;
 
 public class FrontHomeController implements FrontShellAware {
 
+    private static final double COURSE_CARD_WIDTH = 318;
+    private static final double COURSE_THUMBNAIL_HEIGHT = 132;
+
     @FXML
     private FlowPane latestCoursesPane;
 
@@ -33,7 +39,7 @@ public class FrontHomeController implements FrontShellAware {
     public void initialize() {
         latestCoursesPane.setHgap(18);
         latestCoursesPane.setVgap(18);
-        latestCoursesPane.setPadding(new Insets(4, 0, 0, 0));
+        latestCoursesPane.setPadding(new Insets(12, 0, 2, 0));
         loadLatestCourses();
     }
 
@@ -77,19 +83,38 @@ public class FrontHomeController implements FrontShellAware {
         titleLabel.getStyleClass().add("front-course-title");
         titleLabel.setWrapText(true);
 
-        Label descriptionLabel = new Label(truncate(safeValue(course.getDescription(), "No description yet."), 110));
+        Label descriptionLabel = new Label(truncate(safeValue(course.getDescription(), "No description yet."), 104));
         descriptionLabel.getStyleClass().add("front-course-description");
         descriptionLabel.setWrapText(true);
 
         Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        VBox card = new VBox(14, thumbnailPane, categoryLabel, titleLabel, descriptionLabel, spacer);
+        Label metaLabel = new Label(safeValue(course.getStatus(), "draft").toUpperCase());
+        metaLabel.getStyleClass().add("front-course-card-footer");
+
+        Button startButton = new Button("Start Course");
+        startButton.getStyleClass().add("front-card-start-button");
+        startButton.setOnAction(event -> {
+            event.consume();
+            openCourse(course);
+        });
+
+        HBox footer = new HBox(12, metaLabel, spacer, startButton);
+        footer.setAlignment(Pos.CENTER_LEFT);
+        footer.getStyleClass().add("front-card-footer-row");
+
+        VBox body = new VBox(12, categoryLabel, titleLabel, descriptionLabel, footer);
+        body.getStyleClass().add("front-course-card-body");
+        VBox.setVgrow(body, Priority.ALWAYS);
+
+        VBox card = new VBox(thumbnailPane, body);
         card.getStyleClass().add("front-course-card");
         card.getStyleClass().add("front-course-card-clickable");
-        card.setPrefWidth(300);
-        card.setMinWidth(280);
-        card.setPrefHeight(270);
+        card.setPrefWidth(COURSE_CARD_WIDTH);
+        card.setMinWidth(COURSE_CARD_WIDTH);
+        card.setMaxWidth(COURSE_CARD_WIDTH);
+        card.setPrefHeight(334);
         card.setOnMouseClicked(event -> openCourse(course));
         return card;
     }
@@ -97,15 +122,19 @@ public class FrontHomeController implements FrontShellAware {
     private StackPane buildThumbnailPane(Course course) {
         StackPane thumbnailPane = new StackPane();
         thumbnailPane.getStyleClass().add("front-course-thumbnail");
-        thumbnailPane.setPrefHeight(120);
-        thumbnailPane.setMinHeight(120);
-        thumbnailPane.setMaxWidth(Double.MAX_VALUE);
+        thumbnailPane.setPrefSize(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT);
+        thumbnailPane.setMinSize(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT);
+        thumbnailPane.setMaxSize(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT);
+        Rectangle clip = new Rectangle(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT);
+        clip.setArcWidth(40);
+        clip.setArcHeight(40);
+        thumbnailPane.setClip(clip);
 
         Image image = loadThumbnail(course.getThumbnail());
         if (image != null) {
             ImageView imageView = new ImageView(image);
-            imageView.setFitHeight(120);
-            imageView.setFitWidth(264);
+            imageView.setFitHeight(COURSE_THUMBNAIL_HEIGHT);
+            imageView.setFitWidth(COURSE_CARD_WIDTH);
             imageView.setPreserveRatio(false);
             imageView.setSmooth(true);
             imageView.setCache(true);

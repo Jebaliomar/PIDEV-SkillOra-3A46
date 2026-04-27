@@ -12,7 +12,6 @@ import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.Course;
 import tn.esprit.services.CourseService;
 
-import java.net.URI;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -134,12 +133,6 @@ public class CourseNewController implements AdminShellAware {
             valid = false;
         }
 
-        String thumbnail = normalizeOptional(thumbnailField.getText());
-        if (thumbnail != null && !isValidThumbnail(thumbnail)) {
-            setError(thumbnailErrorLabel, "Thumbnail must be a valid image URL or image path.");
-            valid = false;
-        }
-
         String description = normalizeOptional(descriptionArea.getText());
         if (description != null && description.length() > 1000) {
             setError(descriptionErrorLabel, "Description must stay under 1000 characters.");
@@ -159,32 +152,6 @@ public class CourseNewController implements AdminShellAware {
     private String normalizeOptional(String value) {
         String trimmed = value == null ? "" : value.trim();
         return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    private boolean isValidThumbnail(String value) {
-        if (looksLikeHttpUrl(value)) {
-            try {
-                URI uri = URI.create(value);
-                return uri.getScheme() != null && uri.getHost() != null && hasImageExtension(uri.getPath());
-            } catch (IllegalArgumentException e) {
-                return false;
-            }
-        }
-        try {
-            return hasImageExtension(value);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private boolean looksLikeHttpUrl(String value) {
-        return value.startsWith("http://") || value.startsWith("https://");
-    }
-
-    private boolean hasImageExtension(String value) {
-        String lower = value == null ? "" : value.toLowerCase();
-        return lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg")
-                || lower.endsWith(".gif") || lower.endsWith(".webp");
     }
 
     private void clearErrors() {

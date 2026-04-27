@@ -4,13 +4,12 @@ import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
+import javafx.scene.Node;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -23,19 +22,13 @@ import javafx.scene.media.MediaView;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
-import tn.esprit.controllers.StudentLayoutController;
 import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
 import tn.esprit.entities.Course;
 import tn.esprit.entities.CourseSection;
-import tn.esprit.entities.Enrollment;
 import tn.esprit.entities.Lesson;
-import tn.esprit.entities.LessonCompletion;
-import tn.esprit.entities.User;
 import tn.esprit.services.CourseSectionService;
-import tn.esprit.services.EnrollmentService;
 import tn.esprit.services.LessonService;
-import tn.esprit.services.LessonCompletionService;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -46,12 +39,10 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class FrontCourseConsumeController implements FrontShellAware {
 
@@ -71,10 +62,7 @@ public class FrontCourseConsumeController implements FrontShellAware {
     private Label lessonTypeLabel;
 
     @FXML
-    private Label lessonMetaLabel;
-
-    @FXML
-    private Accordion sectionsAccordion;
+    private VBox sectionsAccordion;
 
     @FXML
     private StackPane contentContainer;
@@ -97,19 +85,13 @@ public class FrontCourseConsumeController implements FrontShellAware {
     private FrontShellController shellController;
     private CourseSectionService courseSectionService;
     private LessonService lessonService;
-    private EnrollmentService enrollmentService;
-    private LessonCompletionService lessonCompletionService;
     private Course course;
     private Lesson initialLesson;
-    private User currentUser;
-    private Enrollment currentEnrollment;
     private MediaPlayer mediaPlayer;
     private boolean seeking;
     private final List<Lesson> orderedLessons = new ArrayList<>();
     private final Map<Integer, CourseSection> sectionsById = new HashMap<>();
-    private final Map<Integer, TitledPane> sectionPanes = new HashMap<>();
     private final Map<Integer, Button> lessonButtons = new HashMap<>();
-    private final Set<Integer> completedLessonIds = new HashSet<>();
     private Lesson currentLesson;
 
     @FXML
@@ -133,9 +115,6 @@ public class FrontCourseConsumeController implements FrontShellAware {
 
     public void setCourse(Course course) {
         this.course = course;
-        this.currentUser = StudentLayoutController.getCurrentUser();
-        this.currentEnrollment = null;
-        this.completedLessonIds.clear();
         courseTitleLabel.setText(course == null ? "Course" : course.getTitle());
         loadCurriculum();
     }
@@ -172,19 +151,21 @@ public class FrontCourseConsumeController implements FrontShellAware {
     }
 
     private void loadCurriculum() {
-        sectionsAccordion.getPanes().clear();
+        sectionsAccordion.getChildren().clear();
         orderedLessons.clear();
         lessonButtons.clear();
         sectionsById.clear();
-        sectionPanes.clear();
-        completedLessonIds.clear();
 
         if (course == null || course.getId() == null) {
             return;
         }
 
         try {
-            List<CourseSection> sections = getCourseSectionService().getByCourseId(course.getId());
+            List<CourseSection> sections = getCourseSectionService().getAll().stream()
+                    .filter(section -> course.getId().equals(section.getCourseId()))
+                    .sorted(Comparator.comparing(CourseSection::getPosition, Comparator.nullsLast(Integer::compareTo))
+                            .thenComparing(CourseSection::getId, Comparator.nullsLast(Integer::compareTo)))
+                    .toList();
 
             Map<Integer, List<Lesson>> lessonsBySection = loadLessonsBySection(sections);
             sections.forEach(section -> sectionsById.put(section.getId(), section));
@@ -193,21 +174,16 @@ public class FrontCourseConsumeController implements FrontShellAware {
                 List<Lesson> lessons = lessonsBySection.getOrDefault(section.getId(), List.of());
                 orderedLessons.addAll(lessons);
                 TitledPane pane = buildSectionPane(section, lessons);
-                if (section.getId() != null) {
-                    sectionPanes.put(section.getId(), pane);
-                }
-                sectionsAccordion.getPanes().add(pane);
+                sectionsAccordion.getChildren().add(pane);
             }
 
             if (orderedLessons.isEmpty()) {
-                lessonMetaLabel.setText("No lesson selected");
                 contentContainer.getChildren().setAll(buildMessagePreview("No lessons available.", "This course does not contain any lesson content yet."));
                 previousButton.setDisable(true);
                 nextButton.setDisable(true);
                 return;
             }
 
-            loadUserLearningState();
             Platform.runLater(() -> selectLesson(resolveInitialLesson()));
         } catch (SQLException | IllegalStateException e) {
             contentContainer.getChildren().setAll(buildMessagePreview("Unable to load course content.", e.getMessage()));
@@ -217,12 +193,23 @@ public class FrontCourseConsumeController implements FrontShellAware {
     }
 
     private Map<Integer, List<Lesson>> loadLessonsBySection(List<CourseSection> sections) throws SQLException {
-        List<Integer> sectionIds = sections.stream()
-                .map(CourseSection::getId)
+        Map<Integer, List<Lesson>> lessonsBySection = new HashMap<>();
+        List<Lesson> lessons = getLessonService().getAll().stream()
+                .filter(lesson -> lesson.getSectionId() != null && sectionsByIdOrList(sections).containsKey(lesson.getSectionId()))
+                .sorted(Comparator.comparing(Lesson::getPosition, Comparator.nullsLast(Integer::compareTo))
+                        .thenComparing(Lesson::getId, Comparator.nullsLast(Integer::compareTo)))
                 .toList();
 
-        return getLessonService().getBySectionIds(sectionIds).stream()
-                .collect(Collectors.groupingBy(Lesson::getSectionId, Collectors.toCollection(ArrayList::new)));
+        for (Lesson lesson : lessons) {
+            lessonsBySection.computeIfAbsent(lesson.getSectionId(), key -> new ArrayList<>()).add(lesson);
+        }
+        return lessonsBySection;
+    }
+
+    private Map<Integer, CourseSection> sectionsByIdOrList(List<CourseSection> sections) {
+        Map<Integer, CourseSection> sectionMap = new HashMap<>();
+        sections.forEach(section -> sectionMap.put(section.getId(), section));
+        return sectionMap;
     }
 
     private TitledPane buildSectionPane(CourseSection section, List<Lesson> lessons) {
@@ -236,8 +223,7 @@ public class FrontCourseConsumeController implements FrontShellAware {
             lessons.forEach(lesson -> lessonList.getChildren().add(buildLessonButton(lesson)));
         }
 
-        String paneTitle = safeValue(section.getTitle(), "Untitled Section") + "  •  " + lessons.size();
-        TitledPane pane = new TitledPane(paneTitle, lessonList);
+        TitledPane pane = new TitledPane(section.getTitle(), lessonList);
         pane.getStyleClass().add("front-section-pane");
         pane.setAnimated(true);
         return pane;
@@ -279,11 +265,9 @@ public class FrontCourseConsumeController implements FrontShellAware {
         currentLesson = lesson;
         lessonTitleLabel.setText(safeValue(lesson.getTitle(), "Lesson"));
         lessonTypeLabel.setText(typeLabel(lesson.getType()));
-        lessonMetaLabel.setText(buildLessonMeta(lesson));
         highlightCurrentLesson();
         expandCurrentSection();
         renderLessonContent();
-        syncLearningProgress();
         updateNavigationButtons();
     }
 
@@ -309,9 +293,18 @@ public class FrontCourseConsumeController implements FrontShellAware {
         if (currentLesson == null || currentLesson.getSectionId() == null) {
             return;
         }
-        TitledPane pane = sectionPanes.get(currentLesson.getSectionId());
-        if (pane != null) {
-            sectionsAccordion.setExpandedPane(pane);
+        CourseSection currentSection = sectionsById.get(currentLesson.getSectionId());
+        if (currentSection == null) {
+            return;
+        }
+        for (javafx.scene.Node node : sectionsAccordion.getChildren()) {
+            if (!(node instanceof TitledPane pane)) {
+                continue;
+            }
+            if (currentSection.getTitle().equals(pane.getText())) {
+                pane.setExpanded(true);
+                break;
+            }
         }
     }
 
@@ -340,13 +333,14 @@ public class FrontCourseConsumeController implements FrontShellAware {
         }
     }
 
-    private TextArea buildTextPreview() {
-        TextArea textArea = new TextArea(currentLesson.getContent() == null ? "" : currentLesson.getContent());
-        textArea.setWrapText(true);
-        textArea.setEditable(false);
-        textArea.setFocusTraversable(false);
-        textArea.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        return textArea;
+    private Node buildTextPreview() {
+        WebView webView = new WebView();
+        webView.setContextMenuEnabled(false);
+        webView.prefWidthProperty().bind(contentContainer.widthProperty().subtract(24));
+        webView.prefHeightProperty().bind(contentContainer.heightProperty().subtract(24));
+        webView.getEngine().loadContent(buildTextLessonHtml(currentLesson.getContent()));
+        showPreviewMeta("Reading lesson content");
+        return webView;
     }
 
     private WebView buildPdfPreview() {
@@ -474,6 +468,54 @@ public class FrontCourseConsumeController implements FrontShellAware {
         bodyLabel.getStyleClass().add("detail-body");
         bodyLabel.setWrapText(true);
         return new VBox(10, titleLabel, bodyLabel);
+    }
+
+    private String buildTextLessonHtml(String content) {
+        String raw = content == null ? "" : content.trim();
+        boolean looksLikeHtml = raw.contains("<") && raw.contains(">");
+        String body = looksLikeHtml ? raw : "<p>" + escapeHtml(raw).replace("\n", "<br/>") + "</p>";
+        return """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        html, body {
+                            margin: 0;
+                            padding: 0;
+                            background: #f8fafc;
+                            color: #172338;
+                            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                        }
+                        body {
+                            padding: 28px 32px;
+                            line-height: 1.7;
+                            font-size: 16px;
+                        }
+                        img, iframe, video, table {
+                            max-width: 100%%;
+                        }
+                        h1, h2, h3 {
+                            color: #102a43;
+                            margin-top: 0;
+                        }
+                        p, li {
+                            color: #334e68;
+                        }
+                    </style>
+                </head>
+                <body>%s</body>
+                </html>
+                """.formatted(body);
+    }
+
+    private String escapeHtml(String value) {
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 
     private void togglePlayback(MediaPlayer player, Button playPauseButton) {
@@ -660,104 +702,6 @@ public class FrontCourseConsumeController implements FrontShellAware {
         return type == null || type.isBlank() ? "Unknown" : type;
     }
 
-    private String buildLessonMeta(Lesson lesson) {
-        int index = orderedLessons.indexOf(lesson);
-        String orderText = index >= 0 ? "Lesson " + (index + 1) + " of " + orderedLessons.size() : "Lesson";
-        CourseSection section = lesson.getSectionId() == null ? null : sectionsById.get(lesson.getSectionId());
-        if (section == null || section.getTitle() == null || section.getTitle().isBlank()) {
-            return orderText;
-        }
-        return safeValue(section.getTitle(), "Section") + "  •  " + orderText;
-    }
-
-    private void loadUserLearningState() {
-        if (currentUser == null || currentUser.getId() == null || course == null || course.getId() == null) {
-            currentEnrollment = null;
-            return;
-        }
-        try {
-            currentEnrollment = getEnrollmentService().getByUserAndCourse(currentUser.getId(), course.getId());
-            completedLessonIds.clear();
-            if (currentEnrollment != null && currentEnrollment.getId() != null) {
-                for (LessonCompletion completion : getLessonCompletionService().getByEnrollmentId(currentEnrollment.getId())) {
-                    if (completion.getLessonId() != null) {
-                        completedLessonIds.add(completion.getLessonId());
-                    }
-                }
-            }
-        } catch (SQLException | IllegalStateException e) {
-            currentEnrollment = null;
-            completedLessonIds.clear();
-        }
-    }
-
-    private void syncLearningProgress() {
-        if (currentLesson == null || currentLesson.getId() == null || currentUser == null || currentUser.getId() == null || course == null || course.getId() == null) {
-            return;
-        }
-
-        try {
-            Enrollment enrollment = ensureEnrollment();
-            if (enrollment == null || enrollment.getId() == null) {
-                return;
-            }
-
-            if (!completedLessonIds.contains(currentLesson.getId())) {
-                LessonCompletion existing = getLessonCompletionService().getByEnrollmentAndLesson(enrollment.getId(), currentLesson.getId());
-                if (existing == null) {
-                    LessonCompletion completion = new LessonCompletion();
-                    completion.setEnrollmentId(enrollment.getId());
-                    completion.setLessonId(currentLesson.getId());
-                    completion.setCompletedAt(java.time.LocalDateTime.now());
-                    getLessonCompletionService().add(completion);
-                }
-                completedLessonIds.add(currentLesson.getId());
-            }
-
-            updateEnrollmentProgress(enrollment);
-        } catch (SQLException | IllegalStateException e) {
-            // Preview and navigation should continue even if progress sync fails.
-        }
-    }
-
-    private Enrollment ensureEnrollment() throws SQLException {
-        if (currentEnrollment != null && currentEnrollment.getId() != null) {
-            return currentEnrollment;
-        }
-        if (currentUser == null || currentUser.getId() == null || course == null || course.getId() == null) {
-            return null;
-        }
-
-        currentEnrollment = getEnrollmentService().getByUserAndCourse(currentUser.getId(), course.getId());
-        if (currentEnrollment == null) {
-            Enrollment enrollment = new Enrollment();
-            enrollment.setUserId(currentUser.getId());
-            enrollment.setCourseId(course.getId());
-            enrollment.setEnrolledAt(java.time.LocalDateTime.now());
-            enrollment.setStatus("IN_PROGRESS");
-            enrollment.setProgressPercent((short) 0);
-            getEnrollmentService().add(enrollment);
-            currentEnrollment = enrollment;
-        }
-        return currentEnrollment;
-    }
-
-    private void updateEnrollmentProgress(Enrollment enrollment) throws SQLException {
-        if (enrollment == null || enrollment.getId() == null || orderedLessons.isEmpty()) {
-            return;
-        }
-
-        long completedCount = orderedLessons.stream()
-                .map(Lesson::getId)
-                .filter(lessonId -> lessonId != null && completedLessonIds.contains(lessonId))
-                .count();
-        short progressPercent = (short) Math.min(100, Math.round((completedCount * 100.0f) / orderedLessons.size()));
-        enrollment.setProgressPercent(progressPercent);
-        enrollment.setStatus(progressPercent >= 100 ? "COMPLETED" : "IN_PROGRESS");
-        enrollment.setCompletedAt(progressPercent >= 100 ? java.time.LocalDateTime.now() : null);
-        getEnrollmentService().update(enrollment);
-    }
-
     private String safeValue(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
     }
@@ -774,20 +718,6 @@ public class FrontCourseConsumeController implements FrontShellAware {
             lessonService = new LessonService();
         }
         return lessonService;
-    }
-
-    private EnrollmentService getEnrollmentService() {
-        if (enrollmentService == null) {
-            enrollmentService = new EnrollmentService();
-        }
-        return enrollmentService;
-    }
-
-    private LessonCompletionService getLessonCompletionService() {
-        if (lessonCompletionService == null) {
-            lessonCompletionService = new LessonCompletionService();
-        }
-        return lessonCompletionService;
     }
 
     private void showError(String message, Exception exception) {

@@ -1,0 +1,2041 @@
+/* =============================================================
+   SkillORA Unified Desktop Theme
+   Loaded after legacy styles to make user, admin, and course
+   modules feel like one application.
+   ============================================================= */
+
+.root {
+    -skillora-ink: #182033;
+    -skillora-muted: #64748b;
+    -skillora-soft: #f7f9fc;
+    -skillora-card: #ffffff;
+    -skillora-line: #dbe3ef;
+    -skillora-blue: #2563eb;
+    -skillora-cyan: #0891b2;
+    -skillora-emerald: #059669;
+    -skillora-amber: #d97706;
+    -skillora-rose: #dc2626;
+    -fx-font-family: "Inter", "SF Pro Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-text-fill: -skillora-ink;
+}
+
+.admin-root,
+.app-shell-root,
+.split-container {
+    -fx-background-color:
+        radial-gradient(center 12% 8%, radius 70%, rgba(224,242,254,0.86), transparent 58%),
+        radial-gradient(center 92% 5%, radius 76%, rgba(237,233,254,0.78), transparent 55%),
+        linear-gradient(to bottom right, #f7f9fc, #eef3f9 58%, #f8fbff);
+}
+
+.app-shell {
+    -fx-background-color: transparent;
+    -fx-padding: 18;
+}
+
+.content-area,
+.content-host,
+.content-padding,
+.pf-root,
+.module-page {
+    -fx-background-color: transparent;
+}
+
+.content-area,
+.content-host {
+    -fx-padding: 24;
+}
+
+.sidebar,
+.front-sidebar {
+    -fx-background-color: linear-gradient(to bottom, rgba(255,255,255,0.98), rgba(248,251,255,0.96));
+    -fx-background-radius: 28;
+    -fx-border-color: rgba(219,227,239,0.92);
+    -fx-border-width: 1;
+    -fx-border-radius: 28;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.08), 26, 0.16, 0, 12);
+}
+
+.sidebar-shell {
+    -fx-effect: none;
+}
+
+.sidebar-title,
+.front-brand-title,
+.sidebar-brand,
+.logo-text {
+    -fx-font-family: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #14213d;
+}
+
+.sidebar-subtitle,
+.front-brand-subtitle,
+.front-session-subtitle,
+.front-spotlight-body {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7a90;
+}
+
+.sidebar-nav-group,
+.front-session-card,
+.front-spotlight-card,
+.sidebar-helper {
+    -fx-background-color: rgba(242,246,252,0.94);
+    -fx-background-radius: 20;
+    -fx-border-color: rgba(219,227,239,0.92);
+    -fx-border-radius: 20;
+    -fx-effect: none;
+}
+
+.sidebar-helper,
+.front-spotlight-body {
+    -fx-padding: 0;
+}
+
+.sidebar-item,
+.sidebar-item-selected,
+.nav-item,
+.nav-item-danger,
+.student-nav-btn {
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-padding: 12 15 12 15;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.sidebar-item,
+.nav-item,
+.student-nav-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #35465e;
+}
+
+.sidebar-item:hover,
+.nav-item:hover,
+.student-nav-btn:hover {
+    -fx-background-color: rgba(37,99,235,0.08);
+    -fx-text-fill: #1d4ed8;
+}
+
+.sidebar-item-selected,
+.nav-item-active,
+.student-nav-btn-active {
+    -fx-background-color: linear-gradient(to right, rgba(37,99,235,0.14), rgba(8,145,178,0.10)) !important;
+    -fx-border-color: rgba(37,99,235,0.34) !important;
+    -fx-border-width: 1 !important;
+    -fx-text-fill: #1d4ed8 !important;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.10), 14, 0.12, 0, 5);
+}
+
+.nav-item-danger,
+.nav-signout {
+    -fx-background-color: rgba(220,38,38,0.08);
+    -fx-border-color: rgba(220,38,38,0.14);
+    -fx-text-fill: #b91c1c;
+}
+
+.nav-item-danger:hover,
+.nav-signout:hover {
+    -fx-background-color: rgba(220,38,38,0.14);
+    -fx-border-color: rgba(220,38,38,0.24);
+    -fx-text-fill: #991b1b;
+}
+
+.student-header {
+    -fx-background-color: rgba(255,255,255,0.92);
+    -fx-background-radius: 0 0 26 26;
+    -fx-border-color: transparent transparent rgba(219,227,239,0.9) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 20, 0.14, 0, 8);
+}
+
+.nav-vrule {
+    -fx-background-color: rgba(100,116,139,0.32);
+}
+
+.header-username,
+.theme-toggle {
+    -fx-background-color: rgba(242,246,252,0.98);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(219,227,239,0.95);
+    -fx-border-radius: 16;
+    -fx-text-fill: #22324a;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-font-weight: 700;
+    -fx-padding: 10 14 10 14;
+}
+
+.header-username:hover,
+.theme-toggle:hover {
+    -fx-background-color: white;
+    -fx-border-color: rgba(37,99,235,0.28);
+    -fx-text-fill: #1d4ed8;
+}
+
+.header-username .arrow {
+    -fx-background-color: #334155;
+}
+
+.header-username:hover .arrow {
+    -fx-background-color: #1d4ed8;
+}
+
+.header-username .context-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(219,227,239,0.95);
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.10), 22, 0.18, 0, 10);
+    -fx-padding: 8;
+}
+
+.header-username .menu-item,
+.header-username .menu-item .label {
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-text-fill: #334155;
+}
+
+.header-username .menu-item {
+    -fx-background-radius: 12;
+    -fx-padding: 10 16 10 14;
+}
+
+.header-username .menu-item:hover,
+.header-username .menu-item:focused {
+    -fx-background-color: rgba(37,99,235,0.08);
+}
+
+.header-username .menu-item:hover .label,
+.header-username .menu-item:focused .label {
+    -fx-text-fill: #1d4ed8;
+}
+
+.page-title,
+.dashboard-title,
+.card-title,
+.front-course-hero-title,
+.front-consume-title,
+.pf-name {
+    -fx-font-family: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+    -fx-font-weight: 800;
+    -fx-text-fill: #14213d;
+}
+
+.page-title {
+    -fx-font-size: 36px;
+}
+
+.dashboard-title,
+.card-title {
+    -fx-font-size: 32px;
+}
+
+.page-subtitle,
+.dashboard-subtitle,
+.card-subtitle,
+.front-section-subtitle,
+.detail-body {
+    -fx-text-fill: -skillora-muted;
+}
+
+.toolbar-card,
+.table-card,
+.inspector-card,
+.form-card,
+.detail-card,
+.placeholder-panel,
+.chart-card,
+.user-card,
+.front-section-card,
+.front-filter-card,
+.front-toolbar-card,
+.front-consume-sidebar,
+.front-consume-main,
+.courses-card,
+.profile-header-card,
+.profile-stat-box {
+    -fx-background-color: rgba(255,255,255,0.96);
+    -fx-background-radius: 24;
+    -fx-border-color: rgba(219,227,239,0.92);
+    -fx-border-radius: 24;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 22, 0.14, 0, 10);
+}
+
+.hero-card,
+.front-course-hero {
+    -fx-background-color:
+        radial-gradient(center 86% 18%, radius 75%, rgba(34,211,238,0.34), transparent 62%),
+        linear-gradient(to bottom right, #172338, #1d4d7a 58%, #0f766e);
+    -fx-background-radius: 28;
+    -fx-border-color: rgba(255,255,255,0.16);
+    -fx-border-radius: 28;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.18), 30, 0.16, 0, 14);
+}
+
+.hero-title {
+    -fx-font-family: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+    -fx-font-size: 38px;
+    -fx-font-weight: 800;
+    -fx-text-fill: white;
+}
+
+.hero-subtitle,
+.front-course-hero-description {
+    -fx-font-size: 15px;
+    -fx-text-fill: rgba(241,245,249,0.92);
+}
+
+.hero-eyebrow,
+.front-course-hero-category {
+    -fx-background-color: rgba(255,255,255,0.13);
+    -fx-background-radius: 999;
+    -fx-padding: 7 13 7 13;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: rgba(255,255,255,0.88);
+}
+
+.cta-card {
+    -fx-background-color: linear-gradient(to right, rgba(255,255,255,0.96), rgba(236,253,245,0.92));
+    -fx-background-radius: 24;
+    -fx-border-color: rgba(187,247,208,0.65);
+    -fx-border-radius: 24;
+}
+
+.btn-primary,
+.primary-button,
+.hero-button,
+.pf-btn {
+    -fx-background-color: linear-gradient(to bottom, #2563eb, #1d4ed8);
+    -fx-background-radius: 16;
+    -fx-border-color: transparent;
+    -fx-border-radius: 16;
+    -fx-text-fill: white;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-padding: 12 22 12 22;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.22), 14, 0.14, 0, 5);
+}
+
+.btn-primary:hover,
+.primary-button:hover,
+.hero-button:hover,
+.pf-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #3b82f6, #2563eb);
+}
+
+.btn-outline,
+.secondary-button,
+.set-btn-outline,
+.manage-action-button,
+.icon-action-button {
+    -fx-background-color: rgba(248,250,252,0.96);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(219,227,239,0.96);
+    -fx-border-radius: 16;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 11 18 11 18;
+}
+
+.btn-outline:hover,
+.secondary-button:hover,
+.set-btn-outline:hover,
+.manage-action-button:hover,
+.icon-action-button:hover {
+    -fx-background-color: white;
+    -fx-border-color: rgba(37,99,235,0.30);
+    -fx-text-fill: #1e40af;
+}
+
+.danger-button,
+.btn-danger,
+.danger-icon-action-button {
+    -fx-background-color: rgba(220,38,38,0.10);
+    -fx-border-color: rgba(220,38,38,0.18);
+    -fx-text-fill: #b91c1c;
+}
+
+.text-field,
+.text-area,
+.combo-box,
+.custom-text-field,
+.password-field,
+.set-input,
+.set-combo {
+    -fx-background-color: rgba(255,255,255,0.98);
+    -fx-background-radius: 16;
+    -fx-border-color: rgba(203,213,225,0.96);
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-padding: 11 14 11 14;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-text-fill: #172033;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.text-field:focused,
+.text-area:focused,
+.combo-box:focused,
+.custom-text-field:focused,
+.password-field:focused,
+.set-input:focused,
+.set-combo:focused {
+    -fx-background-color: white;
+    -fx-border-color: rgba(37,99,235,0.48);
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.10), 12, 0.10, 0, 4);
+}
+
+.set-textarea .content,
+.text-area .content {
+    -fx-background-color: transparent;
+    -fx-background-radius: 14;
+}
+
+.stat-card,
+.stat-bar {
+    -fx-background-radius: 22;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.08), 18, 0.14, 0, 8);
+}
+
+.stat-card-blue,
+.stat-bar-blue {
+    -fx-background-color: linear-gradient(to bottom right, #1d4ed8, #3b82f6);
+}
+
+.stat-card-green {
+    -fx-background-color: linear-gradient(to bottom right, #047857, #10b981);
+}
+
+.stat-card-purple,
+.stat-bar-purple {
+    -fx-background-color: linear-gradient(to bottom right, #6d28d9, #8b5cf6);
+}
+
+.stat-card-orange,
+.stat-bar-orange {
+    -fx-background-color: linear-gradient(to bottom right, #b45309, #f59e0b);
+}
+
+.stat-card-red,
+.stat-bar-red {
+    -fx-background-color: linear-gradient(to bottom right, #b91c1c, #ef4444);
+}
+
+.front-course-card {
+    -fx-background-color: rgba(255,255,255,0.97);
+    -fx-background-radius: 22;
+    -fx-border-color: rgba(219,227,239,0.95);
+    -fx-border-radius: 22;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 20, 0.14, 0, 8);
+}
+
+.front-course-card-clickable:hover,
+.user-card:hover {
+    -fx-border-color: rgba(37,99,235,0.28);
+    -fx-background-color: white;
+}
+
+.front-course-category,
+.status-pill,
+.role-badge,
+.status-badge,
+.front-course-progress-pill,
+.pf-role,
+.pf-tag {
+    -fx-background-color: rgba(37,99,235,0.10);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(37,99,235,0.18);
+    -fx-border-radius: 999;
+    -fx-text-fill: #1d4ed8;
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 7 12 7 12;
+}
+
+.front-course-thumbnail,
+.front-course-hero-thumb-shell,
+.avatar-card-viewer,
+.avatar-3d-holder {
+    -fx-background-color: linear-gradient(to bottom right, #dbeafe, #ecfeff);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(191,219,254,0.92);
+    -fx-border-radius: 18;
+}
+
+.pf-scroll,
+.scroll-pane,
+.front-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.pf-scroll > .viewport,
+.scroll-pane > .viewport,
+.front-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.pf-eyebrow,
+.pf-section-label,
+.set-label,
+.field-label,
+.meta-label,
+.detail-label {
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #64748b;
+}
+
+.pf-eyebrow-rule,
+.pf-rule,
+.pf-hairline {
+    -fx-background-color: rgba(148,163,184,0.46);
+    -fx-opacity: 1;
+}
+
+.pf-avatar-frame {
+    -fx-background-color: rgba(255,255,255,0.96);
+    -fx-background-radius: 26;
+    -fx-border-color: rgba(219,227,239,0.94);
+    -fx-border-radius: 26;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.07), 20, 0.14, 0, 8);
+}
+
+.pf-avatar-ring {
+    -fx-fill: linear-gradient(to bottom right, #dbeafe, #cffafe);
+    -fx-stroke: rgba(37,99,235,0.22);
+    -fx-stroke-width: 1;
+}
+
+.pf-avatar-initials {
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 54px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1d4ed8;
+}
+
+.pf-name {
+    -fx-font-size: 52px;
+}
+
+.pf-field,
+.pf-origin,
+.pf-ledger-key,
+.pf-colophon-val,
+.pf-quote,
+.set-section-desc,
+.set-static-val,
+.set-alert-text {
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-style: normal;
+    -fx-text-fill: #475569;
+}
+
+.pf-ledger-num,
+.pf-ledger-val,
+.pf-big-num,
+.pf-quote-mark,
+.set-section-title {
+    -fx-font-family: "Inter", "SF Pro Display", "Segoe UI", sans-serif;
+    -fx-font-style: normal;
+    -fx-text-fill: #14213d;
+}
+
+.set-section-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+}
+
+.pf-quote-mark {
+    -fx-text-fill: #0891b2;
+}
+
+.avatar-card {
+    -fx-background-color: rgba(255,255,255,0.96);
+    -fx-background-radius: 20;
+    -fx-border-color: rgba(219,227,239,0.92);
+    -fx-border-radius: 20;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.05), 16, 0.12, 0, 6);
+}
+
+.avatar-card-selected,
+.avatar-card:hover {
+    -fx-background-color: white;
+    -fx-border-color: rgba(37,99,235,0.42);
+}
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-background-radius: 20;
+    -fx-border-color: transparent;
+}
+
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent rgba(226,232,240,0.78) transparent;
+}
+
+.table-row-cell:hover,
+.table-row-cell:selected {
+    -fx-background-color: #f8fbff;
+}
+
+.left-panel {
+    -fx-background-color: rgba(255,255,255,0.98);
+}
+
+.right-panel {
+    -fx-background-color:
+        radial-gradient(center 76% 20%, radius 80%, rgba(34,211,238,0.35), transparent 62%),
+        linear-gradient(to bottom right, #172338, #1d4d7a 62%, #0f766e);
+}
+
+.right-panel-title,
+.right-panel-subtitle {
+    -fx-text-fill: white;
+}
+
+.decorative-circle {
+    -fx-fill: radial-gradient(center 50% 50%, radius 60%, rgba(255,255,255,0.24), transparent);
+    -fx-opacity: 0.88;
+}
+
+.ghost-button {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(100, 116, 139, 0.35);
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-text-fill: #475569;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+    -fx-padding: 10px 14px;
+}
+
+.ghost-button:hover {
+    -fx-background-color: rgba(15, 23, 42, 0.06);
+    -fx-text-fill: #0f172a;
+}
+
+.dark .ghost-button {
+    -fx-border-color: rgba(148, 163, 184, 0.28);
+    -fx-text-fill: #cbd5e1;
+}
+
+.dark .ghost-button:hover {
+    -fx-background-color: rgba(148, 163, 184, 0.12);
+    -fx-text-fill: #f8fafc;
+}
+
+/* =============================================================
+   Symfony course module visual parity pass
+   Palette and component rhythm mirror SkillORALatest Tailwind UI.
+   ============================================================= */
+.root {
+    -skillora-navy-50: #f8fafc;
+    -skillora-navy-100: #f1f5f9;
+    -skillora-navy-200: #e2e8f0;
+    -skillora-navy-300: #cbd5e1;
+    -skillora-navy-400: #94a3b8;
+    -skillora-navy-500: #64748b;
+    -skillora-navy-600: #475569;
+    -skillora-navy-700: #334155;
+    -skillora-navy-800: #1e293b;
+    -skillora-navy-900: #0f172a;
+    -skillora-navy-950: #0b1220;
+    -skillora-harbor-50: #eff6ff;
+    -skillora-harbor-100: #dbeafe;
+    -skillora-harbor-300: #93c5fd;
+    -skillora-harbor-400: #60a5fa;
+    -skillora-harbor-500: #3b82f6;
+    -skillora-harbor-600: #2563eb;
+    -skillora-harbor-700: #1d4ed8;
+    -skillora-coral-400: #fb7185;
+    -skillora-success-500: #22c55e;
+    -skillora-success-700: #15803d;
+    -skillora-danger-500: #ef4444;
+    -skillora-danger-700: #b91c1c;
+    -fx-font-family: "Inter", "Plus Jakarta Sans", "SF Pro Text", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-base: -skillora-navy-50;
+    -fx-accent: -skillora-harbor-600;
+}
+
+.app-shell-root,
+.split-container {
+    -fx-background-color: linear-gradient(to bottom right, #f8fafc, #f1f5f9 54%, #eff6ff);
+}
+
+.app-shell {
+    -fx-padding: 0;
+}
+
+.content-host {
+    -fx-padding: 26 30 30 18;
+}
+
+.module-page {
+    -fx-padding: 4 0 30 0;
+}
+
+.sidebar,
+.front-sidebar {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent rgba(226,232,240,0.95) transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-border-radius: 0;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.04), 18, 0.10, 4, 0);
+}
+
+.sidebar-shell {
+    -fx-effect: none;
+}
+
+.sidebar-title,
+.front-brand-title,
+.logo-text {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 19px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.sidebar-subtitle,
+.front-brand-subtitle {
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -skillora-navy-500;
+}
+
+.sidebar-nav-group {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.sidebar-section-label,
+.field-label,
+.meta-label,
+.detail-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-500;
+}
+
+.sidebar-helper,
+.front-spotlight-card {
+    -fx-background-color: linear-gradient(to bottom right, rgba(239,246,255,0.95), rgba(255,255,255,0.96));
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(191,219,254,0.88);
+    -fx-border-radius: 18;
+    -fx-padding: 16;
+}
+
+.front-spotlight-title {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.front-spotlight-body {
+    -fx-font-size: 12px;
+    -fx-text-fill: -skillora-navy-600;
+    -fx-padding: 0;
+}
+
+.sidebar-item,
+.sidebar-item-selected,
+.nav-item,
+.student-nav-btn {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 12 14 12 14;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -skillora-navy-600;
+}
+
+.sidebar-item:hover,
+.nav-item:hover,
+.student-nav-btn:hover {
+    -fx-background-color: -skillora-navy-100;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.sidebar-item-selected,
+.nav-item-active,
+.student-nav-btn-active {
+    -fx-background-color: -skillora-harbor-50 !important;
+    -fx-border-color: transparent !important;
+    -fx-text-fill: -skillora-harbor-700 !important;
+    -fx-effect: none;
+}
+
+.page-title,
+.dashboard-title,
+.card-title,
+.front-course-hero-title,
+.front-consume-title,
+.detail-value-title {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.page-title {
+    -fx-font-size: 34px;
+}
+
+.card-title {
+    -fx-font-size: 21px;
+}
+
+.section-title {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.page-subtitle,
+.card-subtitle,
+.front-section-subtitle,
+.detail-body,
+.results-label,
+.placeholder-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: -skillora-navy-500;
+}
+
+.toolbar-card,
+.table-card,
+.inspector-card,
+.form-card,
+.detail-card,
+.placeholder-panel,
+.front-section-card,
+.front-filter-card,
+.front-toolbar-card,
+.front-consume-sidebar,
+.front-consume-main,
+.courses-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 20;
+    -fx-border-color: rgba(226,232,240,0.96);
+    -fx-border-radius: 20;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.07), 18, 0.12, 0, 6);
+}
+
+.form-card,
+.detail-card,
+.placeholder-panel,
+.front-section-card,
+.front-filter-card,
+.front-toolbar-card,
+.front-consume-sidebar,
+.front-consume-main {
+    -fx-padding: 24;
+}
+
+.courses-card-header {
+    -fx-border-color: transparent transparent rgba(226,232,240,0.95) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.btn-primary,
+.primary-button,
+.hero-button,
+.pf-btn {
+    -fx-background-color: -skillora-harbor-600;
+    -fx-background-radius: 14;
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-padding: 10 18 10 18;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.20), 12, 0.14, 0, 4);
+}
+
+.btn-primary:hover,
+.primary-button:hover,
+.hero-button:hover,
+.pf-btn:hover {
+    -fx-background-color: -skillora-harbor-700;
+}
+
+.btn-outline,
+.secondary-button,
+.set-btn-outline,
+.manage-action-button,
+.icon-action-button,
+.ghost-button,
+.breadcrumb-button {
+    -fx-background-color: -skillora-navy-100;
+    -fx-background-radius: 14;
+    -fx-border-color: transparent;
+    -fx-border-radius: 14;
+    -fx-text-fill: -skillora-navy-800;
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-padding: 9 15 9 15;
+    -fx-effect: none;
+}
+
+.btn-outline:hover,
+.secondary-button:hover,
+.set-btn-outline:hover,
+.manage-action-button:hover,
+.icon-action-button:hover,
+.ghost-button:hover,
+.breadcrumb-button:hover {
+    -fx-background-color: -skillora-navy-200;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.danger-button,
+.btn-danger,
+.danger-icon-action-button,
+.icon-action-danger {
+    -fx-background-color: #fef2f2;
+    -fx-border-color: transparent;
+    -fx-text-fill: -skillora-danger-700;
+}
+
+.danger-button:hover,
+.btn-danger:hover,
+.danger-icon-action-button:hover,
+.icon-action-danger:hover {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #991b1b;
+}
+
+.text-field,
+.text-area,
+.combo-box,
+.custom-text-field,
+.password-field,
+.search-field,
+.list-search-field,
+.front-sort-box,
+.set-input,
+.set-combo {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 14;
+    -fx-border-width: 1;
+    -fx-padding: 10 14 10 14;
+    -fx-font-size: 13px;
+    -fx-text-fill: -skillora-navy-900;
+    -fx-prompt-text-fill: -skillora-navy-400;
+    -fx-effect: none;
+}
+
+.text-field:focused,
+.text-area:focused,
+.combo-box:focused,
+.custom-text-field:focused,
+.password-field:focused,
+.search-field:focused,
+.list-search-field:focused,
+.front-sort-box:focused {
+    -fx-border-color: -skillora-harbor-500;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.13), 12, 0.12, 0, 3);
+}
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-table-cell-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -skillora-navy-50;
+    -fx-border-color: transparent transparent -skillora-navy-200 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 46px;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header .label {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-500;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent -skillora-navy-100 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-cell-size: 68px;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: -skillora-navy-50;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: -skillora-harbor-50;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.table-cell {
+    -fx-border-color: transparent;
+    -fx-padding: 12 18 12 18;
+    -fx-text-fill: -skillora-navy-600;
+    -fx-font-size: 13px;
+}
+
+.course-badge {
+    -fx-background-color: -skillora-harbor-100;
+    -fx-background-radius: 14;
+    -fx-min-width: 42;
+    -fx-min-height: 42;
+    -fx-pref-width: 42;
+    -fx-pref-height: 42;
+}
+
+.course-badge-label {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.course-title-cell,
+.detail-value,
+.meta-value {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.category-cell-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -skillora-navy-600;
+}
+
+.status-pill,
+.table-status-pill,
+.front-course-category,
+.front-course-progress-pill,
+.role-badge,
+.status-badge {
+    -fx-background-color: -skillora-navy-100;
+    -fx-background-radius: 999;
+    -fx-border-color: transparent;
+    -fx-text-fill: -skillora-navy-700;
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 6 11 6 11;
+}
+
+.status-published,
+.badge-success {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: -skillora-success-700;
+}
+
+.status-archived,
+.badge-danger {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: -skillora-danger-700;
+}
+
+.status-draft,
+.badge-secondary {
+    -fx-background-color: -skillora-navy-100;
+    -fx-text-fill: -skillora-navy-700;
+}
+
+.front-course-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 20;
+    -fx-border-color: -skillora-navy-100;
+    -fx-border-radius: 20;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.08), 18, 0.12, 0, 6);
+}
+
+.front-course-card-clickable:hover {
+    -fx-border-color: -skillora-navy-200;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.12), 24, 0.14, 0, 10);
+}
+
+.front-course-thumbnail,
+.front-course-hero-thumb-shell {
+    -fx-background-color: linear-gradient(to bottom right, -skillora-navy-800, -skillora-navy-900);
+    -fx-background-radius: 20 20 0 0;
+    -fx-border-color: transparent;
+    -fx-border-radius: 20 20 0 0;
+}
+
+.front-course-thumbnail-placeholder,
+.front-course-thumb-fallback {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-harbor-300;
+}
+
+.front-course-title {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 17px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.front-course-description,
+.front-course-card-footer {
+    -fx-font-size: 13px;
+    -fx-text-fill: -skillora-navy-500;
+}
+
+.front-results-pill-text {
+    -fx-background-color: -skillora-navy-100;
+    -fx-background-radius: 999;
+    -fx-padding: 7 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-600;
+}
+
+.front-filter-check {
+    -fx-font-size: 13px;
+    -fx-text-fill: -skillora-navy-700;
+    -fx-font-weight: 600;
+}
+
+.front-filter-heading {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.front-course-hero {
+    -fx-background-color: linear-gradient(to bottom right, -skillora-navy-950, -skillora-navy-900 54%, #1e3a8a);
+    -fx-background-radius: 24;
+    -fx-border-color: rgba(255,255,255,0.10);
+    -fx-border-radius: 24;
+    -fx-padding: 34;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.24), 28, 0.16, 0, 12);
+}
+
+.front-course-hero-title {
+    -fx-font-size: 40px;
+    -fx-text-fill: #ffffff;
+}
+
+.front-course-hero-description {
+    -fx-font-size: 16px;
+    -fx-text-fill: #cbd5e1;
+}
+
+.front-course-hero-category {
+    -fx-background-color: rgba(30,41,59,0.92);
+    -fx-text-fill: #e2e8f0;
+}
+
+.front-section-pane > .title {
+    -fx-background-color: transparent;
+    -fx-background-radius: 14;
+    -fx-border-color: transparent;
+    -fx-padding: 13 14 13 14;
+}
+
+.front-section-pane > .title:hover {
+    -fx-background-color: -skillora-navy-50;
+}
+
+.front-section-pane > .title > .text {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-fill: -skillora-navy-900;
+}
+
+.front-section-pane > *.content {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 8 0 12 0;
+}
+
+.front-lesson-row,
+.front-lesson-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 14;
+    -fx-padding: 10 12 10 12;
+    -fx-cursor: hand;
+}
+
+.front-lesson-row:hover,
+.front-lesson-item:hover {
+    -fx-background-color: -skillora-navy-50;
+}
+
+.front-lesson-item-active {
+    -fx-background-color: -skillora-harbor-600 !important;
+}
+
+.front-lesson-item-active .label {
+    -fx-text-fill: white;
+}
+
+.front-lesson-icon {
+    -fx-background-color: -skillora-harbor-50;
+    -fx-background-radius: 999;
+    -fx-padding: 5 8;
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.front-lesson-title,
+.front-consume-lesson-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -skillora-navy-700;
+}
+
+.front-lesson-action {
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-harbor-600;
+}
+
+.front-page-header {
+    -fx-background-color: transparent;
+}
+
+.front-consume-preview {
+    -fx-background-color: -skillora-navy-50;
+    -fx-background-radius: 18;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 18;
+    -fx-padding: 18;
+}
+
+.front-consume-status {
+    -fx-background-color: -skillora-harbor-50;
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.progress-bar,
+.progress-bar .bar {
+    -fx-accent: -skillora-harbor-600;
+}
+
+.scroll-pane,
+.front-scroll-pane,
+.pf-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane > .viewport,
+.front-scroll-pane > .viewport,
+.pf-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Refurbished spacing and layout polish from screenshot pass */
+.content-host {
+    -fx-padding: 28 34 30 34;
+}
+
+.module-page {
+    -fx-padding: 0 0 28 0;
+}
+
+.front-page-heading,
+.front-browse-shell {
+    -fx-padding: 0;
+}
+
+.front-browse-page > .top {
+    -fx-padding: 0 0 20 0;
+}
+
+.front-browse-shell {
+    -fx-padding: 18 0 0 0;
+}
+
+.front-browse-results-panel,
+.front-filter-card,
+.front-section-card,
+.courses-card,
+.detail-card,
+.form-card {
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+}
+
+.front-section-card,
+.front-browse-results-panel {
+    -fx-padding: 22 24 22 24;
+}
+
+.front-filter-card {
+    -fx-padding: 22 20 22 20;
+}
+
+.front-catalog-controls {
+    -fx-background-color: -skillora-navy-50;
+    -fx-background-radius: 16;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 16;
+    -fx-padding: 16;
+}
+
+.btn-primary,
+.primary-button,
+.hero-button,
+.pf-btn,
+.danger-button,
+.secondary-button,
+.manage-action-button,
+.icon-action-button,
+.icon-action-danger,
+.ghost-button,
+.breadcrumb-button,
+.front-card-start-button {
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-background-radius: 13;
+    -fx-border-radius: 13;
+}
+
+.primary-button,
+.hero-button,
+.btn-primary {
+    -fx-min-width: 118px;
+}
+
+.secondary-button,
+.ghost-button,
+.breadcrumb-button {
+    -fx-min-width: 86px;
+}
+
+.front-toolbar-toggle {
+    -fx-min-width: 116px;
+}
+
+.front-clear-button {
+    -fx-min-width: 76px;
+}
+
+.manage-action-button {
+    -fx-min-width: 86px;
+    -fx-padding: 8 14 8 14;
+}
+
+.icon-action-button,
+.icon-action-danger {
+    -fx-min-width: 68px;
+    -fx-padding: 8 12 8 12;
+}
+
+.front-course-card {
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-padding: 0;
+    -fx-min-height: 334px;
+}
+
+.front-course-card-body {
+    -fx-padding: 16 18 18 18;
+}
+
+.front-card-footer-row {
+    -fx-border-color: -skillora-navy-100 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 14 0 0 0;
+}
+
+.front-card-start-button {
+    -fx-background-color: -skillora-harbor-600;
+    -fx-text-fill: white;
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-padding: 8 14 8 14;
+    -fx-min-width: 112px;
+    -fx-cursor: hand;
+}
+
+.front-card-start-button:hover {
+    -fx-background-color: -skillora-harbor-700;
+}
+
+.front-course-card-footer {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-500;
+}
+
+.front-course-title {
+    -fx-font-size: 16px;
+    -fx-line-spacing: 1px;
+}
+
+.front-course-description {
+    -fx-font-size: 13px;
+    -fx-line-spacing: 2px;
+}
+
+.front-course-thumbnail {
+    -fx-min-height: 128px;
+    -fx-pref-height: 128px;
+}
+
+.front-filter-check {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 14;
+    -fx-padding: 10 12 10 12;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -skillora-navy-600;
+}
+
+.front-filter-check:hover {
+    -fx-background-color: -skillora-navy-50;
+    -fx-border-color: -skillora-harbor-300;
+}
+
+.front-filter-check:selected {
+    -fx-background-color: -skillora-harbor-50;
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.front-filter-check .box {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 5;
+    -fx-border-color: -skillora-navy-300;
+    -fx-border-radius: 5;
+}
+
+.front-filter-check:selected .box {
+    -fx-background-color: -skillora-harbor-600;
+    -fx-border-color: -skillora-harbor-600;
+}
+
+.front-filter-check:selected .mark {
+    -fx-background-color: white;
+}
+
+.front-search-field,
+.front-sort-box,
+.list-search-field {
+    -fx-min-height: 44px;
+    -fx-pref-height: 44px;
+}
+
+.front-results-pill-text {
+    -fx-min-height: 32px;
+    -fx-alignment: CENTER;
+}
+
+.courses-card {
+    -fx-max-width: 1180px;
+}
+
+.courses-card-header {
+    -fx-padding: 24 28 20 28;
+}
+
+.table-view {
+    -fx-fixed-cell-size: 66px;
+}
+
+.table-view .scroll-bar:horizontal {
+    -fx-opacity: 1;
+    -fx-background-color: transparent;
+    -fx-pref-height: 12px;
+    -fx-padding: 0 14 2 14;
+}
+
+.table-view .scroll-bar:horizontal .thumb,
+.table-view .scroll-bar:vertical .thumb {
+    -fx-background-color: -skillora-navy-300;
+    -fx-background-radius: 999;
+}
+
+.table-view .scroll-bar:horizontal .thumb:hover,
+.table-view .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -skillora-navy-400;
+}
+
+.table-view .scroll-bar:horizontal .track,
+.table-view .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+.table-view .scroll-bar .increment-button,
+.table-view .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.table-view .scroll-bar .increment-arrow,
+.table-view .scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
+.table-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10px;
+}
+
+.table-row-cell:filled {
+    -fx-cursor: hand;
+}
+
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.table-row-cell {
+    -fx-cell-size: 66px;
+}
+
+.course-badge {
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+    -fx-pref-width: 38;
+    -fx-pref-height: 38;
+    -fx-background-radius: 13;
+}
+
+.course-badge-label {
+    -fx-font-size: 15px;
+}
+
+.table-status-pill {
+    -fx-min-width: 94px;
+    -fx-alignment: CENTER;
+}
+
+.front-course-hero {
+    -fx-padding: 32 34 32 34;
+}
+
+.front-section-pane > .title {
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-border-color: -skillora-harbor-300;
+    -fx-border-width: 1;
+    -fx-background-color: -skillora-harbor-50;
+}
+
+.front-lesson-row,
+.front-lesson-item {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 11 14 11 14;
+}
+
+/* Admin layout hardening: one rhythm for course, section, and lesson screens. */
+.button,
+.hero-button,
+.primary-button,
+.secondary-button,
+.danger-button,
+.manage-action-button,
+.icon-action-button,
+.icon-action-danger {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-cursor: hand;
+}
+
+.hero-button,
+.hero-button:hover,
+.hero-button:focused,
+.hero-button:armed,
+.primary-button,
+.primary-button:hover,
+.primary-button:focused,
+.primary-button:armed,
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:focused,
+.btn-primary:armed {
+    -fx-background-color: -skillora-harbor-600;
+    -fx-text-fill: white;
+}
+
+.hero-button:hover,
+.primary-button:hover,
+.btn-primary:hover {
+    -fx-background-color: -skillora-harbor-700;
+}
+
+.hero-button .text,
+.hero-button:hover .text,
+.hero-button:focused .text,
+.hero-button:armed .text,
+.primary-button .text,
+.primary-button:hover .text,
+.primary-button:focused .text,
+.primary-button:armed .text,
+.btn-primary .text,
+.btn-primary:hover .text,
+.btn-primary:focused .text,
+.btn-primary:armed .text {
+    -fx-fill: white;
+}
+
+.secondary-button,
+.manage-action-button,
+.icon-action-button {
+    -fx-background-color: -skillora-navy-100;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.secondary-button:hover,
+.secondary-button:focused,
+.manage-action-button:hover,
+.manage-action-button:focused,
+.icon-action-button:hover,
+.icon-action-button:focused {
+    -fx-background-color: -skillora-navy-200;
+    -fx-text-fill: -skillora-navy-900;
+}
+
+.secondary-button .text,
+.secondary-button:hover .text,
+.secondary-button:focused .text,
+.manage-action-button .text,
+.manage-action-button:hover .text,
+.manage-action-button:focused .text,
+.icon-action-button .text,
+.icon-action-button:hover .text,
+.icon-action-button:focused .text {
+    -fx-fill: -skillora-navy-900;
+}
+
+.danger-button,
+.icon-action-danger {
+    -fx-background-color: #fef2f2;
+    -fx-text-fill: -skillora-danger-700;
+}
+
+.danger-button:hover,
+.danger-button:focused,
+.icon-action-danger:hover,
+.icon-action-danger:focused {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #991b1b;
+}
+
+.danger-button .text,
+.danger-button:hover .text,
+.danger-button:focused .text,
+.icon-action-danger .text,
+.icon-action-danger:hover .text,
+.icon-action-danger:focused .text {
+    -fx-fill: #991b1b;
+}
+
+.hero-button {
+    -fx-min-height: 44px;
+    -fx-pref-height: 44px;
+    -fx-padding: 9 20 9 20;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button {
+    -fx-min-height: 40px;
+    -fx-pref-height: 40px;
+    -fx-padding: 8 16 8 16;
+}
+
+.manage-action-button,
+.icon-action-button,
+.icon-action-danger {
+    -fx-min-height: 38px;
+    -fx-pref-height: 38px;
+    -fx-max-height: 38px;
+    -fx-padding: 7 12 7 12;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+}
+
+.manage-action-button {
+    -fx-min-width: 96px;
+    -fx-pref-width: 104px;
+    -fx-max-width: 112px;
+}
+
+.icon-action-button {
+    -fx-min-width: 86px;
+    -fx-pref-width: 92px;
+    -fx-max-width: 98px;
+}
+
+.icon-action-danger {
+    -fx-min-width: 104px;
+    -fx-pref-width: 112px;
+    -fx-max-width: 120px;
+}
+
+.courses-card,
+.detail-card,
+.form-card,
+.toolbar-card {
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-width: 1;
+}
+
+.courses-card-header {
+    -fx-padding: 26 28 22 28;
+}
+
+.table-view {
+    -fx-fixed-cell-size: 58px;
+}
+
+.table-row-cell {
+    -fx-cell-size: 58px;
+}
+
+.table-cell {
+    -fx-padding: 9 14 9 14;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-size: 44px;
+}
+
+.table-row-cell:filled:hover {
+    -fx-background-color: -skillora-harbor-50;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: #eaf2ff;
+}
+
+.table-view .scroll-bar:horizontal {
+    -fx-pref-height: 10px;
+    -fx-padding: 0 12 1 12;
+}
+
+.table-view .scroll-bar:vertical {
+    -fx-pref-width: 9px;
+}
+
+.table-view .placeholder .label {
+    -fx-text-fill: -skillora-navy-500;
+}
+
+/* Course, section, and lesson view pages */
+.admin-overview-card,
+.admin-side-card,
+.lesson-hero-card,
+.lesson-meta-card,
+.lesson-preview-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 22;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 22;
+    -fx-border-width: 1;
+    -fx-padding: 26;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 20, 0.12, 0, 8);
+}
+
+.admin-overview-card {
+    -fx-background-color: linear-gradient(to bottom right, #ffffff, #f8fbff);
+}
+
+.admin-side-card,
+.lesson-meta-card {
+    -fx-background-color: linear-gradient(to bottom right, #ffffff, #f8fafc);
+}
+
+.admin-avatar-tile {
+    -fx-background-color: linear-gradient(to bottom right, -skillora-harbor-600, -skillora-harbor-700);
+    -fx-background-radius: 18;
+    -fx-min-width: 64px;
+    -fx-min-height: 64px;
+    -fx-pref-width: 64px;
+    -fx-pref-height: 64px;
+    -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.22), 14, 0.14, 0, 5);
+}
+
+.admin-avatar-emerald {
+    -fx-background-color: linear-gradient(to bottom right, #059669, #0f766e);
+}
+
+.admin-avatar-letter {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-size: 25px;
+    -fx-font-weight: 800;
+    -fx-text-fill: white;
+}
+
+.admin-view-title,
+.lesson-view-title {
+    -fx-font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+    -fx-font-weight: 800;
+    -fx-text-fill: -skillora-navy-950;
+}
+
+.admin-view-title {
+    -fx-font-size: 30px;
+}
+
+.lesson-view-title {
+    -fx-font-size: 34px;
+}
+
+.admin-metric-strip {
+    -fx-padding: 2 0 0 0;
+}
+
+.admin-mini-stat {
+    -fx-background-color: -skillora-navy-50;
+    -fx-background-radius: 16;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 16;
+    -fx-padding: 14 16 14 16;
+}
+
+.admin-description-box {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 16;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 16;
+    -fx-padding: 16;
+}
+
+.admin-truncated-value {
+    -fx-font-size: 12px;
+    -fx-line-spacing: 1px;
+}
+
+.admin-table-card {
+    -fx-padding: 0;
+}
+
+.lesson-hero-card {
+    -fx-background-color:
+        radial-gradient(center 88% 16%, radius 68%, rgba(147,197,253,0.35), transparent 62%),
+        linear-gradient(to bottom right, #ffffff, #f8fbff);
+    -fx-padding: 30 32 30 32;
+}
+
+.lesson-preview-card {
+    -fx-padding: 28 30 30 30;
+}
+
+.lesson-preview-surface {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 20;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+    -fx-padding: 10;
+}
+
+.lesson-preview-card .web-view {
+    -fx-background-color: transparent;
+}
+
+/* Front course polish */
+.front-course-card {
+    -fx-overflow: hidden;
+}
+
+.front-course-thumbnail {
+    -fx-min-width: 318px;
+    -fx-pref-width: 318px;
+    -fx-max-width: 318px;
+    -fx-min-height: 132px;
+    -fx-pref-height: 132px;
+    -fx-max-height: 132px;
+    -fx-alignment: CENTER;
+    -fx-background-radius: 20 20 0 0;
+    -fx-border-radius: 20 20 0 0;
+    -fx-padding: 0;
+}
+
+.front-course-card-body {
+    -fx-padding: 18 20 20 20;
+}
+
+.front-card-footer-row {
+    -fx-padding: 14 0 0 0;
+}
+
+.front-sort-box {
+    -fx-min-height: 44px;
+    -fx-pref-height: 44px;
+}
+
+.front-sort-box > .list-cell,
+.front-sort-box > .label,
+.front-sort-box .text,
+.front-sort-cell {
+    -fx-text-fill: -skillora-navy-900;
+    -fx-fill: -skillora-navy-900;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+
+.front-sort-box > .arrow-button {
+    -fx-padding: 0 13 0 8;
+}
+
+.front-sort-box > .arrow-button > .arrow {
+    -fx-background-color: -skillora-navy-600;
+}
+
+.front-sort-box > .open-button > .arrow {
+    -fx-background-color: -skillora-navy-600;
+}
+
+.front-sort-box .list-view {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 14;
+    -fx-padding: 6;
+}
+
+.front-sort-box .list-cell {
+    -fx-background-radius: 10;
+    -fx-padding: 9 12 9 12;
+}
+
+.front-sort-box .list-cell:hover,
+.front-sort-box .list-cell:filled:selected {
+    -fx-background-color: -skillora-harbor-50;
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.front-sort-box .context-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-radius: 14;
+    -fx-padding: 6;
+}
+
+.front-sort-box .menu-item {
+    -fx-background-radius: 10;
+    -fx-padding: 9 14 9 14;
+}
+
+.front-sort-box .menu-item:focused,
+.front-sort-box .menu-item:hover {
+    -fx-background-color: -skillora-harbor-50;
+}
+
+.front-sort-box .menu-item .label {
+    -fx-text-fill: -skillora-navy-900;
+    -fx-font-weight: 800;
+}
+
+.front-sort-box .menu-item:focused .label,
+.front-sort-box .menu-item:hover .label {
+    -fx-text-fill: -skillora-harbor-700;
+}
+
+.front-sections-list {
+    -fx-padding: 10 0 0 0;
+}
+
+.front-section-pane {
+    -fx-background-color: transparent;
+}
+
+.front-section-pane > .title {
+    -fx-background-color: #f8fbff;
+    -fx-background-radius: 16;
+    -fx-border-color: #bfdbfe;
+    -fx-border-radius: 16;
+    -fx-border-width: 1;
+    -fx-padding: 15 18 15 18;
+}
+
+.front-section-pane:expanded > .title {
+    -fx-background-color: -skillora-harbor-50;
+    -fx-border-color: -skillora-harbor-300;
+}
+
+.front-section-pane > *.content {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 16 16;
+    -fx-border-color: transparent -skillora-navy-200 -skillora-navy-200 -skillora-navy-200;
+    -fx-border-radius: 0 0 16 16;
+    -fx-padding: 12 14 14 14;
+}
+
+.front-section-lessons {
+    -fx-padding: 2 0 0 0;
+}
+
+.front-lesson-row {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -skillora-navy-200;
+    -fx-border-width: 1;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+}
+
+.front-lesson-row:hover {
+    -fx-background-color: -skillora-harbor-50;
+    -fx-border-color: -skillora-harbor-300;
+}
+
+.front-course-hero-thumb-shell {
+    -fx-alignment: CENTER;
+    -fx-padding: 0;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-overflow: hidden;
+}

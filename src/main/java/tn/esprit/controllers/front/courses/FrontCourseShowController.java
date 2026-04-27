@@ -1,8 +1,6 @@
 package tn.esprit.controllers.front.courses;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Accordion;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
@@ -22,8 +20,11 @@ import tn.esprit.services.LessonService;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FrontCourseShowController implements FrontShellAware {
@@ -38,22 +39,13 @@ public class FrontCourseShowController implements FrontShellAware {
     private Label descriptionLabel;
 
     @FXML
-    private Label sectionsCountLabel;
-
-    @FXML
-    private Label lessonsCountLabel;
-
-    @FXML
     private ImageView thumbnailImageView;
 
     @FXML
     private Label thumbnailFallbackLabel;
 
     @FXML
-    private Button startCourseButton;
-
-    @FXML
-    private Accordion sectionsAccordion;
+    private VBox sectionsAccordion;
 
     @FXML
     private ScrollPane rootScrollPane;
@@ -62,7 +54,6 @@ public class FrontCourseShowController implements FrontShellAware {
     private CourseSectionService courseSectionService;
     private LessonService lessonService;
     private Course course;
-    private List<Lesson> orderedLessons = List.of();
 
     @Override
     public void setShellController(FrontShellController shellController) {
@@ -88,55 +79,50 @@ public class FrontCourseShowController implements FrontShellAware {
         thumbnailImageView.setManaged(image != null);
         thumbnailFallbackLabel.setVisible(image == null);
         thumbnailFallbackLabel.setManaged(image == null);
-        sectionsCountLabel.setText("0 sections");
-        lessonsCountLabel.setText("0 lessons");
-        startCourseButton.setDisable(true);
     }
 
     private void loadCurriculum() {
-        sectionsAccordion.getPanes().clear();
-        orderedLessons = List.of();
+        sectionsAccordion.getChildren().clear();
         if (course == null || course.getId() == null) {
             return;
         }
 
         try {
-            List<CourseSection> sections = getCourseSectionService().getByCourseId(course.getId());
-            sectionsCountLabel.setText(sections.size() + (sections.size() == 1 ? " section" : " sections"));
+            List<CourseSection> sections = getCourseSectionService().getAll().stream()
+                    .filter(section -> course.getId().equals(section.getCourseId()))
+                    .sorted(Comparator.comparing(CourseSection::getPosition, Comparator.nullsLast(Integer::compareTo))
+                            .thenComparing(CourseSection::getId, Comparator.nullsLast(Integer::compareTo)))
+                    .toList();
 
             if (sections.isEmpty()) {
-                lessonsCountLabel.setText("0 lessons");
-                sectionsAccordion.getPanes().add(buildEmptyPane("No sections yet", "This course does not contain any sections."));
+                sectionsAccordion.getChildren().add(buildEmptyPane("No sections yet", "This course does not contain any sections."));
                 return;
             }
 
             Map<Integer, List<Lesson>> lessonsBySection = loadLessonsForSections(sections);
-            orderedLessons = sections.stream()
-                    .flatMap(section -> lessonsBySection.getOrDefault(section.getId(), List.<Lesson>of()).stream())
-                    .toList();
-            lessonsCountLabel.setText(orderedLessons.size() + (orderedLessons.size() == 1 ? " lesson" : " lessons"));
-            startCourseButton.setDisable(orderedLessons.isEmpty());
-
             for (int index = 0; index < sections.size(); index++) {
                 CourseSection section = sections.get(index);
                 TitledPane pane = buildSectionPane(section, lessonsBySection.getOrDefault(section.getId(), List.of()));
-                sectionsAccordion.getPanes().add(pane);
+                sectionsAccordion.getChildren().add(pane);
                 if (index == 0) {
-                    sectionsAccordion.setExpandedPane(pane);
+                    pane.setExpanded(true);
                 }
             }
         } catch (SQLException | IllegalStateException e) {
-            sectionsAccordion.getPanes().add(buildEmptyPane("Unable to load curriculum", e.getMessage()));
+            sectionsAccordion.getChildren().add(buildEmptyPane("Unable to load curriculum", e.getMessage()));
         }
     }
 
     private Map<Integer, List<Lesson>> loadLessonsForSections(List<CourseSection> sections) throws SQLException {
-        List<Integer> sectionIds = sections.stream()
+        Set<Integer> sectionIds = sections.stream()
                 .map(CourseSection::getId)
-                .toList();
+                .collect(Collectors.toSet());
 
-        return getLessonService().getBySectionIds(sectionIds).stream()
-                .collect(Collectors.groupingBy(Lesson::getSectionId, Collectors.toList()));
+        return getLessonService().getAll().stream()
+                .filter(lesson -> lesson.getSectionId() != null && sectionIds.contains(lesson.getSectionId()))
+                .sorted(Comparator.comparing(Lesson::getPosition, Comparator.nullsLast(Integer::compareTo))
+                        .thenComparing(Lesson::getId, Comparator.nullsLast(Integer::compareTo)))
+                .collect(Collectors.groupingBy(Lesson::getSectionId, Collectors.mapping(Function.identity(), Collectors.toList())));
     }
 
     private TitledPane buildSectionPane(CourseSection section, List<Lesson> lessons) {
@@ -151,8 +137,7 @@ public class FrontCourseShowController implements FrontShellAware {
             lessons.forEach(lesson -> lessonList.getChildren().add(buildLessonRow(lesson)));
         }
 
-        String paneTitle = safeValue(section.getTitle(), "Untitled Section") + "  •  " + lessons.size() + (lessons.size() == 1 ? " lesson" : " lessons");
-        TitledPane pane = new TitledPane(paneTitle, lessonList);
+        TitledPane pane = new TitledPane(section.getTitle(), lessonList);
         pane.getStyleClass().add("front-section-pane");
         pane.setAnimated(true);
         return pane;
@@ -190,20 +175,6 @@ public class FrontCourseShowController implements FrontShellAware {
     private void openLesson(Lesson lesson) {
         if (shellController != null && course != null && lesson != null) {
             shellController.showCourseConsume(course, lesson);
-        }
-    }
-
-    @FXML
-    private void handleBackToBrowse() {
-        if (shellController != null) {
-            shellController.showBrowseCourses();
-        }
-    }
-
-    @FXML
-    private void handleStartCourse() {
-        if (!orderedLessons.isEmpty()) {
-            openLesson(orderedLessons.get(0));
         }
     }
 

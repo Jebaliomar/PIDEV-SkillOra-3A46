@@ -417,6 +417,295 @@
     -fx-text-fill: #F1F5F9;
 }
 
+/* === Course admin tables/buttons === */
+.module-page {
+    -fx-background-color: transparent;
+}
+
+.courses-card,
+.detail-card,
+.form-card,
+.toolbar-card {
+    -fx-background-color: #111827;
+    -fx-border-color: #253044;
+}
+
+.courses-card-header {
+    -fx-border-color: transparent transparent #253044 transparent;
+}
+
+.card-title,
+.section-title,
+.detail-value-title,
+.course-title-cell {
+    -fx-text-fill: #F8FAFC;
+}
+
+.card-subtitle,
+.results-label,
+.detail-body,
+.category-cell-label,
+.meta-label,
+.detail-label {
+    -fx-text-fill: #94A3B8;
+}
+
+.detail-value,
+.meta-value,
+.table-cell {
+    -fx-text-fill: #CBD5E1;
+}
+
+.text-field,
+.search-field,
+.list-search-field {
+    -fx-background-color: #0F172A;
+    -fx-border-color: #334155;
+    -fx-text-fill: #F8FAFC;
+    -fx-prompt-text-fill: #64748B;
+}
+
+.text-field:focused,
+.search-field:focused,
+.list-search-field:focused {
+    -fx-background-color: #111827;
+    -fx-border-color: #38BDF8;
+}
+
+.hero-button,
+.primary-button {
+    -fx-background-color: #2563EB;
+    -fx-text-fill: white;
+}
+
+.hero-button:hover,
+.primary-button:hover {
+    -fx-background-color: #1D4ED8;
+    -fx-text-fill: white;
+}
+
+.secondary-button,
+.manage-action-button,
+.icon-action-button {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #E2E8F0;
+}
+
+.secondary-button:hover,
+.manage-action-button:hover,
+.icon-action-button:hover {
+    -fx-background-color: #334155;
+    -fx-text-fill: #F8FAFC;
+}
+
+.danger-button,
+.icon-action-danger {
+    -fx-background-color: #451A1A;
+    -fx-text-fill: #FCA5A5;
+}
+
+.danger-button:hover,
+.icon-action-danger:hover {
+    -fx-background-color: #7F1D1D;
+    -fx-text-fill: #FECACA;
+}
+
+.table-view,
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #0F172A;
+    -fx-border-color: transparent transparent #253044 transparent;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #94A3B8;
+}
+
+.table-row-cell {
+    -fx-background-color: #111827;
+    -fx-border-color: transparent transparent #253044 transparent;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #162033;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #172554;
+}
+
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: #F8FAFC;
+}
+
+.course-badge {
+    -fx-background-color: #172554;
+}
+
+.course-badge-label {
+    -fx-text-fill: #93C5FD;
+}
+
+.status-draft {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #CBD5E1;
+}
+
+.status-published {
+    -fx-background-color: #052E16;
+    -fx-text-fill: #86EFAC;
+}
+
+.status-archived {
+    -fx-background-color: #450A0A;
+    -fx-text-fill: #FCA5A5;
+}
+
+.table-view .scroll-bar:horizontal .thumb,
+.table-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #475569;
+}
+
+.table-view .scroll-bar:horizontal .thumb:hover,
+.table-view .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #64748B;
+}
+
+.hero-button .text,
+.hero-button:hover .text,
+.hero-button:focused .text,
+.primary-button .text,
+.primary-button:hover .text,
+.primary-button:focused .text {
+    -fx-fill: white;
+}
+
+.secondary-button .text,
+.secondary-button:hover .text,
+.secondary-button:focused .text,
+.manage-action-button .text,
+.manage-action-button:hover .text,
+.manage-action-button:focused .text,
+.icon-action-button .text,
+.icon-action-button:hover .text,
+.icon-action-button:focused .text {
+    -fx-fill: #F8FAFC;
+}
+
+.danger-button .text,
+.danger-button:hover .text,
+.danger-button:focused .text,
+.icon-action-danger .text,
+.icon-action-danger:hover .text,
+.icon-action-danger:focused .text {
+    -fx-fill: #FECACA;
+}
+
+.admin-overview-card,
+.admin-side-card,
+.lesson-hero-card,
+.lesson-meta-card,
+.lesson-preview-card {
+    -fx-background-color: #111827;
+    -fx-border-color: #253044;
+}
+
+.admin-mini-stat,
+.admin-description-box,
+.lesson-preview-surface {
+    -fx-background-color: #0F172A;
+    -fx-border-color: #253044;
+}
+
+.admin-view-title,
+.lesson-view-title,
+.admin-avatar-letter {
+    -fx-text-fill: #F8FAFC;
+}
+
+.admin-avatar-tile {
+    -fx-background-color: linear-gradient(to bottom right, #2563EB, #1D4ED8);
+}
+
+.admin-avatar-emerald {
+    -fx-background-color: linear-gradient(to bottom right, #059669, #0f766e);
+}
+
+.front-sort-box > .list-cell,
+.front-sort-box > .label,
+.front-sort-box .text,
+.front-sort-cell {
+    -fx-text-fill: #F8FAFC;
+    -fx-fill: #F8FAFC;
+}
+
+.front-sort-box > .arrow-button > .arrow {
+    -fx-background-color: #CBD5E1;
+}
+
+.front-sort-box > .open-button > .arrow {
+    -fx-background-color: #CBD5E1;
+}
+
+.front-sort-box .list-view {
+    -fx-background-color: #111827;
+    -fx-border-color: #253044;
+}
+
+.front-sort-box .list-cell:hover,
+.front-sort-box .list-cell:filled:selected {
+    -fx-background-color: #172554;
+    -fx-text-fill: #DBEAFE;
+}
+
+.front-sort-box .context-menu {
+    -fx-background-color: #111827;
+    -fx-border-color: #253044;
+}
+
+.front-sort-box .menu-item:focused,
+.front-sort-box .menu-item:hover {
+    -fx-background-color: #172554;
+}
+
+.front-sort-box .menu-item .label {
+    -fx-text-fill: #F8FAFC;
+}
+
+.front-sort-box .menu-item:focused .label,
+.front-sort-box .menu-item:hover .label {
+    -fx-text-fill: #DBEAFE;
+}
+
+.front-section-pane > .title {
+    -fx-background-color: #0F172A;
+    -fx-border-color: #253044;
+}
+
+.front-section-pane:expanded > .title {
+    -fx-background-color: #172554;
+    -fx-border-color: #2563EB;
+}
+
+.front-section-pane > *.content {
+    -fx-background-color: #111827;
+    -fx-border-color: transparent #253044 #253044 #253044;
+}
+
+.front-lesson-row {
+    -fx-background-color: #0F172A;
+    -fx-border-color: #253044;
+}
+
+.front-lesson-row:hover {
+    -fx-background-color: #172554;
+    -fx-border-color: #2563EB;
+}
+
 /* === Danger Outline Dark === */
 .btn-danger-outline {
     -fx-text-fill: #FCA5A5;

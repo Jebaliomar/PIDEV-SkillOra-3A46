@@ -10,12 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class LessonService {
 
@@ -78,42 +73,6 @@ public class LessonService {
         return null;
     }
 
-    public List<Lesson> getBySectionIds(List<Integer> sectionIds) throws SQLException {
-        if (sectionIds == null || sectionIds.isEmpty()) {
-            return List.of();
-        }
-
-        String placeholders = sectionIds.stream()
-                .map(id -> "?")
-                .collect(Collectors.joining(", "));
-        String sql = "SELECT * FROM `lesson` WHERE `section_id` IN (" + placeholders + ")";
-        List<Lesson> lessons = new ArrayList<>();
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            for (int index = 0; index < sectionIds.size(); index++) {
-                preparedStatement.setInt(index + 1, sectionIds.get(index));
-            }
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    lessons.add(mapResultSetToLesson(resultSet));
-                }
-            }
-        }
-
-        Set<Integer> sectionOrder = Set.copyOf(sectionIds);
-        Map<Integer, Integer> sectionRanks = new HashMap<>();
-        for (int index = 0; index < sectionIds.size(); index++) {
-            sectionRanks.put(sectionIds.get(index), index);
-        }
-        return lessons.stream()
-                .filter(lesson -> lesson.getSectionId() != null && sectionOrder.contains(lesson.getSectionId()))
-                .sorted(Comparator.comparing((Lesson lesson) -> sectionRanks.getOrDefault(lesson.getSectionId(), Integer.MAX_VALUE))
-                        .thenComparing(Lesson::getPosition, Comparator.nullsLast(Integer::compareTo))
-                        .thenComparing(Lesson::getId, Comparator.nullsLast(Integer::compareTo)))
-                .toList();
-    }
-
     public boolean update(Lesson lesson) throws SQLException {
         String sql = "UPDATE `lesson` SET `title` = ?, `type` = ?, `content` = ?, `file_path` = ?, `position` = ?, "
                 + "`created_at` = ?, `updated_at` = ?, `section_id` = ? WHERE `id` = ?";
@@ -133,25 +92,34 @@ public class LessonService {
     }
 
     public boolean delete(int id) throws SQLException {
-        boolean originalAutoCommit = connection.getAutoCommit();
+        boolean previousAutoCommit = connection.getAutoCommit();
+
         try {
             connection.setAutoCommit(false);
-            executeDelete("DELETE FROM `lesson_completion` WHERE `lesson_id` = ?", id);
-            boolean deleted = executeDelete("DELETE FROM `lesson` WHERE `id` = ?", id) > 0;
+            deleteLessonCompletions(id);
+
+            boolean deleted;
+            try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM `lesson` WHERE `id` = ?")) {
+                preparedStatement.setInt(1, id);
+                deleted = preparedStatement.executeUpdate() > 0;
+            }
+
             connection.commit();
             return deleted;
-        } catch (SQLException exception) {
+        } catch (SQLException e) {
             connection.rollback();
-            throw exception;
+            throw e;
         } finally {
-            connection.setAutoCommit(originalAutoCommit);
+            connection.setAutoCommit(previousAutoCommit);
         }
     }
 
-    private int executeDelete(String sql, int id) throws SQLException {
+    private void deleteLessonCompletions(int lessonId) throws SQLException {
+        String sql = "DELETE FROM `lesson_completion` WHERE `lesson_id` = ?";
+
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate();
+            preparedStatement.setInt(1, lessonId);
+            preparedStatement.executeUpdate();
         }
     }
 

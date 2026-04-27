@@ -5,12 +5,17 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.services.FaceIdService;
 import tn.esprit.services.UserService;
+import tn.esprit.tools.AuthSession;
 import tn.esprit.tools.FaceIdServer;
 import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
@@ -19,6 +24,7 @@ import tn.esprit.tools.ThemeManager;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
@@ -37,9 +43,12 @@ public class LoginController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Apply saved theme on load & update button icon
         updateThemeButton();
-        themeToggleBtn.sceneProperty().addListener((obs, o, n) -> { if (n != null) RightPanelAnimator.attach(n); });
+        themeToggleBtn.sceneProperty().addListener((obs, o, n) -> {
+            if (n != null) {
+                RightPanelAnimator.attach(n);
+            }
+        });
         PasswordToggle.wire(passwordField, passwordShowField, passwordEyeBtn);
     }
 
@@ -52,7 +61,6 @@ public class LoginController implements Initializable {
     private void updateThemeButton() {
         themeToggleBtn.setText("");
         themeToggleBtn.setGraphic(ThemeManager.isDarkMode() ? ThemeIcon.sun() : ThemeIcon.moon());
-        // Apply theme after scene is ready
         if (themeToggleBtn.getScene() != null) {
             ThemeManager.applyTheme(themeToggleBtn.getScene());
         }
@@ -62,8 +70,8 @@ public class LoginController implements Initializable {
     public void handleLogin() {
         hideError();
 
-        String email = emailField.getText().trim();
-        String password = passwordField.getText();
+        String email = emailField.getText() == null ? "" : emailField.getText().trim();
+        String password = passwordField.getText() == null ? "" : passwordField.getText();
 
         if (email.isEmpty()) {
             showError("Please enter your email address.");
@@ -76,35 +84,11 @@ public class LoginController implements Initializable {
 
         try {
             User user = userService.authenticate(email, password);
-            if (user != null) {
-                String role = userService.getUserRole(user.getId());
-                System.out.println("Login successful! User: " + user.getFirstName() + " " + user.getLastName() + " | Role: " + role);
-
-                // Route by role: students go to student layout, admins/professors to admin panel
-                String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
-                boolean isStudent = normalizedRole.equals("student");
-
-                String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
-                String title = isStudent ? "SkillORA" : "SkillORA - Admin Panel";
-
-                if (isStudent) {
-                    StudentLayoutController.setCurrentUser(user);
-                } else {
-                    AdminPanelController.setCurrentUser(user);
-                }
-
-                FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
-                Parent dashRoot = dashLoader.load();
-                Scene dashScene = new Scene(dashRoot);
-                dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
-                ThemeManager.applyTheme(dashScene);
-
-                Stage stage = (Stage) emailField.getScene().getWindow();
-                stage.setScene(dashScene);
-                stage.setTitle(title);
-            } else {
+            if (user == null) {
                 showError("Invalid email or password. Please try again.");
+                return;
             }
+            openCourseWorkspace(user, userService.getUserRole(user.getId()));
         } catch (Exception e) {
             showError(e.getMessage());
         }
@@ -149,22 +133,7 @@ public class LoginController implements Initializable {
                 return;
             }
 
-            String role = userService.getUserRole(user.getId());
-            String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
-            boolean isStudent = normalizedRole.equals("student");
-            String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
-            String title = isStudent ? "SkillORA" : "SkillORA - Admin Panel";
-            if (isStudent) StudentLayoutController.setCurrentUser(user);
-            else AdminPanelController.setCurrentUser(user);
-
-            FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent dashRoot = dashLoader.load();
-            Scene dashScene = new Scene(dashRoot);
-            dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
-            ThemeManager.applyTheme(dashScene);
-            Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(dashScene);
-            stage.setTitle(title);
+            openCourseWorkspace(user, userService.getUserRole(user.getId()));
         } catch (Exception e) {
             showError("Face login failed: " + e.getMessage());
         }
@@ -172,36 +141,58 @@ public class LoginController implements Initializable {
 
     @FXML
     public void goToForgotPassword() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ForgotPassword.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
-            ThemeManager.applyTheme(scene);
-
-            Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Forgot password - SkillORA");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        openAuthScreen("/fxml/ForgotPassword.fxml", "Forgot password - SkillORA");
     }
 
     @FXML
     public void goToSignUp() {
+        openAuthScreen("/fxml/SignUp.fxml", "Create Account - SkillORA");
+    }
+
+    private void openCourseWorkspace(User user, String role) throws IOException {
+        String normalizedRole = AuthSession.normalizeRole(role);
+        boolean student = "student".equals(normalizedRole);
+        AuthSession.setCurrentUser(user, normalizedRole);
+
+        String fxmlPath = student ? "/views/front/front_shell.fxml" : "/views/admin/admin_shell.fxml";
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+        Parent root = loader.load();
+
+        Stage stage = (Stage) emailField.getScene().getWindow();
+        Scene scene = new Scene(root, Math.max(stage.getWidth(), 1240), Math.max(stage.getHeight(), 760));
+        applyAppStyles(scene);
+        stage.setScene(scene);
+        stage.setTitle(student ? "SkillORA - Courses" : "SkillORA - Course Admin");
+        stage.setMinWidth(1100);
+        stage.setMinHeight(680);
+        stage.show();
+    }
+
+    private void openAuthScreen(String resourcePath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SignUp.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(resourcePath));
             Parent root = loader.load();
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
-            ThemeManager.applyTheme(scene);
+            applyAuthStyles(scene);
 
             Stage stage = (Stage) emailField.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Create Account - SkillORA");
+            stage.setTitle(title);
         } catch (IOException e) {
-            e.printStackTrace();
+            showError(e.getMessage());
         }
+    }
+
+    private void applyAuthStyles(Scene scene) {
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/style.css")).toExternalForm());
+        ThemeManager.applyTheme(scene);
+    }
+
+    private void applyAppStyles(Scene scene) {
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/atlantafx/base/theme/primer-light.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/macos-theme.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/style.css")).toExternalForm());
+        ThemeManager.applyTheme(scene);
     }
 
     private void showError(String message) {

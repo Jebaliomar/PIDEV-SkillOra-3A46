@@ -16,74 +16,85 @@
             fx:controller="tn.esprit.controllers.admin.courses.CourseShowController">
     <top>
         <HBox alignment="CENTER_LEFT" spacing="12.0">
-            <Button mnemonicParsing="false" onAction="#handleBack" styleClass="secondary-button" text="Back"/>
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" styleClass="secondary-button" text="Back"/>
             <VBox spacing="4.0">
                 <Label fx:id="headerTitleLabel" styleClass="page-title" text="Course"/>
                 <Label styleClass="page-subtitle" text="Read-only detail view. Editing is only available in the dedicated edit screen."/>
             </VBox>
             <StackPane HBox.hgrow="ALWAYS"/>
-            <Button mnemonicParsing="false" onAction="#handleManageSections" styleClass="secondary-button" text="Manage Sections"/>
-            <Button mnemonicParsing="false" onAction="#handleEdit" styleClass="secondary-button" text="Edit"/>
-            <Button mnemonicParsing="false" onAction="#handleDelete" styleClass="danger-button" text="🗑 Delete"/>
+            <Button fx:id="editButton" mnemonicParsing="false" onAction="#handleEdit" styleClass="secondary-button" text="Edit"/>
+            <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDelete" styleClass="danger-button" text="Delete"/>
         </HBox>
     </top>
     <center>
         <VBox spacing="22.0">
+            <BorderPane.margin>
+                <Insets top="24.0"/>
+            </BorderPane.margin>
             <HBox spacing="22.0">
-                <VBox spacing="14.0" styleClass="detail-card" HBox.hgrow="ALWAYS">
-                    <Label styleClass="section-title" text="Overview"/>
-
-                    <VBox spacing="8.0">
-                        <Label styleClass="detail-label" text="Title"/>
-                        <Label fx:id="titleValueLabel" styleClass="detail-value-title" text="-"/>
-                    </VBox>
-
-                    <HBox spacing="20.0">
-                        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-                            <Label styleClass="detail-label" text="Category"/>
-                            <Label fx:id="categoryValueLabel" styleClass="detail-value" text="-"/>
+                <VBox spacing="18.0" styleClass="admin-overview-card" HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="14.0">
+                        <VBox alignment="CENTER" styleClass="admin-avatar-tile">
+                            <Label fx:id="courseInitialLabel" styleClass="admin-avatar-letter" text="C"/>
                         </VBox>
-                        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-                            <Label styleClass="detail-label" text="Status"/>
-                            <Label fx:id="statusValueLabel" styleClass="status-pill" text="-"/>
+                        <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="detail-label" text="COURSE PROFILE"/>
+                            <Label fx:id="titleValueLabel" styleClass="admin-view-title" text="-"/>
+                        </VBox>
+                        <Label fx:id="statusValueLabel" styleClass="status-pill" text="-"/>
+                    </HBox>
+
+                    <HBox spacing="12.0" styleClass="admin-metric-strip">
+                        <VBox spacing="5.0" styleClass="admin-mini-stat" HBox.hgrow="ALWAYS">
+                            <Label styleClass="meta-label" text="Category"/>
+                            <Label fx:id="categoryValueLabel" styleClass="meta-value" text="-"/>
+                        </VBox>
+                        <VBox spacing="5.0" styleClass="admin-mini-stat" HBox.hgrow="ALWAYS">
+                            <Label styleClass="meta-label" text="Sections"/>
+                            <Label fx:id="sectionCountLabel" styleClass="meta-value" text="0"/>
                         </VBox>
                     </HBox>
 
-                    <VBox spacing="8.0">
-                        <Label styleClass="detail-label" text="Description"/>
+                    <VBox spacing="8.0" styleClass="admin-description-box">
+                        <Label styleClass="detail-label" text="DESCRIPTION"/>
                         <Label fx:id="descriptionValueLabel" styleClass="detail-body" text="-" wrapText="true"/>
                     </VBox>
                 </VBox>
 
-                <VBox spacing="14.0" styleClass="detail-card" prefWidth="280.0">
+                <VBox spacing="14.0" styleClass="admin-side-card" prefWidth="330.0">
                     <Label styleClass="section-title" text="Metadata"/>
-                    <HBox>
+                    <VBox spacing="6.0">
                         <Label styleClass="meta-label" text="Created"/>
-                        <StackPane HBox.hgrow="ALWAYS"/>
                         <Label fx:id="createdAtValueLabel" styleClass="meta-value" text="-"/>
-                    </HBox>
+                    </VBox>
                     <Separator/>
-                    <HBox>
+                    <VBox spacing="6.0">
                         <Label styleClass="meta-label" text="Updated"/>
-                        <StackPane HBox.hgrow="ALWAYS"/>
                         <Label fx:id="updatedAtValueLabel" styleClass="meta-value" text="-"/>
-                    </HBox>
+                    </VBox>
                     <Separator/>
-                    <HBox>
+                    <VBox spacing="6.0">
                         <Label styleClass="meta-label" text="Thumbnail"/>
-                        <StackPane HBox.hgrow="ALWAYS"/>
-                        <Label fx:id="thumbnailValueLabel" styleClass="meta-value" text="-" wrapText="true"/>
-                    </HBox>
+                        <Label fx:id="thumbnailValueLabel" styleClass="meta-value admin-truncated-value" text="-" wrapText="true"/>
+                    </VBox>
                 </VBox>
             </HBox>
 
-            <VBox spacing="10.0" styleClass="detail-card" VBox.vgrow="ALWAYS">
-                <Label styleClass="section-title" text="Sections"/>
+            <VBox spacing="14.0" styleClass="courses-card admin-table-card" VBox.vgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <VBox spacing="4.0">
+                        <Label styleClass="section-title" text="Sections"/>
+                        <Label styleClass="card-subtitle" text="Open a section directly from this table."/>
+                    </VBox>
+                    <StackPane HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="addSectionButton" mnemonicParsing="false" onAction="#handleAddSection" styleClass="hero-button" text="Add Section"/>
+                </HBox>
                 <TableView fx:id="sectionTable" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="sectionTitleColumn" prefWidth="500.0" text="Title"/>
-                        <TableColumn fx:id="positionColumn" prefWidth="150.0" text="Position"/>
-                        <TableColumn fx:id="sectionCreatedAtColumn" prefWidth="220.0" text="Created"/>
+                        <TableColumn fx:id="sectionTitleColumn" minWidth="360.0" prefWidth="470.0" text="TITLE"/>
+                        <TableColumn fx:id="positionColumn" minWidth="140.0" prefWidth="150.0" text="POSITION"/>
+                        <TableColumn fx:id="sectionCreatedAtColumn" minWidth="210.0" prefWidth="230.0" text="CREATED"/>
+                        <TableColumn fx:id="sectionActionsColumn" minWidth="330.0" prefWidth="340.0" text="ACTIONS"/>
                     </columns>
                 </TableView>
             </VBox>

@@ -6,18 +6,16 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.geometry.Insets;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import tn.esprit.controllers.AdminPanelController;
-import tn.esprit.controllers.StudentLayoutController;
 import tn.esprit.controllers.front.courses.FrontCourseConsumeController;
 import tn.esprit.controllers.front.courses.FrontCourseShowController;
-import tn.esprit.controllers.front.home.FrontMyLearningController;
 import tn.esprit.entities.Course;
 import tn.esprit.entities.Lesson;
-import tn.esprit.entities.User;
-import tn.esprit.services.UserService;
 import tn.esprit.tools.AppNavigator;
+import tn.esprit.tools.AuthSession;
 
 public class FrontShellController {
 
@@ -43,27 +41,21 @@ public class FrontShellController {
     private Button dashboardButton;
 
     @FXML
-    private Button userFrontButton;
+    private Button logoutButton;
 
     @FXML
-    private VBox dashboardCard;
+    private BorderPane shellPane;
 
     @FXML
-    private Label userSummaryLabel;
-
-    @FXML
-    private Label sessionSummaryLabel;
+    private StackPane sidebarContainer;
 
     @FXML
     private StackPane contentContainer;
 
-    private User activeUser;
-    private String activeRole;
-    private UserService userService;
-
     @FXML
     public void initialize() {
-        resolveSessionContext();
+        configureAccessForCurrentUser();
+        applyExpandedLayout();
         showHome();
     }
 
@@ -81,7 +73,8 @@ public class FrontShellController {
 
     @FXML
     private void handleMyLearning() {
-        showMyLearning();
+        setActiveModule(myLearningNavButton);
+        showPlaceholder("My Learning", "This area is reserved for enrolled courses and progress tracking.");
     }
 
     @FXML
@@ -108,8 +101,15 @@ public class FrontShellController {
     }
 
     @FXML
-    private void handleUserFront() {
-        AppNavigator.showUserFront(userFrontButton != null ? userFrontButton : contentContainer);
+    private void handleLogout() {
+        AppNavigator.showLogin(logoutButton);
+    }
+
+    private void configureAccessForCurrentUser() {
+        if (dashboardButton != null && !AuthSession.isAdminAreaAllowed()) {
+            dashboardButton.setManaged(false);
+            dashboardButton.setVisible(false);
+        }
     }
 
     public void showHome() {
@@ -120,15 +120,6 @@ public class FrontShellController {
 
     public void showBrowseCourses() {
         handleBrowseCourses();
-    }
-
-    public void showMyLearning() {
-        setActiveModule(myLearningNavButton);
-        loadContent("/views/front/home/front_my_learning.fxml", controller -> {
-            if (controller instanceof FrontMyLearningController) {
-                // No additional state required beyond current session.
-            }
-        });
     }
 
     public void showCourseShow(Course course) {
@@ -151,6 +142,7 @@ public class FrontShellController {
     }
 
     private void showPlaceholder(String title, String message) {
+        applyExpandedLayout();
         VBox placeholder = new VBox(10);
         placeholder.getStyleClass().add("placeholder-panel");
         Label titleLabel = new Label(title);
@@ -162,67 +154,9 @@ public class FrontShellController {
         contentContainer.getChildren().setAll(placeholder);
     }
 
-    private void resolveSessionContext() {
-        User studentUser = StudentLayoutController.getCurrentUser();
-        User adminUser = AdminPanelController.getCurrentUser();
-        activeUser = studentUser != null ? studentUser : adminUser;
-        activeRole = resolveRole(activeUser, studentUser != null);
-
-        if (activeUser != null) {
-            String firstName = safeValue(activeUser.getFirstName(), "");
-            String lastName = safeValue(activeUser.getLastName(), "");
-            String fullName = (firstName + " " + lastName).trim();
-            userSummaryLabel.setText(fullName.isBlank() ? safeValue(activeUser.getEmail(), "Connected User") : fullName);
-        } else {
-            userSummaryLabel.setText("Guest Session");
-        }
-
-        String sessionText = switch (activeRole) {
-            case "student" -> "Student learning workspace";
-            case "admin" -> "Administrator preview workspace";
-            case "professor" -> "Professor preview workspace";
-            default -> "Course workspace";
-        };
-        sessionSummaryLabel.setText(sessionText);
-
-        boolean allowDashboard = !"student".equals(activeRole) && activeUser != null;
-        dashboardCard.setManaged(true);
-        dashboardCard.setVisible(true);
-        dashboardButton.setManaged(allowDashboard);
-        dashboardButton.setVisible(allowDashboard);
-    }
-
-    private String resolveRole(User user, boolean isStudentContext) {
-        if (isStudentContext) {
-            return "student";
-        }
-        if (user == null || user.getId() == null) {
-            return "";
-        }
-        try {
-            String role = getUserService().getUserRole(user.getId());
-            if (role == null) {
-                return "";
-            }
-            return role.toLowerCase().replace("role_", "");
-        } catch (Exception e) {
-            return "";
-        }
-    }
-
-    private String safeValue(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value;
-    }
-
-    private UserService getUserService() {
-        if (userService == null) {
-            userService = new UserService();
-        }
-        return userService;
-    }
-
     private void loadContent(String resourcePath, ControllerConfigurer configurer) {
         try {
+            applyLayoutForResource(resourcePath);
             FXMLLoader loader = new FXMLLoader(getClass().getResource(resourcePath));
             Node content = loader.load();
             Object controller = loader.getController();
@@ -236,6 +170,44 @@ public class FrontShellController {
             alert.setHeaderText("Unable to load view");
             alert.setContentText(e.getMessage());
             alert.showAndWait();
+        }
+    }
+
+    private void applyLayoutForResource(String resourcePath) {
+        boolean compactShell = resourcePath.endsWith("/front_browse_courses.fxml")
+                || resourcePath.endsWith("/front_course_consume.fxml");
+        if (compactShell) {
+            applyCompactLayout();
+        } else {
+            applyExpandedLayout();
+        }
+    }
+
+    private void applyCompactLayout() {
+        if (sidebarContainer != null) {
+            sidebarContainer.setManaged(false);
+            sidebarContainer.setVisible(false);
+            sidebarContainer.setMinWidth(0);
+            sidebarContainer.setPrefWidth(0);
+            sidebarContainer.setMaxWidth(0);
+        }
+        if (contentContainer != null) {
+            BorderPane.setMargin(contentContainer, new Insets(18, 20, 20, 20));
+            contentContainer.setPadding(new Insets(14, 18, 24, 18));
+        }
+    }
+
+    private void applyExpandedLayout() {
+        if (sidebarContainer != null) {
+            sidebarContainer.setManaged(true);
+            sidebarContainer.setVisible(true);
+            sidebarContainer.setMinWidth(286);
+            sidebarContainer.setPrefWidth(286);
+            sidebarContainer.setMaxWidth(286);
+        }
+        if (contentContainer != null) {
+            BorderPane.setMargin(contentContainer, new Insets(20, 20, 20, 14));
+            contentContainer.setPadding(new Insets(28, 32, 28, 32));
         }
     }
 

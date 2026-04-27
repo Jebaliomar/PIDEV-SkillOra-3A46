@@ -142,12 +142,7 @@ public class SignUpController implements Initializable {
                 return;
             }
 
-            // Open avatar picker first
-            String avatar = pickAvatar();
-            if (avatar == null) {
-                showError("Please select a 3D avatar to finish registration.");
-                return;
-            }
+            String avatar = "course-user";
 
             User user = new User();
             user.setEmail(email);
