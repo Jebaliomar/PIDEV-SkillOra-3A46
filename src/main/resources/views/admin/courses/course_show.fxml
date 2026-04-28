@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -10,6 +13,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Arc?>
+<?import javafx.scene.shape.Circle?>
 
 <BorderPane prefHeight="780.0" prefWidth="1120.0" styleClass="module-page"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
@@ -27,10 +32,12 @@
         </HBox>
     </top>
     <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="front-scroll-pane">
+            <content>
         <VBox spacing="22.0">
-            <BorderPane.margin>
-                <Insets top="24.0"/>
-            </BorderPane.margin>
+            <padding>
+                <Insets top="24.0" right="8.0" bottom="24.0" left="0.0"/>
+            </padding>
             <HBox spacing="22.0">
                 <VBox spacing="18.0" styleClass="admin-overview-card" HBox.hgrow="ALWAYS">
                     <HBox alignment="CENTER_LEFT" spacing="14.0">
@@ -98,6 +105,93 @@
                     </columns>
                 </TableView>
             </VBox>
+
+            <VBox spacing="22.0" styleClass="admin-analytics-card">
+                <VBox spacing="5.0">
+                    <Label styleClass="analytics-title" text="Learning Analytics"/>
+                    <Label styleClass="analytics-subtitle" text="Live stats for enrollments and completions in this course."/>
+                </VBox>
+
+                <HBox spacing="18.0">
+                    <VBox spacing="7.0" styleClass="analytics-stat-card" HBox.hgrow="ALWAYS">
+                        <Label styleClass="analytics-stat-label" text="ENROLLMENTS"/>
+                        <Label fx:id="enrollmentCountLabel" text="0">
+                            <styleClass>
+                                <String fx:value="analytics-stat-value"/>
+                                <String fx:value="analytics-blue-text"/>
+                            </styleClass>
+                        </Label>
+                    </VBox>
+                    <VBox spacing="7.0" styleClass="analytics-stat-card" HBox.hgrow="ALWAYS">
+                        <Label styleClass="analytics-stat-label" text="COMPLETED"/>
+                        <Label fx:id="completionCountLabel" text="0">
+                            <styleClass>
+                                <String fx:value="analytics-stat-value"/>
+                                <String fx:value="analytics-green-text"/>
+                            </styleClass>
+                        </Label>
+                    </VBox>
+                    <VBox spacing="7.0" styleClass="analytics-stat-card" HBox.hgrow="ALWAYS">
+                        <Label styleClass="analytics-stat-label" text="IN PROGRESS"/>
+                        <Label fx:id="activeCountLabel" styleClass="analytics-stat-value" text="0"/>
+                    </VBox>
+                </HBox>
+
+                <HBox alignment="CENTER" spacing="34.0" styleClass="analytics-visual-row">
+                    <StackPane minHeight="214.0" minWidth="240.0" prefHeight="214.0" prefWidth="270.0">
+                        <Circle radius="78.0" styleClass="analytics-ring-track"/>
+                        <Arc fx:id="completionRateArc" length="0.0" radiusX="78.0" radiusY="78.0" startAngle="90.0" styleClass="analytics-ring-fill"/>
+                        <VBox alignment="CENTER" spacing="2.0">
+                            <Label styleClass="analytics-ring-label" text="COMPLETION"/>
+                            <Label fx:id="completionRateLabel" styleClass="analytics-ring-value" text="0%"/>
+                        </VBox>
+                    </StackPane>
+
+                    <VBox spacing="18.0" HBox.hgrow="ALWAYS">
+                        <VBox spacing="7.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="analytics-bar-label" text="Total Enrollments"/>
+                                <StackPane HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="analyticsTotalValueLabel" styleClass="analytics-bar-value" text="0"/>
+                            </HBox>
+                            <ProgressBar fx:id="analyticsTotalProgressBar" maxWidth="Infinity" progress="0.0">
+                                <styleClass>
+                                    <String fx:value="analytics-progress"/>
+                                    <String fx:value="analytics-progress-blue"/>
+                                </styleClass>
+                            </ProgressBar>
+                        </VBox>
+                        <VBox spacing="7.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="analytics-bar-label" text="Completions"/>
+                                <StackPane HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="analyticsCompletionValueLabel" styleClass="analytics-bar-value" text="0"/>
+                            </HBox>
+                            <ProgressBar fx:id="analyticsCompletionProgressBar" maxWidth="Infinity" progress="0.0">
+                                <styleClass>
+                                    <String fx:value="analytics-progress"/>
+                                    <String fx:value="analytics-progress-green"/>
+                                </styleClass>
+                            </ProgressBar>
+                        </VBox>
+                        <VBox spacing="7.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="analytics-bar-label" text="Still In Progress"/>
+                                <StackPane HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="analyticsActiveValueLabel" styleClass="analytics-bar-value" text="0"/>
+                            </HBox>
+                            <ProgressBar fx:id="analyticsActiveProgressBar" maxWidth="Infinity" progress="0.0">
+                                <styleClass>
+                                    <String fx:value="analytics-progress"/>
+                                    <String fx:value="analytics-progress-coral"/>
+                                </styleClass>
+                            </ProgressBar>
+                        </VBox>
+                    </VBox>
+                </HBox>
+            </VBox>
         </VBox>
+            </content>
+        </ScrollPane>
     </center>
 </BorderPane>

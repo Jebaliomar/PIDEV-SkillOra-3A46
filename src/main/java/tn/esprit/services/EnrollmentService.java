@@ -105,6 +105,32 @@ public class EnrollmentService {
         return enrollments;
     }
 
+    public int countByCourse(int courseId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM `enrollment` WHERE `course_id` = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, courseId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() ? resultSet.getInt(1) : 0;
+            }
+        }
+    }
+
+    public int countCompletedByCourse(int courseId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM `enrollment` "
+                + "WHERE `course_id` = ? AND (`status` = ? OR `progress_percent` >= 100)";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, courseId);
+            preparedStatement.setString(2, "completed");
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() ? resultSet.getInt(1) : 0;
+            }
+        }
+    }
+
     public Enrollment enrollIfMissing(int userId, int courseId) throws SQLException {
         Enrollment existing = findOneByUserAndCourse(userId, courseId);
         if (existing != null) {

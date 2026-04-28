@@ -7,18 +7,21 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Arc;
 import tn.esprit.controllers.admin.AdminShellAware;
 import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.Course;
 import tn.esprit.entities.CourseSection;
 import tn.esprit.services.CourseSectionService;
 import tn.esprit.services.CourseService;
+import tn.esprit.services.EnrollmentService;
 import tn.esprit.tools.AppIcons;
 
 import java.sql.SQLException;
@@ -62,6 +65,39 @@ public class CourseShowController implements AdminShellAware {
     private Label sectionCountLabel;
 
     @FXML
+    private Label enrollmentCountLabel;
+
+    @FXML
+    private Label completionCountLabel;
+
+    @FXML
+    private Label activeCountLabel;
+
+    @FXML
+    private Label completionRateLabel;
+
+    @FXML
+    private Label analyticsTotalValueLabel;
+
+    @FXML
+    private Label analyticsCompletionValueLabel;
+
+    @FXML
+    private Label analyticsActiveValueLabel;
+
+    @FXML
+    private ProgressBar analyticsTotalProgressBar;
+
+    @FXML
+    private ProgressBar analyticsCompletionProgressBar;
+
+    @FXML
+    private ProgressBar analyticsActiveProgressBar;
+
+    @FXML
+    private Arc completionRateArc;
+
+    @FXML
     private Button backButton;
 
     @FXML
@@ -91,6 +127,7 @@ public class CourseShowController implements AdminShellAware {
     private AdminShellController shellController;
     private CourseSectionService courseSectionService;
     private CourseService courseService;
+    private EnrollmentService enrollmentService;
     private Course course;
 
     @FXML
@@ -177,6 +214,7 @@ public class CourseShowController implements AdminShellAware {
         this.course = course;
         populateCourseDetails();
         loadSections();
+        loadAnalytics();
     }
 
     @FXML
@@ -272,6 +310,49 @@ public class CourseShowController implements AdminShellAware {
         }
     }
 
+    private void loadAnalytics() {
+        if (course == null || course.getId() == null) {
+            updateAnalytics(0, 0);
+            return;
+        }
+
+        try {
+            int enrollments = getEnrollmentService().countByCourse(course.getId());
+            int completions = getEnrollmentService().countCompletedByCourse(course.getId());
+            updateAnalytics(enrollments, completions);
+        } catch (IllegalStateException e) {
+            updateAnalytics(0, 0);
+            showError("Database connection failed.", e);
+        } catch (SQLException e) {
+            updateAnalytics(0, 0);
+            showError("Unable to load course analytics.", e);
+        }
+    }
+
+    private void updateAnalytics(int enrollments, int completions) {
+        int safeEnrollments = Math.max(0, enrollments);
+        int safeCompletions = Math.max(0, Math.min(completions, safeEnrollments));
+        int active = Math.max(0, safeEnrollments - safeCompletions);
+        int completionRate = safeEnrollments == 0 ? 0 : (int) Math.round((safeCompletions * 100.0) / safeEnrollments);
+        double completionRatio = safeEnrollments == 0 ? 0 : safeCompletions / (double) safeEnrollments;
+        double activeRatio = safeEnrollments == 0 ? 0 : active / (double) safeEnrollments;
+
+        enrollmentCountLabel.setText(String.valueOf(safeEnrollments));
+        completionCountLabel.setText(String.valueOf(safeCompletions));
+        activeCountLabel.setText(String.valueOf(active));
+        completionRateLabel.setText(completionRate + "%");
+
+        analyticsTotalValueLabel.setText(String.valueOf(safeEnrollments));
+        analyticsCompletionValueLabel.setText(String.valueOf(safeCompletions));
+        analyticsActiveValueLabel.setText(String.valueOf(active));
+        analyticsTotalProgressBar.setProgress(safeEnrollments == 0 ? 0 : 1);
+        analyticsCompletionProgressBar.setProgress(completionRatio);
+        analyticsActiveProgressBar.setProgress(activeRatio);
+
+        completionRateArc.setLength(-360.0 * completionRate / 100.0);
+        completionRateArc.setVisible(completionRate > 0);
+    }
+
     private CourseSectionService getCourseSectionService() {
         if (courseSectionService == null) {
             courseSectionService = new CourseSectionService();
@@ -284,6 +365,13 @@ public class CourseShowController implements AdminShellAware {
             courseService = new CourseService();
         }
         return courseService;
+    }
+
+    private EnrollmentService getEnrollmentService() {
+        if (enrollmentService == null) {
+            enrollmentService = new EnrollmentService();
+        }
+        return enrollmentService;
     }
 
     private void openSection(CourseSection section) {
