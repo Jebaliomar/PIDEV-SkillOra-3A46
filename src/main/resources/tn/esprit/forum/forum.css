@@ -2,11 +2,12 @@
 
 /* Root background */
 .root {
-    -fx-background-color: #f0f4f9;
+    -fx-font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    -fx-background-color: #F8F9FB;
 }
 
 .root-alt {
-    -fx-background-color: #f8faff;
+    -fx-background-color: #F8F9FB;
 }
 
 /* Header styles */
@@ -38,7 +39,7 @@
 }
 
 .btn-primary {
-    -fx-background-color: #3b82f6;
+    -fx-background-color: #0891b2;
     -fx-text-fill: white;
     -fx-font-weight: 700;
     -fx-font-size: 14px;
@@ -46,11 +47,11 @@
     -fx-border-radius: 10;
     -fx-cursor: hand;
     -fx-padding: 11 28 11 28;
-    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.35), 10, 0, 0, 3);
+    -fx-effect: dropshadow(gaussian, rgba(8,145,178,0.35), 10, 0, 0, 3);
 }
 
 .btn-primary-alt {
-    -fx-background-color: #6366f1;
+    -fx-background-color: #0891b2;
     -fx-text-fill: white;
     -fx-font-weight: 700;
     -fx-font-size: 14px;
@@ -61,7 +62,7 @@
 }
 
 .btn-refresh {
-    -fx-background-color: #1d4ed8;
+    -fx-background-color: #0e7490;
     -fx-text-fill: white;
     -fx-font-size: 13px;
     -fx-font-weight: 700;
@@ -73,20 +74,20 @@
 
 .btn-admin {
     -fx-background-color: white;
-    -fx-text-fill: #1d4ed8;
+    -fx-text-fill: #0e7490;
     -fx-font-weight: 700;
     -fx-font-size: 14px;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
-    -fx-border-color: #bfdbfe;
+    -fx-border-color: rgba(8,145,178,0.35);
     -fx-border-width: 1.5;
     -fx-cursor: hand;
     -fx-padding: 11 18 11 18;
 }
 
 .btn-edit {
-    -fx-background-color: #eff6ff;
-    -fx-text-fill: #1d4ed8;
+    -fx-background-color: rgba(8,145,178,0.08);
+    -fx-text-fill: #0e7490;
     -fx-font-weight: 700;
     -fx-font-size: 13px;
     -fx-background-radius: 8;
@@ -107,7 +108,7 @@
 }
 
 .btn-search {
-    -fx-background-color: #6366f1;
+    -fx-background-color: #0891b2;
     -fx-text-fill: white;
     -fx-font-weight: 700;
     -fx-font-size: 13px;
@@ -148,19 +149,19 @@
 }
 
 .label-user {
-    -fx-text-fill: #1d4ed8;
+    -fx-text-fill: #0e7490;
     -fx-font-weight: 700;
     -fx-font-size: 12px;
 }
 
 .label-user-alt {
-    -fx-text-fill: #3b82f6;
+    -fx-text-fill: #0891b2;
     -fx-font-weight: 700;
     -fx-font-size: 12px;
 }
 
 .label-user-alt2 {
-    -fx-text-fill: #6366f1;
+    -fx-text-fill: #0891b2;
     -fx-font-weight: 700;
     -fx-font-size: 12px;
 }
@@ -188,7 +189,7 @@
 }
 
 .label-meta-value-blue {
-    -fx-text-fill: #3b82f6;
+    -fx-text-fill: #0891b2;
     -fx-font-size: 13px;
     -fx-font-weight: 600;
 }
@@ -304,7 +305,7 @@
 
 /* Gradient accent */
 .gradient-accent {
-    -fx-background-color: linear-gradient(to right, #6366f1, #3b82f6, #0ea5e9);
+    -fx-background-color: linear-gradient(to right, #0891b2, #06b6d4, #22d3ee);
     -fx-pref-height: 4;
     -fx-min-height: 4;
 }
@@ -320,4 +321,96 @@
 
 .spacer-large {
     -fx-pref-height: 18;
+}
+
+/* =============================================================
+   DARK MODE — activated when root has .theme-dark class
+   ============================================================= */
+
+.theme-dark .root,
+.theme-dark .root-alt {
+    -fx-background-color: #0B1220;
+}
+
+.theme-dark .header,
+.theme-dark .header-alt {
+    -fx-background-color: #111827;
+    -fx-border-color: transparent transparent #1F2937 transparent;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 10, 0, 0, 3);
+}
+
+.theme-dark .btn-secondary {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #CBD5E1;
+    -fx-border-color: #334155;
+}
+
+.theme-dark .btn-admin {
+    -fx-background-color: #111827;
+    -fx-text-fill: #22d3ee;
+    -fx-border-color: rgba(34, 211, 238, 0.35);
+}
+
+.theme-dark .btn-reset {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #CBD5E1;
+    -fx-border-color: #334155;
+}
+
+.theme-dark .btn-edit {
+    -fx-background-color: rgba(34, 211, 238, 0.15);
+    -fx-text-fill: #22d3ee;
+}
+
+.theme-dark .btn-delete {
+    -fx-background-color: rgba(239, 68, 68, 0.15);
+    -fx-text-fill: #f87171;
+}
+
+.theme-dark .label-title,
+.theme-dark .label-title-large,
+.theme-dark .label-section,
+.theme-dark .label-section-small,
+.theme-dark .label-post-title {
+    -fx-text-fill: #F8FAFC;
+}
+
+.theme-dark .label-subtitle,
+.theme-dark .label-meta-value,
+.theme-dark .label-meta-value-alt {
+    -fx-text-fill: #94A3B8;
+}
+
+.theme-dark .label-user,
+.theme-dark .label-user-alt,
+.theme-dark .label-user-alt2,
+.theme-dark .label-meta-value-blue {
+    -fx-text-fill: #22d3ee;
+}
+
+.theme-dark .label-field {
+    -fx-text-fill: #CBD5E1;
+}
+
+.theme-dark .label-meta {
+    -fx-text-fill: #64748B;
+}
+
+.theme-dark .label-content {
+    -fx-text-fill: #E2E8F0;
+}
+
+.theme-dark .input-field,
+.theme-dark .text-area,
+.theme-dark .search-field {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-text-fill: #F8FAFC;
+    -fx-prompt-text-fill: #64748B;
+}
+
+.theme-dark .input-field:focused,
+.theme-dark .text-area:focused,
+.theme-dark .search-field:focused {
+    -fx-border-color: #22d3ee;
 }

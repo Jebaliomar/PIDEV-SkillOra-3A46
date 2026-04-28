@@ -3,11 +3,13 @@ package tn.esprit.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.User;
 import tn.esprit.tools.AppNavigator;
 import tn.esprit.tools.ThemeIcon;
@@ -34,6 +36,7 @@ public class AdminPanelController implements Initializable {
     @FXML private Button navReservations;
     @FXML private Button navForum;
     @FXML private Button navCourses;
+    @FXML private Button navEvaluations;
     @FXML private Button navStats;
     @FXML private Button themeToggleBtn;
 
@@ -85,7 +88,44 @@ public class AdminPanelController implements Initializable {
 
     @FXML
     public void showCoursesAdmin() {
-        AppNavigator.showAdminDashboard(navCourses != null ? navCourses : contentArea);
+        AdminShellController shell = new AdminShellController();
+        shell.bindContentContainer(contentArea);
+        shell.showCoursesIndex();
+        setActiveNav(navCourses);
+    }
+
+    @FXML
+    public void showEvaluationsAdmin() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ListeEvaluation.fxml"));
+            Parent root = loader.load();
+            // ListeEvaluation ships with its own left sidebar inside the root
+            // AnchorPane. Strip it and embed only the main content so the
+            // AdminPanel sidebar stays visible.
+            Node embedded = root;
+            if (root instanceof javafx.scene.layout.AnchorPane ap && ap.getChildren().size() >= 2) {
+                javafx.scene.Node main = ap.getChildren().get(1);
+                ap.getChildren().clear();
+                if (main instanceof javafx.scene.layout.AnchorPane mainAp) {
+                    mainAp.setLayoutX(0);
+                    mainAp.setLayoutY(0);
+                }
+                embedded = (Node) main;
+            }
+            // The FXML references @style.css via a relative path; re-attach it
+            // to the embedded subtree so only this view is affected.
+            if (embedded instanceof Parent p) {
+                try {
+                    String css = getClass().getResource("/style.css").toExternalForm();
+                    if (!p.getStylesheets().contains(css)) p.getStylesheets().add(css);
+                } catch (Exception ignored) {
+                }
+            }
+            contentArea.getChildren().setAll(embedded);
+            setActiveNav(navEvaluations);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

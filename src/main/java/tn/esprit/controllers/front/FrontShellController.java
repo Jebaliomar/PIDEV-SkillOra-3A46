@@ -76,6 +76,14 @@ public class FrontShellController {
         showHome();
     }
 
+    /**
+     * Allow an embedding host (e.g. StudentLayout) to redirect rendering into
+     * its own content pane so the host's nav bar stays visible.
+     */
+    public void bindContentContainer(StackPane container) {
+        this.contentContainer = container;
+    }
+
     @FXML
     private void handleHome() {
         showHome();
@@ -219,13 +227,15 @@ public class FrontShellController {
         activeUser = studentUser != null ? studentUser : adminUser;
         activeRole = resolveRole(activeUser, studentUser != null);
 
-        if (activeUser != null) {
-            String firstName = safeValue(activeUser.getFirstName(), "");
-            String lastName = safeValue(activeUser.getLastName(), "");
-            String fullName = (firstName + " " + lastName).trim();
-            userSummaryLabel.setText(fullName.isBlank() ? safeValue(activeUser.getEmail(), "Connected User") : fullName);
-        } else {
-            userSummaryLabel.setText("Guest Session");
+        if (userSummaryLabel != null) {
+            if (activeUser != null) {
+                String firstName = safeValue(activeUser.getFirstName(), "");
+                String lastName = safeValue(activeUser.getLastName(), "");
+                String fullName = (firstName + " " + lastName).trim();
+                userSummaryLabel.setText(fullName.isBlank() ? safeValue(activeUser.getEmail(), "Connected User") : fullName);
+            } else {
+                userSummaryLabel.setText("Guest Session");
+            }
         }
 
         String sessionText = switch (activeRole) {
@@ -234,13 +244,17 @@ public class FrontShellController {
             case "professor" -> "Professor preview workspace";
             default -> "Course workspace";
         };
-        sessionSummaryLabel.setText(sessionText);
+        if (sessionSummaryLabel != null) sessionSummaryLabel.setText(sessionText);
 
         boolean allowDashboard = !"student".equals(activeRole) && activeUser != null;
-        dashboardCard.setManaged(true);
-        dashboardCard.setVisible(true);
-        dashboardButton.setManaged(allowDashboard);
-        dashboardButton.setVisible(allowDashboard);
+        if (dashboardCard != null) {
+            dashboardCard.setManaged(true);
+            dashboardCard.setVisible(true);
+        }
+        if (dashboardButton != null) {
+            dashboardButton.setManaged(allowDashboard);
+            dashboardButton.setVisible(allowDashboard);
+        }
     }
 
     private String resolveRole(User user, boolean isStudentContext) {
@@ -305,11 +319,12 @@ public class FrontShellController {
     }
 
     private void clearModuleSelection(Button button) {
+        if (button == null) return;
         button.getStyleClass().remove("sidebar-item-selected");
         if (!button.getStyleClass().contains("sidebar-item")) {
             button.getStyleClass().add("sidebar-item");
         }
-    }  
+    }
 
     @FunctionalInterface
     private interface ControllerConfigurer {

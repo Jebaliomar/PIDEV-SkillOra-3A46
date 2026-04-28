@@ -1,11 +1,11 @@
 .root-bg {
     -fx-background-color: #0b1220;
-    -fx-font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    -fx-font-family: "Segoe UI", "Helvetica Neue", sans-serif;
 }
 
 .top-bar {
     -fx-background-color: rgba(11, 18, 32, 0.96);
-    -fx-border-color: #1f2b45;
+    -fx-border-color: #1E293B;
     -fx-border-width: 0 0 1 0;
 }
 
@@ -34,19 +34,19 @@
 }
 
 .avatar-chip {
-    -fx-background-color: #eef3fb;
+    -fx-background-color: #E0F7FA;
     -fx-background-radius: 999;
 }
 
 .avatar-text {
-    -fx-text-fill: #2563eb;
+    -fx-text-fill: #0891b2;
     -fx-font-size: 20px;
     -fx-font-weight: 800;
 }
 
 .admin-sidebar {
     -fx-background-color: #0f172a;
-    -fx-border-color: #1f2b45;
+    -fx-border-color: #1E293B;
     -fx-border-width: 0 1 0 0;
     -fx-padding: 6 0 0 0;
 }
@@ -57,7 +57,7 @@
 }
 
 .brand-icon-wrap {
-    -fx-background-color: linear-gradient(to bottom right, #3b82f6, #2563eb);
+    -fx-background-color: linear-gradient(to bottom right, #06b6d4, #0891b2);
     -fx-background-radius: 999;
 }
 
@@ -105,8 +105,8 @@
 }
 
 .sidebar-nav-item-active {
-    -fx-background-color: linear-gradient(to right, #dbeafe, #eef5ff);
-    -fx-text-fill: #1d4ed8;
+    -fx-background-color: linear-gradient(to right, #CCFBF1, #E0F7FA);
+    -fx-text-fill: #0e7490;
     -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.18), 14, 0.18, 0, 4);
 }
 
@@ -141,16 +141,16 @@
 }
 
 .list-card {
-    -fx-background-color: #111a2e;
+    -fx-background-color: #111827;
     -fx-background-radius: 20;
-    -fx-border-color: #23314f;
+    -fx-border-color: #1E293B;
     -fx-border-radius: 20;
 }
 
 .section-card {
-    -fx-background-color: #111a2e;
+    -fx-background-color: #111827;
     -fx-background-radius: 24;
-    -fx-border-color: #23314f;
+    -fx-border-color: #1E293B;
     -fx-border-radius: 24;
 }
 
@@ -173,7 +173,7 @@
     -fx-border-radius: 12;
     -fx-background-radius: 12;
     -fx-padding: 9 11;
-    -fx-focus-color: #3b82f6;
+    -fx-focus-color: #06b6d4;
     -fx-faint-focus-color: transparent;
 }
 
@@ -260,7 +260,7 @@
 
 .table-row {
     -fx-background-color: #0f172a;
-    -fx-border-color: #1f2a44;
+    -fx-border-color: #1E293B;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
     -fx-padding: 10 12;
@@ -302,7 +302,7 @@
 }
 
 .btn-primary {
-    -fx-background-color: linear-gradient(to right, #3b82f6, #2563eb);
+    -fx-background-color: linear-gradient(to right, #06b6d4, #0891b2);
     -fx-text-fill: #ffffff;
 }
 
@@ -313,7 +313,7 @@
 
 .light-inline-button {
     -fx-background-color: #e7edf8;
-    -fx-text-fill: #23314f;
+    -fx-text-fill: #1E293B;
     -fx-background-radius: 14;
     -fx-border-radius: 14;
     -fx-padding: 9 16;
@@ -333,12 +333,12 @@
 
 .btn-row-view {
     -fx-background-color: #24334f;
-    -fx-text-fill: #bfdbfe;
+    -fx-text-fill: #99F6E4;
 }
 
 .btn-row-edit {
-    -fx-background-color: #1e3a8a;
-    -fx-text-fill: #dbeafe;
+    -fx-background-color: #0e7490;
+    -fx-text-fill: #CCFBF1;
 }
 
 .btn-row-delete {
@@ -378,12 +378,12 @@
 }
 
 .type-chip-item-selected {
-    -fx-background-color: #1e3a8a;
-    -fx-border-color: #3b82f6;
+    -fx-background-color: #0e7490;
+    -fx-border-color: #06b6d4;
 }
 
 .type-chip-label {
-    -fx-text-fill: #dbeafe;
+    -fx-text-fill: #CCFBF1;
     -fx-font-size: 12px;
     -fx-font-weight: 700;
 }
@@ -401,7 +401,7 @@
     -fx-border-radius: 12;
     -fx-background-radius: 12;
     -fx-padding: 9 11;
-    -fx-focus-color: #3b82f6;
+    -fx-focus-color: #06b6d4;
     -fx-faint-focus-color: transparent;
 }
 
@@ -472,7 +472,7 @@
 
 .price-box {
     -fx-background-color: rgba(59, 130, 246, 0.08);
-    -fx-border-color: #2e4f86;
+    -fx-border-color: #1E293B;
     -fx-border-radius: 14;
     -fx-background-radius: 14;
     -fx-padding: 10 12;
@@ -487,7 +487,7 @@
 }
 
 .status-badge {
-    -fx-text-fill: #93c5fd;
+    -fx-text-fill: #22d3ee;
     -fx-font-size: 12px;
     -fx-font-weight: 700;
     -fx-background-color: rgba(30, 64, 175, 0.22);
@@ -534,7 +534,7 @@
 }
 
 .details-subtitle {
-    -fx-text-fill: #93c5fd;
+    -fx-text-fill: #22d3ee;
     -fx-font-size: 16px;
     -fx-font-weight: 700;
 }
@@ -558,7 +558,7 @@
 }
 
 .theme-light .topbar-button {
-    -fx-background-color: #eef3fb;
+    -fx-background-color: #E0F7FA;
     -fx-text-fill: #22314f;
 }
 
@@ -595,8 +595,8 @@
 }
 
 .theme-light .sidebar-nav-item-active {
-    -fx-background-color: linear-gradient(to right, #dbeafe, #eef5ff);
-    -fx-text-fill: #1d4ed8;
+    -fx-background-color: linear-gradient(to right, #CCFBF1, #E0F7FA);
+    -fx-text-fill: #0e7490;
 }
 
 .theme-light .main-content-wrap {
@@ -679,7 +679,7 @@
 }
 
 .theme-light .table-head-row {
-    -fx-background-color: #eef3fb;
+    -fx-background-color: #E0F7FA;
 }
 
 .theme-light .th-title,
@@ -712,12 +712,12 @@
 }
 
 .theme-light .btn-secondary {
-    -fx-background-color: #eef3fb;
+    -fx-background-color: #E0F7FA;
     -fx-text-fill: #22314f;
 }
 
 .theme-light .light-inline-button {
-    -fx-background-color: #eef3fb;
+    -fx-background-color: #E0F7FA;
     -fx-text-fill: #22314f;
 }
 
@@ -727,13 +727,13 @@
 }
 
 .theme-light .btn-row-view {
-    -fx-background-color: #e9f1ff;
-    -fx-text-fill: #2857b8;
+    -fx-background-color: #E0F7FA;
+    -fx-text-fill: #0891b2;
 }
 
 .theme-light .btn-row-edit {
-    -fx-background-color: #dbeafe;
-    -fx-text-fill: #1d4ed8;
+    -fx-background-color: #CCFBF1;
+    -fx-text-fill: #0e7490;
 }
 
 .theme-light .btn-row-delete {
@@ -747,17 +747,17 @@
 }
 
 .theme-light .type-chip-item {
-    -fx-background-color: #eef3fb;
+    -fx-background-color: #E0F7FA;
     -fx-border-color: #d5deec;
 }
 
 .theme-light .type-chip-item-selected {
-    -fx-background-color: #dbeafe;
-    -fx-border-color: #60a5fa;
+    -fx-background-color: #CCFBF1;
+    -fx-border-color: #22d3ee;
 }
 
 .theme-light .type-chip-label {
-    -fx-text-fill: #1f4db6;
+    -fx-text-fill: #0891b2;
 }
 
 .theme-light .chip-remove-button {
@@ -773,7 +773,7 @@
 
 .theme-light .details-subtitle,
 .theme-light .status-badge {
-    -fx-text-fill: #1d4ed8;
+    -fx-text-fill: #0e7490;
 }
 
 .theme-light .status-badge {

@@ -8,6 +8,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.Node;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
@@ -26,6 +28,8 @@ public class StudentLayoutController implements Initializable {
     @FXML private Button navHome;
     @FXML private Button navCourses;
     @FXML private Button navEvents;
+    @FXML private Button navForum;
+    @FXML private Button navAssessment;
     @FXML private MenuButton userMenu;
     @FXML private MenuItem menuProfile;
     @FXML private MenuItem menuSettings;
@@ -68,14 +72,100 @@ public class StudentLayoutController implements Initializable {
 
     @FXML
     public void showCourses() {
-        AppNavigator.showFrontBrowseCourses(navCourses != null ? navCourses : navHome);
-        setActiveNav(navCourses);
+        try {
+            tn.esprit.controllers.front.FrontShellController shell =
+                    new tn.esprit.controllers.front.FrontShellController();
+            shell.bindContentContainer(contentArea);
+            shell.showBrowseCourses();
+            setActiveNav(navCourses);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     public void showEvents() {
-        AppNavigator.showFrontEvents(navEvents != null ? navEvents : navHome);
-        setActiveNav(navEvents);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/event/SiteEventsView.fxml"));
+            Parent root = loader.load();
+            // Strip the view's own top navbar so the student nav stays visible.
+            if (root instanceof BorderPane bp) {
+                Node center = bp.getCenter();
+                bp.setTop(null);
+                bp.setBottom(null);
+                bp.setLeft(null);
+                bp.setRight(null);
+                if (center != null) {
+                    contentArea.getChildren().setAll(center);
+                } else {
+                    contentArea.getChildren().setAll(root);
+                }
+            } else {
+                contentArea.getChildren().setAll(root);
+            }
+            ensureEventStylesheets();
+            setActiveNav(navEvents);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private tn.esprit.mains.ForumCrudLauncher embeddedForumLauncher;
+
+    @FXML
+    public void showForum() {
+        try {
+            if (embeddedForumLauncher == null) {
+                embeddedForumLauncher = new tn.esprit.mains.ForumCrudLauncher() {
+                    @Override
+                    protected void setScene(Parent root, String title) {
+                        contentArea.getChildren().setAll(root);
+                    }
+                };
+                embeddedForumLauncher.initForEmbedded((Stage) contentArea.getScene().getWindow());
+            }
+            embeddedForumLauncher.showOverviewScene();
+            ensureForumStylesheet();
+            setActiveNav(navForum);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void showAssessment() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserAssessmentView.fxml"));
+            Parent content = loader.load();
+            contentArea.getChildren().setAll(content);
+            addStylesheet(contentArea.getScene(), "/user-assessment.css");
+            setActiveNav(navAssessment);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void ensureForumStylesheet() {
+        Scene scene = contentArea.getScene();
+        if (scene == null) return;
+        addStylesheet(scene, "/tn/esprit/forum/forum.css");
+    }
+
+    private void ensureEventStylesheets() {
+        Scene scene = contentArea.getScene();
+        if (scene == null) return;
+        addStylesheet(scene, "/styles/site-events.css");
+        addStylesheet(scene, "/styles/event.css");
+        addStylesheet(scene, "/styles/salle.css");
+        addStylesheet(scene, "/styles/reservations.css");
+    }
+
+    private void addStylesheet(Scene scene, String path) {
+        try {
+            String url = getClass().getResource(path).toExternalForm();
+            if (!scene.getStylesheets().contains(url)) scene.getStylesheets().add(url);
+        } catch (Exception ignored) {
+        }
     }
 
     @FXML
@@ -91,7 +181,7 @@ public class StudentLayoutController implements Initializable {
     }
 
     public void showCourseHub() {
-        AppNavigator.showFrontBrowseCourses(navCourses != null ? navCourses : navHome);
+        showCourses();
     }
 
     private void loadContent(String fxmlPath) {

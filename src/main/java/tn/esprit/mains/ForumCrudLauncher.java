@@ -177,7 +177,7 @@ public class ForumCrudLauncher extends Application {
         }
     }
 
-    private void setScene(Parent root, String title) {
+    protected void setScene(Parent root, String title) {
         primaryStage.setTitle("SkillOra Forum - " + title);
         primaryStage.setScene(new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT));
     }

@@ -1,6 +1,6 @@
 .root {
-    -fx-font-family: "Segoe UI", "Arial";
-    -fx-background-color: linear-gradient(to bottom right, #07152b, #0b2345);
+    -fx-font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    -fx-background-color: #0B1220;
 }
 
 .quiz-page {
@@ -8,7 +8,7 @@
 }
 
 .quiz-header {
-    -fx-background-color: linear-gradient(to right, #0b1d3a, #0e2a52);
+    -fx-background-color: linear-gradient(to right, #0B1220, #0e7490);
     -fx-background-radius: 18;
     -fx-padding: 22;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 16, 0.2, 0, 6);
@@ -21,7 +21,7 @@
 }
 
 .quiz-subtitle {
-    -fx-text-fill: #c7d5f0;
+    -fx-text-fill: #94A3B8;
     -fx-font-size: 14px;
 }
 
@@ -62,12 +62,12 @@
 }
 
 .radio-button:selected {
-    -fx-background-color: #e8f0ff;
-    -fx-border-color: #4f8cff;
+    -fx-background-color: rgba(8,145,178,0.12);
+    -fx-border-color: #0891b2;
 }
 
 .primary-button {
-    -fx-background-color: linear-gradient(to right, #2563eb, #1d4ed8);
+    -fx-background-color: linear-gradient(to right, #0891b2, #0e7490);
     -fx-text-fill: white;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
@@ -109,11 +109,11 @@
 }
 
 .pass-page {
-    -fx-background-color: linear-gradient(to bottom right, #07152b, #0b2345);
+    -fx-background-color: linear-gradient(to bottom right, #0B1220, #0B1220);
 }
 
 .pass-header {
-    -fx-background-color: linear-gradient(to right, #0b1d3a, #0e2a52);
+    -fx-background-color: linear-gradient(to right, #0B1220, #0e7490);
     -fx-background-radius: 18;
     -fx-padding: 22;
 }
@@ -125,7 +125,7 @@
 }
 
 .pass-subtitle {
-    -fx-text-fill: #c7d5f0;
+    -fx-text-fill: #94A3B8;
     -fx-font-size: 14px;
 }
 

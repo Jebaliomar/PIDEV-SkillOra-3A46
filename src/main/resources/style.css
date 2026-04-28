@@ -76,7 +76,7 @@
    HERO / HEADER BLOCK
    ========================= */
 .hero-section {
-    -fx-background-color: linear-gradient(to right, #1d4ed8, #0f172a);
+    -fx-background-color: linear-gradient(to right, #0e7490, #0f172a);
     -fx-background-radius: 22;
     -fx-padding: 18;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 16, 0.18, 0, 4);
@@ -84,7 +84,7 @@
 
 .hero-badge {
     -fx-background-color: rgba(255,255,255,0.10);
-    -fx-text-fill: #dbeafe;
+    -fx-text-fill: #CCFBF1;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-padding: 6 12 6 12;
@@ -193,7 +193,7 @@
 .text-area:hover,
 .combo-box:hover,
 .date-picker:hover {
-    -fx-border-color: #3b82f6;
+    -fx-border-color: #06b6d4;
 }
 
 .text-field:focused,
@@ -387,7 +387,7 @@
 
 .badge-quiz {
     -fx-background-color: rgba(59,130,246,0.18);
-    -fx-text-fill: #60a5fa;
+    -fx-text-fill: #22d3ee;
 }
 
 .badge-exam {
@@ -436,7 +436,7 @@
 
 .radio-button {
     -fx-font-size: 14px;
-    -fx-text-fill: #dbeafe;
+    -fx-text-fill: #CCFBF1;
     -fx-padding: 8 10 8 10;
 }
 
@@ -542,7 +542,7 @@
 }
 
 .form-label {
-    -fx-text-fill: #dbeafe;
+    -fx-text-fill: #CCFBF1;
     -fx-font-size: 14px;
     -fx-font-weight: 600;
 }
@@ -554,7 +554,7 @@
 }
 
 .upload-label {
-    -fx-text-fill: #93c5fd;
+    -fx-text-fill: #22d3ee;
     -fx-font-size: 12px;
     -fx-font-weight: 500;
 }
@@ -573,7 +573,7 @@
 }
 
 .form-input:hover {
-    -fx-border-color: #3b82f6;
+    -fx-border-color: #06b6d4;
 }
 
 .form-input:focused {
@@ -594,7 +594,7 @@
 }
 
 .form-textarea:hover {
-    -fx-border-color: #3b82f6;
+    -fx-border-color: #06b6d4;
 }
 
 .form-textarea:focused {
@@ -620,7 +620,7 @@
 }
 
 .form-combo:hover {
-    -fx-border-color: #3b82f6;
+    -fx-border-color: #06b6d4;
 }
 
 .form-combo:focused {

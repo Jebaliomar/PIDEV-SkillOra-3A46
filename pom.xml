@@ -46,7 +46,7 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-web</artifactId>
-            <version>${javafx.version}</version>
+            <version>21.0.1-nojsobject</version>
         </dependency>
 
         <dependency>

@@ -73,7 +73,7 @@
 }
 
 .reservation-event-stat-value {
-    -fx-text-fill: #93c5fd;
+    -fx-text-fill: #22d3ee;
     -fx-font-size: 13px;
     -fx-font-weight: 700;
 }
@@ -182,8 +182,8 @@
 }
 
 .reservation-seats-chip {
-    -fx-background-color: rgba(37, 99, 235, 0.25);
-    -fx-border-color: rgba(96, 165, 250, 0.55);
+    -fx-background-color: rgba(8, 145, 178, 0.25);
+    -fx-border-color: rgba(34, 211, 238, 0.55);
     -fx-border-radius: 999;
 }
 
@@ -286,7 +286,7 @@
 }
 
 .theme-light .reservation-event-stat-value {
-    -fx-text-fill: #1d4ed8;
+    -fx-text-fill: #0e7490;
 }
 
 .reservation-edit-title {
@@ -325,8 +325,8 @@
 }
 
 .theme-light .reservation-seats-chip {
-    -fx-background-color: rgba(37, 99, 235, 0.12);
-    -fx-border-color: rgba(59, 130, 246, 0.35);
+    -fx-background-color: rgba(8, 145, 178, 0.12);
+    -fx-border-color: rgba(8, 145, 178, 0.35);
 }
 
 .theme-light .reservation-status-chip {

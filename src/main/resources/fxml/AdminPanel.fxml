@@ -45,6 +45,8 @@
                         styleClass="sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
                 <Button fx:id="navCourses" text="Courses Admin" onAction="#showCoursesAdmin"
                         styleClass="sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+                <Button fx:id="navEvaluations" text="Evaluations" onAction="#showEvaluationsAdmin"
+                        styleClass="sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
                 <Button fx:id="navStats" text="Statistics" onAction="#showStatistics"
                         styleClass="sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
             </VBox>

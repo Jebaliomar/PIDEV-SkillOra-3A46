@@ -59,6 +59,14 @@ public class AdminShellController {
         showCoursesIndex();
     }
 
+    /**
+     * Allow an embedding host (e.g. the legacy AdminPanel) to redirect
+     * content rendering into its own panel so the host's sidebar stays visible.
+     */
+    public void bindContentContainer(StackPane container) {
+        this.contentContainer = container;
+    }
+
     @FXML
     private void handleCoursesModule() {
         System.out.println("AdminShellController.handleCoursesModule() triggered");
@@ -249,6 +257,7 @@ public class AdminShellController {
     }
 
     private void clearModuleSelection(Button button) {
+        if (button == null) return;
         button.getStyleClass().remove("sidebar-item-selected");
         if (!button.getStyleClass().contains("sidebar-item")) {
             button.getStyleClass().add("sidebar-item");

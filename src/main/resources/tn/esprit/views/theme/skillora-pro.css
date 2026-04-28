@@ -1,20 +1,20 @@
 .app-root {
-    -fx-font-family: "Manrope", "Segoe UI";
-    -fx-background-color: linear-gradient(to bottom, #070c1a, #0a1530);
-    -app-panel: #0f1d3b;
-    -app-panel-soft: #12254a;
-    -app-border: #233f6f;
+    -fx-font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    -fx-background-color: linear-gradient(to bottom, #0B1220, #0B1220);
+    -app-panel: #111827;
+    -app-panel-soft: #1E293B;
+    -app-border: #1E293B;
     -app-text: #e7eefb;
     -app-muted: #95a7c8;
-    -app-primary: #2f6fed;
-    -app-primary-strong: #2558bc;
+    -app-primary: #0891b2;
+    -app-primary-strong: #0e7490;
     -app-success: #16a34a;
     -app-danger: #dc2626;
 }
 
 .top-shell {
-    -fx-background-color: linear-gradient(to right, #0a142c, #0d1d3d);
-    -fx-border-color: transparent transparent #223f70 transparent;
+    -fx-background-color: linear-gradient(to right, #0B1220, #111827);
+    -fx-border-color: transparent transparent #1E293B transparent;
     -fx-border-width: 0 0 1 0;
     -fx-padding: 12 16;
     -fx-background-radius: 16;
@@ -37,20 +37,20 @@
 }
 
 .nav-btn:hover {
-    -fx-background-color: rgba(47, 111, 237, 0.18);
-    -fx-text-fill: #dbeafe;
+    -fx-background-color: rgba(8, 145, 178, 0.18);
+    -fx-text-fill: #CCFBF1;
 }
 
 .nav-btn-active {
-    -fx-background-color: linear-gradient(to bottom, #2f6fed, #285fd0);
+    -fx-background-color: linear-gradient(to bottom, #0891b2, #0e7490);
     -fx-text-fill: white;
     -fx-background-radius: 12;
 }
 
 .app-search {
-    -fx-control-inner-background: #112547;
-    -fx-background-color: #112547;
-    -fx-border-color: #2b4e85;
+    -fx-control-inner-background: #1E293B;
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
     -fx-border-radius: 14;
     -fx-background-radius: 14;
     -fx-text-fill: #e2e8f0;
@@ -67,8 +67,8 @@
 }
 
 .hero-panel {
-    -fx-background-color: linear-gradient(to right, #14306a, #2559c4);
-    -fx-border-color: #2f5fb7;
+    -fx-background-color: linear-gradient(to right, #0e7490, #0891b2);
+    -fx-border-color: #0891b2;
     -fx-border-radius: 18;
     -fx-background-radius: 18;
     -fx-padding: 24;
@@ -87,8 +87,8 @@
 }
 
 .metric-card {
-    -fx-background-color: #0f2143;
-    -fx-border-color: #274678;
+    -fx-background-color: #111827;
+    -fx-border-color: #1E293B;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
     -fx-padding: 12;
@@ -113,8 +113,8 @@
 }
 
 .filter-bar {
-    -fx-background-color: #0d1d3f;
-    -fx-border-color: #244372;
+    -fx-background-color: #111827;
+    -fx-border-color: #334155;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
     -fx-padding: 10;
@@ -129,7 +129,7 @@
 .footer-shell {
     -fx-padding: 12 16 14 16;
     -fx-background-color: rgba(8, 18, 40, 0.8);
-    -fx-border-color: #20375f transparent transparent transparent;
+    -fx-border-color: #1E293B transparent transparent transparent;
     -fx-border-width: 1 0 0 0;
 }
 
@@ -140,7 +140,7 @@
 }
 
 .btn-primary {
-    -fx-background-color: linear-gradient(to bottom, #2f6fed, #285fd0);
+    -fx-background-color: linear-gradient(to bottom, #0891b2, #0e7490);
     -fx-text-fill: white;
     -fx-font-weight: 800;
     -fx-background-radius: 11;
@@ -148,8 +148,8 @@
 }
 
 .btn-secondary {
-    -fx-background-color: #23395f;
-    -fx-text-fill: #dbeafe;
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #CCFBF1;
     -fx-font-weight: 800;
     -fx-background-radius: 11;
     -fx-padding: 8 14;
@@ -173,16 +173,16 @@
 
 .btn-ghost {
     -fx-background-color: transparent;
-    -fx-border-color: #355784;
+    -fx-border-color: #334155;
     -fx-border-radius: 11;
     -fx-background-radius: 11;
-    -fx-text-fill: #dbeafe;
+    -fx-text-fill: #CCFBF1;
     -fx-font-weight: 800;
     -fx-padding: 8 14;
 }
 
 .badge-btn {
-    -fx-background-color: #213b69;
+    -fx-background-color: #1E293B;
     -fx-text-fill: #e9f0ff;
     -fx-background-radius: 14;
     -fx-padding: 6 10;
@@ -208,8 +208,8 @@
 }
 
 .auth-card {
-    -fx-background-color: #0f2143;
-    -fx-border-color: #274678;
+    -fx-background-color: #111827;
+    -fx-border-color: #1E293B;
     -fx-border-radius: 16;
     -fx-background-radius: 16;
     -fx-padding: 30;
@@ -234,9 +234,9 @@
 }
 
 .input-field {
-    -fx-control-inner-background: #112547;
-    -fx-background-color: #112547;
-    -fx-border-color: #2b4e85;
+    -fx-control-inner-background: #1E293B;
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
     -fx-border-radius: 10;
     -fx-background-radius: 10;
     -fx-text-fill: #e7eefb;
@@ -260,18 +260,18 @@
 
 .pagination .number-button {
     -fx-background-radius: 9;
-    -fx-background-color: #20365f;
-    -fx-text-fill: #dbeafe;
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #CCFBF1;
 }
 
 .pagination .number-button:selected {
-    -fx-background-color: #2f6fed;
+    -fx-background-color: #0891b2;
     -fx-text-fill: white;
 }
 
 .pagination .left-arrow-button,
 .pagination .right-arrow-button {
-    -fx-background-color: #1b2f53;
+    -fx-background-color: #1E293B;
     -fx-background-radius: 9;
 }
 
@@ -280,7 +280,7 @@
 }
 
 .refresh-btn {
-    -fx-background-color: #1f355b;
+    -fx-background-color: #1E293B;
     -fx-text-fill: #e2e8f0;
     -fx-font-weight: 800;
     -fx-background-radius: 10;

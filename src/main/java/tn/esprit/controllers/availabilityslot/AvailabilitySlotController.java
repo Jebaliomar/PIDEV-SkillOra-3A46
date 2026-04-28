@@ -31,7 +31,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.web.WebView;
 import javafx.concurrent.Worker;
-import netscape.javascript.JSObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import tn.esprit.entities.AvailabilitySlot;
@@ -1558,8 +1557,13 @@ public class AvailabilitySlotController {
             if (newState != Worker.State.SUCCEEDED) {
                 return;
             }
-            JSObject window = (JSObject) mapView.getEngine().executeScript("window");
-            window.setMember("javaBridge", bridge);
+            try {
+                Object window = mapView.getEngine().executeScript("window");
+                window.getClass().getMethod("setMember", String.class, Object.class)
+                        .invoke(window, "javaBridge", bridge);
+            } catch (ReflectiveOperationException ignored) {
+                // Bridge unavailable — map click-to-pick will be disabled.
+            }
         });
         mapView.getEngine().loadContent(buildInteractiveMapHtml(lat, lon));
     }
