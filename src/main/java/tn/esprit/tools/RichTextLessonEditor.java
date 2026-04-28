@@ -213,14 +213,14 @@ public class RichTextLessonEditor extends StackPane {
                         }
                         * { box-sizing: border-box; }
                         button, select, textarea, article {
-                            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Arial, sans-serif;
+                            font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Arial, sans-serif;
                         }
                         html, body {
                             margin: 0;
                             width: 100%;
                             height: 100%;
                             background: transparent;
-                            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Arial, sans-serif;
+                            font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Arial, sans-serif;
                             color: var(--ink);
                             overflow: hidden;
                         }

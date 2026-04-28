@@ -93,7 +93,7 @@ public class FrontHomeController implements FrontShellAware {
         Label metaLabel = new Label(safeValue(course.getStatus(), "draft").toUpperCase());
         metaLabel.getStyleClass().add("front-course-card-footer");
 
-        Button startButton = new Button("Start Course");
+        Button startButton = new Button("View Course");
         startButton.getStyleClass().add("front-card-start-button");
         startButton.setOnAction(event -> {
             event.consume();

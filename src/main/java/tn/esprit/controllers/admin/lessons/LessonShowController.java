@@ -391,7 +391,7 @@ public class LessonShowController implements AdminShellAware {
                                 margin: 0;
                                 height: 100%%;
                                 background: #f8fafc;
-                                font-family: Arial, sans-serif;
+                                font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Arial, sans-serif;
                                 color: #0f172a;
                             }
                             body {
@@ -488,7 +488,7 @@ public class LessonShowController implements AdminShellAware {
                             margin: 0;
                             background: #f8fafc;
                             color: #0f172a;
-                            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                            font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Arial, sans-serif;
                             font-size: 16px;
                             line-height: 1.7;
                         }

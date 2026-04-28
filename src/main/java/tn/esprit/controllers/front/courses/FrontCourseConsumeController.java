@@ -306,7 +306,15 @@ public class FrontCourseConsumeController implements FrontShellAware {
         }
 
         try {
-            enrollment = getEnrollmentService().enrollIfMissing(user.getId(), course.getId());
+            enrollment = getEnrollmentService().findOneByUserAndCourse(user.getId(), course.getId());
+            if (enrollment == null) {
+                previewStatusLabel.setText("Complete checkout from the course page before opening lessons.");
+                previewStatusLabel.setVisible(true);
+                previewStatusLabel.setManaged(true);
+                updateProgressUi(0, 0, getCourseProgressService().getTotalLessons(course));
+                updateCertificateButton();
+                return;
+            }
             refreshProgressState(false);
         } catch (Exception e) {
             showError("Unable to initialize course progress.", e);
@@ -426,6 +434,21 @@ public class FrontCourseConsumeController implements FrontShellAware {
 
     private void selectLesson(Lesson lesson) {
         if (lesson == null) {
+            return;
+        }
+        if (enrollment == null) {
+            currentLesson = lesson;
+            lessonTitleLabel.setText(safeValue(lesson.getTitle(), "Lesson"));
+            lessonTypeLabel.setText(typeLabel(lesson.getType()));
+            aiSummaryCard.setVisible(false);
+            aiSummaryCard.setManaged(false);
+            contentContainer.getChildren().setAll(buildMessagePreview(
+                    "Payment required",
+                    "This lesson unlocks after checkout. Go back to the course page and buy the course to continue."));
+            previousButton.setDisable(true);
+            nextButton.setDisable(true);
+            highlightCurrentLesson();
+            expandCurrentSection();
             return;
         }
         currentLesson = lesson;
@@ -779,7 +802,7 @@ public class FrontCourseConsumeController implements FrontShellAware {
                             padding: 0;
                             background: #f8fafc;
                             color: #172338;
-                            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                            font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Arial, sans-serif;
                         }
                         body {
                             padding: 28px 32px;
@@ -938,7 +961,7 @@ public class FrontCourseConsumeController implements FrontShellAware {
                         <title>Lesson PDF Preview</title>
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
                         <style>
-                            html, body { margin: 0; height: 100%%; background: #f8fafc; font-family: Arial, sans-serif; color: #0f172a; }
+                            html, body { margin: 0; height: 100%%; background: #f8fafc; font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Arial, sans-serif; color: #0f172a; }
                             body { padding: 18px; box-sizing: border-box; }
                             #viewer { display: flex; flex-direction: column; gap: 18px; }
                             .page-card { background: white; border-radius: 14px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); padding: 12px; }

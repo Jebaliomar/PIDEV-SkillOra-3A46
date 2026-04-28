@@ -10,6 +10,9 @@ src/main/resources/mail.properties
 ### File Uploads ###
 uploads/
 
+### Local app secrets ###
+app.properties
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml

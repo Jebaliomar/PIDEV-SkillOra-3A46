@@ -21,12 +21,14 @@ import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
 import tn.esprit.entities.Certificate;
 import tn.esprit.entities.Course;
+import tn.esprit.entities.CoursePrice;
 import tn.esprit.entities.CourseSection;
 import tn.esprit.entities.Enrollment;
 import tn.esprit.entities.Lesson;
 import tn.esprit.entities.User;
 import tn.esprit.services.CertificateService;
 import tn.esprit.services.CourseInsightsService;
+import tn.esprit.services.CoursePaymentService;
 import tn.esprit.services.CourseSectionService;
 import tn.esprit.services.CourseProgressService;
 import tn.esprit.services.EnrollmentService;
@@ -56,6 +58,9 @@ public class FrontCourseShowController implements FrontShellAware {
 
     @FXML
     private Label descriptionLabel;
+
+    @FXML
+    private Label priceLabel;
 
     @FXML
     private ImageView thumbnailImageView;
@@ -112,11 +117,13 @@ public class FrontCourseShowController implements FrontShellAware {
     private CourseProgressService courseProgressService;
     private CertificateService certificateService;
     private CourseInsightsService courseInsightsService;
+    private CoursePaymentService coursePaymentService;
     private Course course;
     private Enrollment enrollment;
     private Certificate certificate;
     private Set<Integer> completedLessonIds = Set.of();
     private CourseInsightsService.CourseInsights loadedInsights;
+    private boolean paymentInProgress;
 
     @Override
     public void setShellController(FrontShellController shellController) {
@@ -138,6 +145,7 @@ public class FrontCourseShowController implements FrontShellAware {
         courseTitleLabel.setText(safeValue(course.getTitle(), "Untitled Course"));
         categoryLabel.setText(safeValue(course.getCategory(), "Uncategorized"));
         descriptionLabel.setText(safeValue(course.getDescription(), "No description is available for this course yet."));
+        updatePriceLabel();
         Image image = loadThumbnail(course.getThumbnail());
         thumbnailImageView.setImage(image);
         thumbnailImageView.setVisible(image != null);
@@ -148,16 +156,30 @@ public class FrontCourseShowController implements FrontShellAware {
 
     @FXML
     private void handleContinueCourse() {
+        if (paymentInProgress) {
+            return;
+        }
+        if (enrollment == null) {
+            startCheckoutThen(() -> openNextLessonAfterEnrollment());
+            return;
+        }
+        openNextLessonAfterEnrollment();
+    }
+
+    private void openNextLessonAfterEnrollment() {
         try {
-            Enrollment currentEnrollment = ensureEnrollment();
-            Lesson nextLesson = getCourseProgressService().getNextUncompletedLesson(currentEnrollment, course);
+            if (enrollment == null) {
+                showInfo("Payment required", "Complete checkout before opening this course.");
+                return;
+            }
+            Lesson nextLesson = getCourseProgressService().getNextUncompletedLesson(enrollment, course);
             if (nextLesson == null) {
                 showInfo("No lessons available", "This course does not contain any lesson content yet.");
                 return;
             }
             openLesson(nextLesson);
         } catch (SQLException | IllegalStateException e) {
-            showError("Unable to start this course.", e);
+            showError("Unable to open this course.", e);
         }
     }
 
@@ -221,7 +243,7 @@ public class FrontCourseShowController implements FrontShellAware {
         updateProgressUi(0, 0, 0);
         certificateButton.setVisible(false);
         certificateButton.setManaged(false);
-        continueButton.setText("Start Course");
+        continueButton.setText("Buy Course");
 
         User user = AuthSession.getCurrentUser();
         if (course == null || course.getId() == null || user == null || user.getId() == null) {
@@ -240,6 +262,9 @@ public class FrontCourseShowController implements FrontShellAware {
                     certificate = getCertificateService().issueIfEligible(enrollment, user, course, totalLessons);
                 }
                 continueButton.setText(completedLessons >= totalLessons && totalLessons > 0 ? "Review Course" : "Continue Course");
+            } else {
+                CoursePrice price = getCoursePaymentService().getOrCreatePrice(course);
+                continueButton.setText("Buy Course · " + getCoursePaymentService().formatPrice(price));
             }
             updateProgressUi(enrollment == null ? 0 : enrollment.getProgressPercent(), completedLessons, totalLessons);
             updateCertificateButton();
@@ -345,26 +370,69 @@ public class FrontCourseShowController implements FrontShellAware {
 
     private void openLesson(Lesson lesson) {
         if (shellController != null && course != null && lesson != null) {
-            try {
-                ensureEnrollment();
+            if (enrollment == null) {
+                startCheckoutThen(() -> shellController.showCourseConsume(course, lesson));
+            } else {
                 shellController.showCourseConsume(course, lesson);
-            } catch (SQLException | IllegalStateException e) {
-                showError("Unable to open this lesson.", e);
             }
         }
     }
 
-    private Enrollment ensureEnrollment() throws SQLException {
-        if (course == null || course.getId() == null) {
-            throw new IllegalStateException("No course is selected.");
-        }
+    private void startCheckoutThen(Runnable afterEnrollment) {
         User user = AuthSession.getCurrentUser();
         if (user == null || user.getId() == null) {
-            throw new IllegalStateException("Please sign in before starting a course.");
+            showInfo("Sign in required", "Please sign in before buying this course.");
+            return;
         }
-        enrollment = getEnrollmentService().enrollIfMissing(user.getId(), course.getId());
-        loadLearningState();
-        return enrollment;
+        if (course == null || course.getId() == null) {
+            showInfo("No course selected", "Choose a course before starting checkout.");
+            return;
+        }
+
+        paymentInProgress = true;
+        continueButton.setDisable(true);
+        continueButton.setText("Opening checkout...");
+
+        Task<Enrollment> task = new Task<>() {
+            @Override
+            protected Enrollment call() throws Exception {
+                return getCoursePaymentService().checkoutAndEnroll(user, course);
+            }
+        };
+        task.setOnSucceeded(event -> {
+            paymentInProgress = false;
+            continueButton.setDisable(false);
+            enrollment = task.getValue();
+            loadLearningState();
+            loadCurriculum();
+            showInfo("Course unlocked", "Payment confirmed. You can start learning now.");
+            if (afterEnrollment != null) {
+                afterEnrollment.run();
+            }
+        });
+        task.setOnFailed(event -> {
+            paymentInProgress = false;
+            continueButton.setDisable(false);
+            loadLearningState();
+            Throwable error = task.getException();
+            showError("Payment was not completed.", error instanceof Exception exception ? exception : new Exception(error));
+        });
+
+        Thread thread = new Thread(task, "skillora-course-checkout");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void updatePriceLabel() {
+        if (priceLabel == null || course == null || course.getId() == null) {
+            return;
+        }
+        try {
+            CoursePrice price = getCoursePaymentService().getOrCreatePrice(course);
+            priceLabel.setText(getCoursePaymentService().formatPrice(price));
+        } catch (Exception e) {
+            priceLabel.setText("Price unavailable");
+        }
     }
 
     private void updateProgressUi(Number progressValue, int completedLessons, int totalLessons) {
@@ -647,5 +715,12 @@ public class FrontCourseShowController implements FrontShellAware {
             courseInsightsService = new CourseInsightsService();
         }
         return courseInsightsService;
+    }
+
+    private CoursePaymentService getCoursePaymentService() {
+        if (coursePaymentService == null) {
+            coursePaymentService = new CoursePaymentService();
+        }
+        return coursePaymentService;
     }
 }

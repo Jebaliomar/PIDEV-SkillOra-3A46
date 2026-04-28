@@ -1,5 +1,5 @@
 .root {
-    -fx-font-family: ".AppleSystemUIFont", ".SF NS Text", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-background-color: transparent;
     -fx-text-fill: #162033;
     -fx-base: #f7f8fc;
@@ -1289,4 +1289,23 @@
 
 .separator .line {
     -fx-border-color: rgba(226,232,240,0.85);
+}
+
+.front-payment-kicker {
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-text-fill: rgba(219,234,254,0.78);
+}
+
+.front-payment-price-pill {
+    -fx-background-color: rgba(255,255,255,0.16);
+    -fx-background-radius: 999;
+    -fx-border-color: rgba(191,219,254,0.28);
+    -fx-border-radius: 999;
+    -fx-padding: 7 13 7 13;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: white;
 }

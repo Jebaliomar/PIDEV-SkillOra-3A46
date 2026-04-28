@@ -5,7 +5,7 @@
 
 /* === Root Variables === */
 .root {
-    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -navy-900: #0A0E27;
     -navy-800: #1A1F3A;
     -navy-700: #2A2F4A;
@@ -83,7 +83,7 @@
 }
 
 .logo-text {
-    -fx-font-family: "Cambria", "Georgia", "Palatino Linotype", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 26px;
     -fx-font-weight: normal;
     -fx-text-fill: #121212;
@@ -835,7 +835,7 @@
 .student-nav-btn {
     -fx-background-color: transparent;
     -fx-text-fill: #1a1a1a;
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-padding: 10 4 10 4;
@@ -862,7 +862,7 @@
     -fx-border-radius: 0;
     -fx-border-width: 1;
     -fx-text-fill: #1a1a1a;
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-style: italic;
     -fx-font-weight: normal;
     -fx-font-size: 14px;
@@ -892,7 +892,7 @@
     -fx-padding: 10 20 10 14;
 }
 .header-username .menu-item .label {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 14px;
     -fx-font-style: italic;
     -fx-text-fill: #1a1a1a;
@@ -910,7 +910,7 @@
 .nav-signout {
     -fx-background-color: transparent;
     -fx-text-fill: #1a1a1a;
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-padding: 10 18 10 18;
@@ -1104,7 +1104,7 @@
 .pf-root { -fx-background-color: transparent; }
 
 .pf-eyebrow {
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 10.5px;
     -fx-font-weight: bold;
     -fx-text-fill: #1a1a1a;
@@ -1123,12 +1123,12 @@
     -fx-stroke-width: 1;
 }
 .pf-avatar-initials {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 60px;
     -fx-text-fill: #1a1a1a;
 }
 .pf-role {
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-text-fill: #0e7490;
@@ -1140,26 +1140,26 @@
 }
 
 .pf-name {
-    -fx-font-family: "Cambria", "Georgia", "Palatino Linotype", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 64px;
     -fx-text-fill: #121212;
 }
 .pf-accent-mark { -fx-background-color: #0891b2; }
 .pf-field {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 19px;
     -fx-font-style: italic;
     -fx-text-fill: #4a4a4a;
 }
 .pf-origin {
-    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 12px;
     -fx-text-fill: #6B6158;
 }
 .pf-btn {
     -fx-background-color: #1a1a1a;
     -fx-text-fill: #F5F1E8;
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-padding: 14 32 14 32;
@@ -1177,7 +1177,7 @@
 .pf-hairline { -fx-background-color: #1a1a1a; -fx-opacity: 0.15; }
 
 .pf-section-label {
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-text-fill: #0891b2;
@@ -1185,42 +1185,42 @@
 
 .pf-ledger-row { -fx-padding: 18 0 18 0; }
 .pf-ledger-num {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 14px;
     -fx-font-style: italic;
     -fx-text-fill: #a59c90;
     -fx-min-width: 32;
 }
 .pf-ledger-key {
-    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 13px;
     -fx-text-fill: #1a1a1a;
 }
 .pf-ledger-val {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 30px;
     -fx-text-fill: #121212;
 }
 
 .pf-big-num {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 88px;
     -fx-text-fill: #121212;
 }
 .pf-muted-small {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 13px;
     -fx-font-style: italic;
     -fx-text-fill: #6B6158;
 }
 
 .pf-quote-mark {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 112px;
     -fx-text-fill: #0891b2;
 }
 .pf-quote {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 22px;
     -fx-font-style: italic;
     -fx-text-fill: #2a2a2a;
@@ -1228,19 +1228,19 @@
 }
 
 .pf-colophon-key {
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-text-fill: #8a8175;
 }
 .pf-colophon-val {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 15px;
     -fx-text-fill: #1a1a1a;
 }
 
 .pf-tag {
-    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 11px;
     -fx-text-fill: #1a1a1a;
     -fx-padding: 9 18 9 18;
@@ -1255,13 +1255,13 @@
 }
 
 .pf-skill-name {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 16px;
     -fx-font-style: italic;
     -fx-text-fill: #1a1a1a;
 }
 .pf-skill-val {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 13px;
     -fx-text-fill: #8a8175;
 }
@@ -1289,31 +1289,31 @@
 /* Settings — editorial                                           */
 /* ============================================================= */
 .set-section-title {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 32px;
     -fx-text-fill: #121212;
 }
 .set-section-desc {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 14px;
     -fx-font-style: italic;
     -fx-text-fill: #6B6158;
     -fx-line-spacing: 2;
 }
 .set-label {
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-text-fill: #8a8175;
 }
 .set-hint {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 12px;
     -fx-font-style: italic;
     -fx-text-fill: #9a9185;
 }
 .set-static-val {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 18px;
     -fx-text-fill: #1a1a1a;
     -fx-padding: 6 0 6 0;
@@ -1325,7 +1325,7 @@
     -fx-border-width: 0 0 1 0;
     -fx-background-radius: 0;
     -fx-padding: 10 0 10 0;
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 16px;
     -fx-text-fill: #1a1a1a;
     -fx-prompt-text-fill: #a59c90;
@@ -1356,7 +1356,7 @@
     -fx-border-color: transparent transparent #1a1a1a transparent;
     -fx-border-width: 0 0 1 0;
     -fx-background-radius: 0;
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 16px;
     -fx-padding: 0;
 }
@@ -1376,7 +1376,7 @@
     -fx-background-color: transparent;
     -fx-text-fill: #1a1a1a;
     -fx-padding: 10 0 10 0;
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 16px;
 }
 .set-combo .list-view {
@@ -1389,7 +1389,7 @@
     -fx-background-color: transparent;
     -fx-text-fill: #1a1a1a;
     -fx-padding: 10 14 10 14;
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 14px;
 }
 .set-combo .list-view .list-cell:hover,
@@ -1401,7 +1401,7 @@
 .set-btn-outline {
     -fx-background-color: transparent;
     -fx-text-fill: #1a1a1a;
-    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-padding: 13 28 13 28;
@@ -1423,14 +1423,14 @@
 .set-alert-success { -fx-border-color: #16a34a; }
 .set-alert-error   { -fx-border-color: #dc2626; }
 .set-alert-mark {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
 .set-alert-mark-success { -fx-text-fill: #16a34a; }
 .set-alert-mark-error   { -fx-text-fill: #dc2626; }
 .set-alert-text {
-    -fx-font-family: "Cambria", "Georgia", serif;
+    -fx-font-family: "Helvetica Neue Medium", "Helvetica Neue", "HelveticaNeue", "SF Pro Text", ".AppleSystemUIFont", "Segoe UI", Arial, sans-serif;
     -fx-font-size: 15px;
     -fx-font-style: italic;
     -fx-text-fill: #1a1a1a;

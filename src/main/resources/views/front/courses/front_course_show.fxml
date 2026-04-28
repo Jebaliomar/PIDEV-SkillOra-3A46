@@ -20,6 +20,10 @@
                     <Label fx:id="categoryLabel" styleClass="front-course-hero-category" text="Category"/>
                     <Label fx:id="courseTitleLabel" styleClass="front-course-hero-title" text="Course Title" wrapText="true"/>
                     <Label fx:id="descriptionLabel" styleClass="front-course-hero-description" text="Course description" wrapText="true"/>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label styleClass="front-payment-kicker" text="COURSE ACCESS"/>
+                        <Label fx:id="priceLabel" styleClass="front-payment-price-pill" text="USD 19.99"/>
+                    </HBox>
                     <VBox spacing="9.0" styleClass="front-course-progress-panel">
                         <HBox alignment="CENTER_LEFT" spacing="12.0">
                             <Label fx:id="progressLabel" styleClass="front-course-progress-value" text="0% complete"/>
@@ -29,7 +33,7 @@
                         <ProgressBar fx:id="courseProgressBar" maxWidth="Infinity" progress="0.0"/>
                     </VBox>
                     <HBox alignment="CENTER_LEFT" spacing="12.0">
-                        <Button fx:id="continueButton" mnemonicParsing="false" onAction="#handleContinueCourse" styleClass="hero-button" text="Start Course"/>
+                        <Button fx:id="continueButton" mnemonicParsing="false" onAction="#handleContinueCourse" styleClass="hero-button" text="Buy Course"/>
                         <Button fx:id="certificateButton" managed="false" mnemonicParsing="false" onAction="#handleOpenCertificate" styleClass="secondary-button front-certificate-button" text="Open Certificate" visible="false"/>
                     </HBox>
                 </VBox>
