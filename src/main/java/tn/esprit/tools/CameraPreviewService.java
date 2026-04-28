@@ -24,15 +24,11 @@ public class CameraPreviewService {
     public record CameraFrame(Image image, BufferedImage bufferedImage, int width, int height) {
     }
 
-    private static final int TARGET_FPS = 30;
-
     private final CameraReservationConfig config;
     private Webcam webcam;
     private ScheduledExecutorService executor;
     private Consumer<String> statusConsumer;
-    private Consumer<CameraFrame> frameConsumer;
     private final AtomicBoolean running = new AtomicBoolean(false);
-    private final AtomicBoolean uiUpdatePending = new AtomicBoolean(false);
     private final AtomicBoolean firstFrameReceived = new AtomicBoolean(false);
     private volatile CameraFrame latestFrame;
 
@@ -45,8 +41,11 @@ public class CameraPreviewService {
     }
 
     public void bind(Consumer<CameraFrame> frameConsumer, Consumer<String> statusConsumer) {
-        this.frameConsumer = frameConsumer;
         this.statusConsumer = statusConsumer;
+    }
+
+    public CameraFrame getLatestFrame() {
+        return latestFrame;
     }
 
     public synchronized void start() {
@@ -56,8 +55,8 @@ public class CameraPreviewService {
 
         updateStatus("Connexion a la camera...");
         firstFrameReceived.set(false);
-        uiUpdatePending.set(false);
         running.set(true);
+        latestFrame = null;
 
         executor = Executors.newSingleThreadScheduledExecutor(buildThreadFactory());
         executor.execute(this::openAndStreamCamera);
@@ -65,7 +64,6 @@ public class CameraPreviewService {
 
     public synchronized void stop() {
         running.set(false);
-        uiUpdatePending.set(false);
 
         ScheduledExecutorService currentExecutor = executor;
         executor = null;
@@ -83,7 +81,6 @@ public class CameraPreviewService {
         }
 
         latestFrame = null;
-        pushFrameToUi(null);
         updateStatus("Camera arretee.");
     }
 
@@ -139,24 +136,8 @@ public class CameraPreviewService {
             if (firstFrameReceived.compareAndSet(false, true)) {
                 updateStatus("Flux camera actif");
             }
-
-            if (uiUpdatePending.compareAndSet(false, true)) {
-                Platform.runLater(() -> {
-                    try {
-                        pushFrameToUi(latestFrame);
-                    } finally {
-                        uiUpdatePending.set(false);
-                    }
-                });
-            }
         } catch (Exception exception) {
             updateStatus("Lecture camera interrompue: " + safeMessage(exception));
-        }
-    }
-
-    private void pushFrameToUi(CameraFrame frame) {
-        if (frameConsumer != null) {
-            frameConsumer.accept(frame);
         }
     }
 

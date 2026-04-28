@@ -159,7 +159,8 @@
                                 <Label fx:id="seatsSummaryLabel" text="Capacity matrix 0 seats" styleClass="site-matrix-caption"/>
                             </HBox>
 
-                            <HBox alignment="CENTER_RIGHT">
+                            <HBox alignment="CENTER_RIGHT" spacing="10">
+                                <Button text="Vision Test" onAction="#onOpenVisionTest" styleClass="site-vision-test-button"/>
                                 <Button fx:id="reservationButton" text="Reservation" onAction="#onOpenReservationForm" styleClass="site-submit-button"/>
                             </HBox>
 

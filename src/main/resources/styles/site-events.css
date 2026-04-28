@@ -1036,6 +1036,17 @@
     -fx-font-weight: 700;
 }
 
+.site-camera-debug-label {
+    -fx-background-color: rgba(15, 23, 42, 0.78);
+    -fx-border-color: rgba(59, 130, 246, 0.24);
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-text-fill: #dbeafe;
+    -fx-padding: 8 12;
+    -fx-font-size: 11px;
+    -fx-font-family: "Consolas";
+}
+
 .site-camera-pinch-label,
 .site-camera-pinch-minus {
     -fx-text-fill: rgba(255,255,255,0.88);
@@ -1163,6 +1174,176 @@
     -fx-font-size: 13px;
 }
 
+.site-camera-dialog {
+    -fx-background-color: linear-gradient(to bottom right, #eef6ff, #f8fbff);
+}
+
+.site-camera-header {
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-border-color: #dce5f2;
+    -fx-border-width: 0 0 1 0;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 18, 0.18, 0, 5);
+}
+
+.site-camera-header-subtitle {
+    -fx-text-fill: #6f83a3;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.site-camera-top-badge {
+    -fx-background-color: rgba(20, 184, 166, 0.12);
+    -fx-border-color: rgba(20, 184, 166, 0.28);
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #0f766e;
+    -fx-padding: 7 12;
+}
+
+.site-camera-workspace {
+    -fx-background-color: transparent;
+}
+
+.site-camera-main-panel,
+.site-camera-side-panel {
+    -fx-background-color: transparent;
+}
+
+.site-camera-preview-card,
+.site-camera-control-card,
+.site-camera-toolbar {
+    -fx-background-color: rgba(255, 255, 255, 0.96);
+    -fx-border-color: #dce5f2;
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 20, 0.16, 0, 8);
+}
+
+.site-camera-preview-card {
+    -fx-padding: 16;
+}
+
+.site-camera-panel-header {
+    -fx-padding: 0 2 0 2;
+}
+
+.site-camera-panel-title {
+    -fx-text-fill: #15233f;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.site-camera-panel-subtitle {
+    -fx-text-fill: #6f83a3;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.site-camera-active-field-pill {
+    -fx-background-color: rgba(239, 68, 68, 0.10);
+    -fx-border-color: rgba(239, 68, 68, 0.22);
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #b91c1c;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+}
+
+.site-camera-strip,
+.site-camera-bottom-panel,
+.site-camera-footer {
+    -fx-background-color: rgba(255, 255, 255, 0.96);
+    -fx-border-color: #dce5f2;
+    -fx-border-width: 1;
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+}
+
+.site-camera-preview-shell {
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.18), 24, 0.18, 0, 10);
+}
+
+.site-camera-preview-surface {
+    -fx-background-radius: 18;
+}
+
+.site-camera-tab {
+    -fx-padding: 9 12;
+    -fx-font-size: 13px;
+}
+
+.site-camera-tab:selected {
+    -fx-background-color: linear-gradient(to right, #2563eb, #14b8a6);
+    -fx-border-color: rgba(37, 99, 235, 0.32);
+}
+
+.site-camera-value-card {
+    -fx-min-width: 132;
+    -fx-pref-width: 132;
+    -fx-background-color: #f8fbff;
+    -fx-border-color: #dce5f2;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 10 12;
+}
+
+.site-camera-value-card-empty {
+    -fx-background-color: #f8fafc;
+}
+
+.site-camera-toolbar {
+    -fx-border-width: 1;
+}
+
+.site-camera-result-row,
+.site-camera-utility-row {
+    -fx-background-color: transparent;
+}
+
+.site-camera-result-field {
+    -fx-border-color: #cfdbea;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 11 14;
+    -fx-font-size: 14px;
+}
+
+.site-camera-soft-button {
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 10 14;
+}
+
+.site-camera-recognize-button {
+    -fx-background-color: linear-gradient(to right, #2563eb, #1d4ed8);
+    -fx-border-color: #2563eb;
+    -fx-text-fill: white;
+}
+
+.site-camera-save-button {
+    -fx-background-color: rgba(20, 184, 166, 0.12);
+    -fx-border-color: rgba(20, 184, 166, 0.32);
+    -fx-text-fill: #0f766e;
+}
+
+.site-camera-button {
+    -fx-background-color: linear-gradient(to right, #0f766e, #2563eb);
+    -fx-border-color: transparent;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: white;
+    -fx-padding: 12 18;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+}
+
+.site-camera-button:hover {
+    -fx-background-color: linear-gradient(to right, #0d9488, #1d4ed8);
+}
+
 .site-submit-button {
     -fx-background-color: linear-gradient(to right, #3b82f6, #2563eb);
     -fx-text-fill: white;
@@ -1174,6 +1355,198 @@
 
 .site-submit-button:disabled {
     -fx-opacity: 0.45;
+}
+
+.site-vision-test-button {
+    -fx-background-color: rgba(20, 184, 166, 0.12);
+    -fx-border-color: rgba(20, 184, 166, 0.32);
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #0f766e;
+    -fx-padding: 12 22;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+}
+
+.site-vision-test-button:hover {
+    -fx-background-color: rgba(20, 184, 166, 0.18);
+}
+
+.vision-test-root {
+    -fx-background-color: linear-gradient(to bottom right, #edf7ff, #f8fbff);
+    -fx-font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+.vision-test-card {
+    -fx-background-color: rgba(255, 255, 255, 0.98);
+    -fx-border-color: #dce5f2;
+    -fx-border-radius: 22;
+    -fx-background-radius: 22;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.12), 28, 0.16, 0, 10);
+}
+
+.vision-test-title {
+    -fx-text-fill: #15233f;
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+}
+
+.vision-test-subtitle {
+    -fx-text-fill: #647892;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+}
+
+.vision-test-progress {
+    -fx-accent: #14b8a6;
+    -fx-pref-height: 10;
+}
+
+.vision-test-dots {
+    -fx-padding: 2 0 0 0;
+}
+
+.vision-test-dot {
+    -fx-min-width: 12;
+    -fx-min-height: 12;
+    -fx-max-width: 12;
+    -fx-max-height: 12;
+    -fx-background-color: #dbe6f4;
+    -fx-background-radius: 999;
+}
+
+.vision-test-dot-current {
+    -fx-background-color: #93c5fd;
+}
+
+.vision-test-dot-active {
+    -fx-background-color: #14b8a6;
+}
+
+.vision-test-letter-panel {
+    -fx-background-color: linear-gradient(to bottom, #f8fbff, #eef5ff);
+    -fx-border-color: #dce5f2;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-padding: 22;
+}
+
+.vision-test-level {
+    -fx-text-fill: #4f6280;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.vision-test-letter {
+    -fx-text-fill: #0f172a;
+    -fx-font-family: "Arial Black", "Segoe UI", Arial, sans-serif;
+    -fx-font-weight: 900;
+}
+
+.vision-test-actions {
+    -fx-max-width: 560;
+}
+
+.vision-test-button {
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 13 18;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.vision-test-button-yes {
+    -fx-background-color: linear-gradient(to right, #14b8a6, #0f766e);
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+}
+
+.vision-test-button-no {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d5dfef;
+    -fx-text-fill: #334765;
+}
+
+.vision-test-button-close {
+    -fx-background-color: linear-gradient(to right, #3b82f6, #2563eb);
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+    -fx-min-width: 180;
+}
+
+.vision-test-result-panel {
+    -fx-background-color: linear-gradient(to bottom, #f8fbff, #ffffff);
+    -fx-border-color: #dce5f2;
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-padding: 24;
+}
+
+.vision-test-result-main {
+    -fx-text-fill: #15233f;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+}
+
+.vision-test-result-distance {
+    -fx-text-fill: #0f766e;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+}
+
+.vision-test-result-tip {
+    -fx-text-fill: #4f6280;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+    -fx-text-alignment: center;
+}
+
+.theme-dark .site-vision-test-button {
+    -fx-background-color: rgba(20, 184, 166, 0.16);
+    -fx-border-color: rgba(45, 212, 191, 0.30);
+    -fx-text-fill: #99f6e4;
+}
+
+.theme-dark.vision-test-root {
+    -fx-background-color: linear-gradient(to bottom right, #101827, #172033);
+}
+
+.theme-dark .vision-test-card,
+.theme-dark .vision-test-letter-panel,
+.theme-dark .vision-test-result-panel {
+    -fx-background-color: #111827;
+    -fx-border-color: #24324d;
+    -fx-effect: none;
+}
+
+.theme-dark .vision-test-title,
+.theme-dark .vision-test-letter,
+.theme-dark .vision-test-result-main {
+    -fx-text-fill: #f8fafc;
+}
+
+.theme-dark .vision-test-subtitle,
+.theme-dark .vision-test-level,
+.theme-dark .vision-test-result-tip {
+    -fx-text-fill: #8aa0c4;
+}
+
+.theme-dark .vision-test-dot {
+    -fx-background-color: #31415f;
+}
+
+.theme-dark .vision-test-dot-current {
+    -fx-background-color: #60a5fa;
+}
+
+.theme-dark .vision-test-dot-active {
+    -fx-background-color: #2dd4bf;
+}
+
+.theme-dark .vision-test-button-no {
+    -fx-background-color: #162033;
+    -fx-border-color: #31415f;
+    -fx-text-fill: #dbeafe;
 }
 
 .site-cancel-button {
@@ -1337,4 +1710,67 @@
 
 .theme-dark .site-map-chip-icon {
     -fx-text-fill: #8db7ff;
+}
+
+.theme-dark .site-camera-dialog {
+    -fx-background-color: linear-gradient(to bottom right, #101827, #172033);
+}
+
+.theme-dark .site-camera-preview-card,
+.theme-dark .site-camera-control-card,
+.theme-dark .site-camera-toolbar {
+    -fx-background-color: rgba(17, 24, 39, 0.96);
+    -fx-border-color: #24324d;
+    -fx-effect: none;
+}
+
+.theme-dark .site-camera-header-subtitle,
+.theme-dark .site-camera-panel-subtitle {
+    -fx-text-fill: #8aa0c4;
+}
+
+.theme-dark .site-camera-panel-title {
+    -fx-text-fill: #f8fafc;
+}
+
+.theme-dark .site-camera-top-badge {
+    -fx-background-color: rgba(20, 184, 166, 0.16);
+    -fx-border-color: rgba(45, 212, 191, 0.30);
+    -fx-text-fill: #99f6e4;
+}
+
+.theme-dark .site-camera-active-field-pill {
+    -fx-background-color: rgba(239, 68, 68, 0.16);
+    -fx-border-color: rgba(248, 113, 113, 0.30);
+    -fx-text-fill: #fecaca;
+}
+
+.theme-dark .site-camera-strip,
+.theme-dark .site-camera-bottom-panel,
+.theme-dark .site-camera-footer {
+    -fx-background-color: rgba(17, 24, 39, 0.96);
+    -fx-border-color: #24324d;
+}
+
+.theme-dark .site-camera-tab:selected {
+    -fx-background-color: linear-gradient(to right, #2563eb, #0f766e);
+    -fx-border-color: rgba(96, 165, 250, 0.36);
+}
+
+.theme-dark .site-camera-recognize-button {
+    -fx-background-color: linear-gradient(to right, #2563eb, #1d4ed8);
+    -fx-border-color: #2563eb;
+    -fx-text-fill: white;
+}
+
+.theme-dark .site-camera-save-button {
+    -fx-background-color: rgba(20, 184, 166, 0.16);
+    -fx-border-color: rgba(45, 212, 191, 0.30);
+    -fx-text-fill: #99f6e4;
+}
+
+.theme-dark .site-camera-button {
+    -fx-background-color: linear-gradient(to right, #0f766e, #2563eb);
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
 }

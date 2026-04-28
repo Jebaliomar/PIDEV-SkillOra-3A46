@@ -1,0 +1,6 @@
+# Copy this file to twilio.properties or set equivalent environment variables.
+# Do not commit twilio.properties because it contains your Auth Token.
+twilio.account.sid=
+twilio.auth.token=
+twilio.from.number=
+twilio.default-country-code=+216

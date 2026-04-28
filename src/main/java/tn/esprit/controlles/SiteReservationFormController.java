@@ -1,6 +1,7 @@
 package tn.esprit.controlles;
 
 import javafx.animation.PauseTransition;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -23,6 +24,7 @@ import tn.esprit.entities.Salle;
 import tn.esprit.entities.SiteReservationFormData;
 import tn.esprit.services.ReservationService;
 import tn.esprit.services.SiteReservationFormService;
+import tn.esprit.services.TwilioSmsService;
 import tn.esprit.tools.CameraReservationDialog;
 import tn.esprit.tools.CameraReservationField;
 import tn.esprit.tools.OcrTextRecognizer;
@@ -86,6 +88,7 @@ public class SiteReservationFormController {
 
     private final SiteReservationFormService formService = new SiteReservationFormService();
     private final ReservationService reservationService = new ReservationService();
+    private final TwilioSmsService twilioSmsService = new TwilioSmsService();
     private final OcrTextRecognizer ocrTextRecognizer = new TesseractCliTextRecognizer();
 
     private Event event;
@@ -149,7 +152,8 @@ public class SiteReservationFormController {
             clearValidationState();
             Reservation reservation = buildReservationPayload();
             reservationService.add(reservation);
-            showSuccessFlash("Reservation enregistree", true);
+            showSuccessFlash("Reservation enregistree, SMS en cours", false);
+            sendReservationSmsThenFinish(reservation);
         } catch (ValidationException e) {
         } catch (IllegalArgumentException e) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -234,6 +238,53 @@ public class SiteReservationFormController {
         reservation.setSalleId(salleId);
         reservation.setUserId(null);
         return reservation;
+    }
+
+    private void sendReservationSmsThenFinish(Reservation reservation) {
+        Task<String> smsTask = new Task<>() {
+            @Override
+            protected String call() {
+                return sendReservationThankYouSms(reservation);
+            }
+        };
+        smsTask.setOnSucceeded(event -> {
+            String smsError = smsTask.getValue();
+            if (smsError == null) {
+                showSuccessFlash("Reservation enregistree, SMS envoye", true);
+            } else {
+                showSuccessFlash("Reservation enregistree", false);
+                showSmsWarning(smsError);
+                goBackToSalleDetails();
+            }
+        });
+        smsTask.setOnFailed(event -> {
+            showSuccessFlash("Reservation enregistree", false);
+            showSmsWarning("Reservation enregistree, mais le SMS n'a pas pu etre envoye.");
+            goBackToSalleDetails();
+        });
+
+        Thread thread = new Thread(smsTask, "twilio-reservation-sms");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private String sendReservationThankYouSms(Reservation reservation) {
+        try {
+            twilioSmsService.sendReservationThankYou(reservation, eventField.getText(), salleField.getText());
+            return null;
+        } catch (TwilioSmsService.SmsException exception) {
+            return exception.getMessage() == null || exception.getMessage().isBlank()
+                    ? "Reservation enregistree, mais le SMS n'a pas pu etre envoye."
+                    : exception.getMessage();
+        }
+    }
+
+    private void showSmsWarning(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("SMS Twilio");
+        alert.setHeaderText("Reservation enregistree, SMS non envoye");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private String buildNombrePlaces() {

@@ -12,9 +12,21 @@ public class SimpleColorHandTrackingDetector implements HandTrackingDetector {
 
     private static final int SAMPLE_STEP = 3;
     private static final int MIN_COMPONENT_PIXELS = 150;
-    private static final double GESTURE_ON_THRESHOLD = 0.60;
-    private static final double GESTURE_OFF_THRESHOLD = 0.42;
+    private static final double FINGERTIP_INSET = 0.02;
+    private static final double DETECTOR_DEADZONE = 0.004;
+    private static final double DETECTOR_SMOOTHING = 0.26;
+    private static final double DETECTOR_FAST_SMOOTHING = 0.42;
+    private static final double DETECTOR_OUTLIER_THRESHOLD = 0.09;
+    private static final double PINCH_ON_FACTOR = 0.20;
+    private static final double PINCH_OFF_FACTOR = 0.29;
+    private static final int POINT_HISTORY_SIZE = 4;
     private boolean drawingGestureActive;
+    private HandLandmarkPoint stabilizedDrawingPoint;
+    private HandLandmarkPoint stabilizedCentroid;
+    private HandLandmarkPoint stabilizedThumbPoint;
+    private final Deque<HandLandmarkPoint> indexHistory = new ArrayDeque<>();
+    private final Deque<HandLandmarkPoint> thumbHistory = new ArrayDeque<>();
+    private final Deque<HandLandmarkPoint> centroidHistory = new ArrayDeque<>();
 
     @Override
     public void start() {
@@ -22,6 +34,13 @@ public class SimpleColorHandTrackingDetector implements HandTrackingDetector {
 
     @Override
     public void stop() {
+        stabilizedDrawingPoint = null;
+        stabilizedCentroid = null;
+        stabilizedThumbPoint = null;
+        drawingGestureActive = false;
+        indexHistory.clear();
+        thumbHistory.clear();
+        centroidHistory.clear();
     }
 
     @Override
@@ -36,47 +55,70 @@ public class SimpleColorHandTrackingDetector implements HandTrackingDetector {
             return TrackedHandState.unavailable("Main non detectee. Placez votre main dans la zone camera.");
         }
 
-        HandLandmarkPoint centroid = new HandLandmarkPoint(component.centroidX, component.centroidY, 1.0);
-        HandLandmarkPoint fingertip = component.boundary.stream()
-                .filter(point -> point.y() <= centroid.y() + 0.04)
-                .max(Comparator.comparingDouble(point ->
-                        (centroid.y() - point.y()) - Math.abs(point.x() - centroid.x()) * 0.45))
-                .orElseGet(() -> component.boundary.stream()
-                        .min(Comparator.comparingDouble(HandLandmarkPoint::y))
-                        .orElse(centroid));
-
-        double dx = fingertip.x() - centroid.x();
-        double dy = fingertip.y() - centroid.y();
-        double distance = Math.hypot(dx, dy);
+        HandLandmarkPoint centroid = stabilizeCentroid(
+                averagePoint(centroidHistory, new HandLandmarkPoint(component.centroidX, component.centroidY, 1.0))
+        );
+        HandLandmarkPoint indexTip = stabilizeDrawingPoint(
+                averagePoint(indexHistory, refineIndexTip(component, centroid))
+        );
         double bboxDiagonal = Math.hypot(component.maxX - component.minX, component.maxY - component.minY);
         double bboxWidth = Math.max(0.001, component.maxX - component.minX);
         double bboxHeight = Math.max(0.001, component.maxY - component.minY);
         double fillRatio = clamp(component.area / Math.max(1.0, component.boundingArea));
         double topSpread = computeTopSpread(component.boundary, component.minY, bboxWidth, bboxHeight);
-        double fingertipOffset = clamp(distance / Math.max(0.001, bboxDiagonal));
-        double gestureStrength = clamp(
-                fillRatio * 0.48
-                        + (1.0 - topSpread) * 0.34
-                        + (1.0 - fingertipOffset) * 0.18
+        HandLandmarkPoint thumbTip = stabilizeThumbPoint(
+                averagePoint(thumbHistory, refineThumbTip(component, centroid, indexTip, bboxDiagonal))
         );
+        double pinchDistance = thumbTip == null || indexTip == null
+                ? 1.0
+                : Math.hypot(indexTip.x() - thumbTip.x(), indexTip.y() - thumbTip.y());
+        double pinchStartThreshold = Math.max(0.055, bboxDiagonal * PINCH_ON_FACTOR);
+        double pinchEndThreshold = Math.max(pinchStartThreshold + 0.028, bboxDiagonal * PINCH_OFF_FACTOR);
+        double pinchRatio = pinchDistance / Math.max(0.001, bboxDiagonal);
+        double pinchStrength = clamp(1.0 - pinchDistance / Math.max(0.001, pinchEndThreshold));
+        double fingertipExtension = indexTip == null
+                ? 0.0
+                : clamp(Math.hypot(indexTip.x() - centroid.x(), indexTip.y() - centroid.y()) / Math.max(0.001, bboxDiagonal));
+        double thumbExtension = thumbTip == null
+                ? 0.0
+                : clamp(Math.hypot(thumbTip.x() - centroid.x(), thumbTip.y() - centroid.y()) / Math.max(0.001, bboxDiagonal));
+        boolean pinchShape = thumbTip != null
+                && indexTip != null
+                && fingertipExtension > 0.18
+                && thumbExtension > 0.10
+                && pinchRatio < 0.38;
         drawingGestureActive = drawingGestureActive
-                ? gestureStrength >= GESTURE_OFF_THRESHOLD
-                : gestureStrength >= GESTURE_ON_THRESHOLD;
-        boolean drawingActive = drawingGestureActive && fingertip.y() < centroid.y() + bboxHeight * 0.18;
+                ? pinchShape && pinchDistance <= pinchEndThreshold
+                : pinchShape && pinchDistance <= pinchStartThreshold;
+        boolean drawingActive = drawingGestureActive && indexTip != null && thumbTip != null;
+        double gestureStrength = drawingActive
+                ? clamp(0.65 + pinchStrength * 0.35)
+                : clamp(pinchStrength * 0.45 + (1.0 - topSpread) * 0.20 + fillRatio * 0.10);
 
-        List<HandLandmarkPoint> landmarks = sampleBoundary(component.boundary, 16);
-        landmarks = new ArrayList<>(landmarks);
-        landmarks.add(fingertip);
+        List<HandLandmarkPoint> landmarks = new ArrayList<>();
+        if (centroid != null) {
+            landmarks.add(centroid);
+        }
+        if (thumbTip != null) {
+            landmarks.add(thumbTip);
+        }
+        if (indexTip != null) {
+            landmarks.add(indexTip);
+        }
+        HandTrackingPhase phase = drawingActive ? HandTrackingPhase.PINCH_ACTIVE : HandTrackingPhase.HAND_OPEN;
 
         return new TrackedHandState(
                 true,
                 landmarks,
-                fingertip,
+                drawingActive ? indexTip : null,
+                drawingActive ? indexTip : null,
                 drawingActive,
+                phase,
                 drawingActive
-                        ? "Geste ecriture actif."
-                        : "Main ouverte : pause. Fermez la main ou faites un pinch pour tracer.",
-                gestureStrength
+                        ? "Pinch actif : point rouge visible, pret a dessiner."
+                        : "Main ouverte : dessin desactive. Faites un pinch pour tracer.",
+                gestureStrength,
+                pinchDistance
         );
     }
 
@@ -88,6 +130,149 @@ public class SimpleColorHandTrackingDetector implements HandTrackingDetector {
     @Override
     public boolean isAvailable() {
         return true;
+    }
+
+    private HandLandmarkPoint refineIndexTip(Component component, HandLandmarkPoint centroid) {
+        List<HandLandmarkPoint> candidates = component.boundary.stream()
+                .filter(point -> point.y() <= centroid.y() + 0.10)
+                .sorted(Comparator.comparingDouble((HandLandmarkPoint point) ->
+                        scoreFingertip(point, centroid)).reversed())
+                .limit(5)
+                .toList();
+
+        HandLandmarkPoint contourTip;
+        if (candidates.isEmpty()) {
+            contourTip = component.boundary.stream()
+                    .min(Comparator.comparingDouble(HandLandmarkPoint::y))
+                    .orElse(centroid);
+        } else {
+            double sumX = 0.0;
+            double sumY = 0.0;
+            for (HandLandmarkPoint candidate : candidates) {
+                sumX += candidate.x();
+                sumY += candidate.y();
+            }
+            contourTip = new HandLandmarkPoint(sumX / candidates.size(), sumY / candidates.size(), 1.0);
+        }
+
+        double insetX = contourTip.x() + (centroid.x() - contourTip.x()) * FINGERTIP_INSET;
+        double insetY = contourTip.y() + (centroid.y() - contourTip.y()) * FINGERTIP_INSET;
+        return new HandLandmarkPoint(clamp(insetX), clamp(insetY), 1.0);
+    }
+
+    private HandLandmarkPoint refineThumbTip(Component component, HandLandmarkPoint centroid, HandLandmarkPoint indexTip, double bboxDiagonal) {
+        if (indexTip == null) {
+            return null;
+        }
+
+        double indexAngle = Math.atan2(indexTip.y() - centroid.y(), indexTip.x() - centroid.x());
+        return component.boundary.stream()
+                .filter(point -> point.y() <= centroid.y() + 0.18)
+                .filter(point -> !isNear(point, indexTip, 0.03))
+                .filter(point -> {
+                    double angle = Math.atan2(point.y() - centroid.y(), point.x() - centroid.x());
+                    double angleDiff = Math.abs(normalizeAngle(angle - indexAngle));
+                    return angleDiff > 0.45 && angleDiff < 2.7;
+                })
+                .min(Comparator.comparingDouble(point -> thumbScore(point, centroid, indexTip, bboxDiagonal)))
+                .map(point -> {
+                    double insetX = point.x() + (centroid.x() - point.x()) * FINGERTIP_INSET;
+                    double insetY = point.y() + (centroid.y() - point.y()) * FINGERTIP_INSET;
+                    return new HandLandmarkPoint(clamp(insetX), clamp(insetY), 1.0);
+                })
+                .orElse(null);
+    }
+
+    private double scoreFingertip(HandLandmarkPoint point, HandLandmarkPoint centroid) {
+        double verticalReach = centroid.y() - point.y();
+        double radialReach = Math.hypot(point.x() - centroid.x(), point.y() - centroid.y());
+        double sidePenalty = Math.abs(point.x() - centroid.x()) * 0.16;
+        return verticalReach * 0.72 + radialReach * 0.28 - sidePenalty;
+    }
+
+    private HandLandmarkPoint stabilizeDrawingPoint(HandLandmarkPoint rawPoint) {
+        if (rawPoint == null) {
+            stabilizedDrawingPoint = null;
+            indexHistory.clear();
+            return null;
+        }
+        if (stabilizedDrawingPoint == null) {
+            stabilizedDrawingPoint = rawPoint;
+            return rawPoint;
+        }
+        stabilizedDrawingPoint = smoothPoint(stabilizedDrawingPoint, rawPoint);
+        return stabilizedDrawingPoint;
+    }
+
+    private HandLandmarkPoint stabilizeThumbPoint(HandLandmarkPoint rawPoint) {
+        if (rawPoint == null) {
+            stabilizedThumbPoint = null;
+            thumbHistory.clear();
+            return null;
+        }
+        if (stabilizedThumbPoint == null) {
+            stabilizedThumbPoint = rawPoint;
+            return rawPoint;
+        }
+        stabilizedThumbPoint = smoothPoint(stabilizedThumbPoint, rawPoint);
+        return stabilizedThumbPoint;
+    }
+
+    private HandLandmarkPoint stabilizeCentroid(HandLandmarkPoint rawPoint) {
+        if (rawPoint == null) {
+            stabilizedCentroid = null;
+            centroidHistory.clear();
+            return null;
+        }
+        if (stabilizedCentroid == null) {
+            stabilizedCentroid = rawPoint;
+            return rawPoint;
+        }
+        stabilizedCentroid = smoothPoint(stabilizedCentroid, rawPoint);
+        return stabilizedCentroid;
+    }
+
+    private HandLandmarkPoint averagePoint(Deque<HandLandmarkPoint> history, HandLandmarkPoint point) {
+        if (point == null) {
+            history.clear();
+            return null;
+        }
+        history.addLast(point);
+        while (history.size() > POINT_HISTORY_SIZE) {
+            history.removeFirst();
+        }
+        double sumX = 0.0;
+        double sumY = 0.0;
+        double sumConfidence = 0.0;
+        int size = 0;
+        for (HandLandmarkPoint value : history) {
+            sumX += value.x();
+            sumY += value.y();
+            sumConfidence += value.confidence();
+            size++;
+        }
+        if (size == 0) {
+            return point;
+        }
+        return new HandLandmarkPoint(sumX / size, sumY / size, sumConfidence / size);
+    }
+
+    private HandLandmarkPoint smoothPoint(HandLandmarkPoint previous, HandLandmarkPoint raw) {
+        double dx = raw.x() - previous.x();
+        double dy = raw.y() - previous.y();
+        double distance = Math.hypot(dx, dy);
+        if (distance < DETECTOR_DEADZONE) {
+            return previous;
+        }
+        if (distance > DETECTOR_OUTLIER_THRESHOLD) {
+            return previous;
+        }
+        double alpha = distance > 0.025 ? DETECTOR_FAST_SMOOTHING : DETECTOR_SMOOTHING;
+        return new HandLandmarkPoint(
+                previous.x() + dx * alpha,
+                previous.y() + dy * alpha,
+                raw.confidence()
+        );
     }
 
     private double computeTopSpread(List<HandLandmarkPoint> boundary, double minY, double bboxWidth, double bboxHeight) {
@@ -110,6 +295,26 @@ public class SimpleColorHandTrackingDetector implements HandTrackingDetector {
 
     private double clamp(double value) {
         return Math.max(0.0, Math.min(1.0, value));
+    }
+
+    private double thumbScore(HandLandmarkPoint point, HandLandmarkPoint centroid, HandLandmarkPoint indexTip, double bboxDiagonal) {
+        double pairDistance = Math.hypot(point.x() - indexTip.x(), point.y() - indexTip.y());
+        double centroidDistance = Math.hypot(point.x() - centroid.x(), point.y() - centroid.y());
+        return pairDistance * 0.75 - centroidDistance * 0.18 + Math.abs(point.y() - indexTip.y()) * 0.22 + bboxDiagonal * 0.05;
+    }
+
+    private boolean isNear(HandLandmarkPoint a, HandLandmarkPoint b, double threshold) {
+        return Math.hypot(a.x() - b.x(), a.y() - b.y()) <= threshold;
+    }
+
+    private double normalizeAngle(double angle) {
+        while (angle <= -Math.PI) {
+            angle += Math.PI * 2.0;
+        }
+        while (angle > Math.PI) {
+            angle -= Math.PI * 2.0;
+        }
+        return angle;
     }
 
     private DetectionGrid buildSkinMask(BufferedImage frame) {

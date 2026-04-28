@@ -1,5 +1,6 @@
 package tn.esprit.tools;
 
+import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -31,14 +32,15 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public final class CameraReservationDialog {
+    private static final Logger LOG = LoggerFactory.getLogger(CameraReservationDialog.class);
     private static final double DRAW_MIN_DISTANCE = 0.42;
     private static final double DRAW_INTERPOLATION_STEP = 6.0;
     private static final double DRAW_STROKE_WIDTH = 6.0;
@@ -55,16 +57,24 @@ public final class CameraReservationDialog {
     private final CameraPreviewService cameraPreviewService = new CameraPreviewService(config);
     private final HandTrackingDetector handTrackingDetector = new SimpleColorHandTrackingDetector();
     private final HandTrackingOverlayRenderer handTrackingOverlayRenderer = new HandTrackingOverlayRenderer();
-    private final TrackedPointerSmoother trackedPointerSmoother = new TrackedPointerSmoother();
+    private final CoordinateMapper coordinateMapper = new CoordinateMapper();
+    private final TrackedPointerSmoother trackedPointerSmoother = TrackedPointerSmoother.fromConfig(config);
+    private final AssistedTrackedPen assistedTrackedPen = new AssistedTrackedPen();
+    private final OneEuroPointFilter guidePointFilter = new OneEuroPointFilter();
     private CameraReservationField selectedField = CameraReservationField.PRENOM;
+    private boolean directScreenMode = true;
     private Canvas landmarksCanvas;
     private GraphicsContext landmarksGraphics;
     private Canvas inkCanvas;
     private GraphicsContext inkGraphics;
+    private StableCameraPreviewPane previewPane;
+    private HandwritingStrokeEngine strokeEngine;
     private ProgressBar pinchMeter;
     private Label statusLabel;
     private Label cameraStatusLabel;
+    private Label trackingDebugLabel;
     private Label drawingModeLabel;
+    private Label activeFieldBadgeLabel;
     private Button cameraToggleButton;
     private Button recognizeButton;
     private TextField resultField;
@@ -78,14 +88,19 @@ public final class CameraReservationDialog {
     private boolean trackingStrokeActive;
     private boolean recognitionRunning;
     private int missingTrackingFrames;
-    private int activeTrackingFrames;
     private HandLandmarkPoint lastTrackingPoint;
     private TrackedHandState lastDetectedState;
     private Stage stage;
     private EnumMap<CameraReservationField, String> result;
+    private AnimationTimer renderLoop;
+    private CameraPreviewService.CameraFrame lastRenderedFrame;
+    private long lastRenderTick;
+    private long lastDebugLogNanos;
     private static final int TRACKING_GRACE_FRAMES = 8;
-    private static final int TRACKING_ACTIVATION_FRAMES = 2;
+    private static final int DRAWING_GRACE_FRAMES = 4;
     private static final double MAX_TRACKING_JUMP = 0.12;
+    private static final long DEBUG_LOG_INTERVAL_NANOS = 300_000_000L;
+    private int drawingGraceFrames;
 
     private CameraReservationDialog(Map<CameraReservationField, String> initialValues, OcrTextRecognizer recognizer) {
         this.recognizer = recognizer;
@@ -114,15 +129,15 @@ public final class CameraReservationDialog {
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initStyle(StageStyle.DECORATED);
         stage.setTitle("Reservation Camera");
-        stage.setMinWidth(930);
-        stage.setMinHeight(700);
+        stage.setMinWidth(1060);
+        stage.setMinHeight(720);
 
         BorderPane root = new BorderPane();
         root.getStyleClass().addAll("site-root", "site-camera-dialog");
         root.setTop(buildHeader());
         root.setCenter(buildContent());
 
-        Scene scene = new Scene(root, 980, 760);
+        Scene scene = new Scene(root, 1160, 780);
         if (sourceScene != null) {
             scene.getStylesheets().addAll(sourceScene.getStylesheets());
             if (sourceScene.getRoot().getStyleClass().contains("theme-dark")) {
@@ -132,8 +147,11 @@ public final class CameraReservationDialog {
 
         stage.setOnShown(event -> startCameraPreview());
         stage.setOnHidden(event -> {
+            stopRenderLoop();
             cameraPreviewService.stop();
             handTrackingDetector.stop();
+            assistedTrackedPen.reset();
+            guidePointFilter.reset();
         });
         stage.setScene(scene);
         stage.centerOnScreen();
@@ -144,13 +162,17 @@ public final class CameraReservationDialog {
     }
 
     private BorderPane buildHeader() {
-        Label title = new Label("Camera - Ecriture gestuelle");
+        Label title = new Label("Reservation Camera");
         title.getStyleClass().add("site-camera-modal-title");
 
-        Label badge = new Label("+ OCR IA");
+        Label subtitle = new Label("Ecriture gestuelle et reconnaissance OCR");
+        subtitle.getStyleClass().add("site-camera-header-subtitle");
+
+        Label badge = new Label("Live OCR");
         badge.getStyleClass().add("site-camera-top-badge");
 
-        HBox titleRow = new HBox(8, title, badge);
+        VBox titleBlock = new VBox(3, title, subtitle);
+        HBox titleRow = new HBox(12, titleBlock, badge);
         titleRow.setAlignment(Pos.CENTER_LEFT);
 
         Button closeButton = new Button("✕");
@@ -161,26 +183,65 @@ public final class CameraReservationDialog {
         header.getStyleClass().add("site-camera-header");
         header.setLeft(titleRow);
         header.setRight(closeButton);
-        header.setPadding(new Insets(16, 18, 12, 18));
+        header.setPadding(new Insets(18, 22, 16, 22));
         return header;
     }
 
-    private VBox buildContent() {
-        VBox content = new VBox(
-                0,
+    private HBox buildContent() {
+        VBox previewCard = buildPreviewCard();
+        VBox.setVgrow(previewCard, Priority.ALWAYS);
+
+        VBox mainPanel = new VBox(14, previewCard, buildToolbar());
+        mainPanel.getStyleClass().add("site-camera-main-panel");
+        mainPanel.setFillWidth(true);
+        HBox.setHgrow(mainPanel, Priority.ALWAYS);
+
+        VBox sidePanel = new VBox(
+                14,
                 buildFieldSelector(),
-                buildPreviewPane(),
+                buildInputModeSelector(),
                 buildPendingPanel(),
-                buildToolbar(),
                 buildUsageFooter()
         );
-        content.setPadding(new Insets(0, 18, 18, 18));
+        sidePanel.getStyleClass().add("site-camera-side-panel");
+        sidePanel.setPrefWidth(336);
+        sidePanel.setMinWidth(312);
+        sidePanel.setMaxWidth(360);
+
+        HBox content = new HBox(18, mainPanel, sidePanel);
+        content.getStyleClass().add("site-camera-workspace");
+        content.setPadding(new Insets(18, 22, 22, 22));
         return content;
+    }
+
+    private VBox buildPreviewCard() {
+        Label title = new Label("Zone camera");
+        title.getStyleClass().add("site-camera-panel-title");
+
+        Label subtitle = new Label("Tracez le texte dans la zone sombre.");
+        subtitle.getStyleClass().add("site-camera-panel-subtitle");
+
+        activeFieldBadgeLabel = new Label("Champ : " + selectedField.getDisplayName());
+        activeFieldBadgeLabel.getStyleClass().add("site-camera-active-field-pill");
+
+        VBox titleBlock = new VBox(2, title, subtitle);
+        HBox header = new HBox(12, titleBlock, new Region(), activeFieldBadgeLabel);
+        header.getStyleClass().add("site-camera-panel-header");
+        header.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(header.getChildren().get(1), Priority.ALWAYS);
+
+        StackPane preview = buildPreviewPane();
+        VBox.setVgrow(preview, Priority.ALWAYS);
+
+        VBox card = new VBox(14, header, preview);
+        card.getStyleClass().add("site-camera-preview-card");
+        card.setFillWidth(true);
+        return card;
     }
 
     private VBox buildFieldSelector() {
         ToggleGroup group = new ToggleGroup();
-        Label activeLabel = new Label("Champ actif :");
+        Label activeLabel = new Label("Champ a remplir");
         activeLabel.getStyleClass().add("site-camera-inline-label");
 
         HBox buttons = new HBox(10);
@@ -189,6 +250,8 @@ public final class CameraReservationDialog {
             button.getStyleClass().add("site-camera-tab");
             button.setToggleGroup(group);
             button.setSelected(field == selectedField);
+            button.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(button, Priority.ALWAYS);
             button.setOnAction(event -> {
                 selectedField = field;
                 refreshSelectedField();
@@ -197,18 +260,59 @@ public final class CameraReservationDialog {
             buttons.getChildren().add(button);
         }
 
-        HBox row = new HBox(12, activeLabel, buttons);
+        HBox.setHgrow(buttons, Priority.ALWAYS);
+
+        VBox box = new VBox(10, activeLabel, buttons);
+        box.getStyleClass().addAll("site-camera-strip", "site-camera-control-card");
+        box.setPadding(new Insets(14, 16, 16, 16));
+        return box;
+    }
+
+    private VBox buildInputModeSelector() {
+        ToggleGroup modeGroup = new ToggleGroup();
+
+        Label modeLabel = new Label("Mode d'ecriture");
+        modeLabel.getStyleClass().add("site-camera-inline-label");
+
+        ToggleButton directButton = new ToggleButton("Ecran assisté");
+        directButton.getStyleClass().add("site-camera-tab");
+        directButton.setToggleGroup(modeGroup);
+        directButton.setSelected(true);
+        directButton.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(directButton, Priority.ALWAYS);
+        directButton.setOnAction(event -> {
+            directScreenMode = true;
+            stopTrackingStroke();
+            if (drawingModeLabel != null) {
+                drawingModeLabel.setText("MODE ECRAN ASSISTE : dessinez directement sur l'ecran avec la souris ou le tactile.");
+            }
+        });
+
+        ToggleButton trackingButton = new ToggleButton("Suivi caméra");
+        trackingButton.getStyleClass().add("site-camera-tab");
+        trackingButton.setToggleGroup(modeGroup);
+        trackingButton.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(trackingButton, Priority.ALWAYS);
+        trackingButton.setOnAction(event -> {
+            directScreenMode = false;
+            if (drawingModeLabel != null) {
+                drawingModeLabel.setText("MODE SUIVI CAMERA : fermez la main ou faites un pinch pour tracer.");
+            }
+        });
+
+        HBox row = new HBox(10, directButton, trackingButton);
         row.setAlignment(Pos.CENTER_LEFT);
 
-        VBox box = new VBox(row);
-        box.getStyleClass().add("site-camera-strip");
-        box.setPadding(new Insets(10, 16, 10, 16));
+        VBox box = new VBox(10, modeLabel, row);
+        box.getStyleClass().addAll("site-camera-strip", "site-camera-control-card");
+        box.setPadding(new Insets(14, 16, 16, 16));
         return box;
     }
 
     private StackPane buildPreviewPane() {
-        StableCameraPreviewPane previewPane = new StableCameraPreviewPane();
-        previewPane.setPrefSize(config.getPreviewWidth(), config.getPreviewHeight());
+        previewPane = new StableCameraPreviewPane();
+        previewPane.setPrefSize(760, config.getPreviewHeight());
+        previewPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         cameraStatusLabel = new Label("Connexion a la camera...");
         cameraStatusLabel.getStyleClass().add("site-camera-overlay-status");
@@ -216,6 +320,15 @@ public final class CameraReservationDialog {
         cameraStatusLabel.setMaxWidth(360);
         StackPane.setAlignment(cameraStatusLabel, Pos.BOTTOM_CENTER);
         StackPane.setMargin(cameraStatusLabel, new Insets(0, 0, 14, 0));
+
+        trackingDebugLabel = new Label("debug tracking: attente de donnees");
+        trackingDebugLabel.getStyleClass().add("site-camera-debug-label");
+        trackingDebugLabel.setWrapText(true);
+        trackingDebugLabel.setMaxWidth(340);
+        trackingDebugLabel.setVisible(false);
+        trackingDebugLabel.setManaged(false);
+        StackPane.setAlignment(trackingDebugLabel, Pos.BOTTOM_LEFT);
+        StackPane.setMargin(trackingDebugLabel, new Insets(0, 0, 14, 14));
 
         Label liveLabel = new Label("Live camera preview");
         liveLabel.getStyleClass().add("site-camera-live-chip");
@@ -226,6 +339,7 @@ public final class CameraReservationDialog {
         landmarksGraphics = landmarksCanvas.getGraphicsContext2D();
         inkCanvas = previewPane.getDrawingCanvas();
         inkGraphics = inkCanvas.getGraphicsContext2D();
+        strokeEngine = new HandwritingStrokeEngine(inkCanvas, inkGraphics, config);
         configureCanvasDrawing();
         clearCanvas();
         inkCanvas.setMouseTransparent(false);
@@ -241,8 +355,10 @@ public final class CameraReservationDialog {
         StackPane.setAlignment(meterLegend, Pos.TOP_RIGHT);
         StackPane.setMargin(meterLegend, new Insets(10, 14, 0, 0));
 
-        StackPane overlay = new StackPane(previewPane, liveLabel, meterLegend, cameraStatusLabel);
-        overlay.setPrefSize(config.getPreviewWidth(), config.getPreviewHeight());
+        StackPane overlay = new StackPane(previewPane, liveLabel, meterLegend, cameraStatusLabel, trackingDebugLabel);
+        overlay.setMinSize(620, 390);
+        overlay.setPrefSize(760, config.getPreviewHeight());
+        overlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         Rectangle clip = new Rectangle();
         clip.arcWidthProperty().set(28);
@@ -251,35 +367,27 @@ public final class CameraReservationDialog {
         clip.heightProperty().bind(overlay.heightProperty());
         overlay.setClip(clip);
 
-        cameraPreviewService.bind(frame -> {
-            previewPane.getImageView().setImage(frame == null ? null : frame.image());
-            if (frame != null) {
-                previewPane.setSourceDimensions(frame.width(), frame.height());
-                renderHandTracking(frame);
-            } else if (landmarksGraphics != null && landmarksCanvas != null) {
-                landmarksGraphics.clearRect(0, 0, landmarksCanvas.getWidth(), landmarksCanvas.getHeight());
-            }
-        }, this::updateCameraStatus);
+        cameraPreviewService.bind(null, this::updateCameraStatus);
         return overlay;
     }
 
     private VBox buildPendingPanel() {
-        drawingModeLabel = new Label("TRACAGE LIBRE : dessinez directement dans la zone camera.");
+        drawingModeLabel = new Label("MODE ECRAN ASSISTE : dessinez directement sur l'ecran avec la souris ou le tactile.");
         drawingModeLabel.getStyleClass().add("site-camera-helper-note");
 
         Label valuesTitle = new Label("VALEURS A ENREGISTRER");
         valuesTitle.getStyleClass().add("site-camera-section-title");
 
         pendingBadges = new FlowPane(8, 8);
-        pendingBadges.setPrefWrapLength(860);
+        pendingBadges.setPrefWrapLength(300);
 
         VBox box = new VBox(12, drawingModeLabel, valuesTitle, pendingBadges);
-        box.getStyleClass().add("site-camera-bottom-panel");
-        box.setPadding(new Insets(10, 18, 12, 18));
+        box.getStyleClass().addAll("site-camera-bottom-panel", "site-camera-control-card");
+        box.setPadding(new Insets(14, 16, 16, 16));
         return box;
     }
 
-    private HBox buildToolbar() {
+    private VBox buildToolbar() {
         Button clearButton = new Button("⌫ Effacer");
         clearButton.getStyleClass().add("site-camera-soft-button");
         clearButton.setOnAction(event -> {
@@ -297,7 +405,7 @@ public final class CameraReservationDialog {
         HBox.setHgrow(resultField, Priority.ALWAYS);
 
         recognizeButton = new Button("🔎 Reconnaître");
-        recognizeButton.getStyleClass().add("site-camera-soft-button");
+        recognizeButton.getStyleClass().addAll("site-camera-soft-button", "site-camera-recognize-button");
         recognizeButton.setOnAction(event -> recognizeOrNormalize());
         syncRecognizeButtonState();
 
@@ -314,10 +422,17 @@ public final class CameraReservationDialog {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox toolbar = new HBox(10, clearButton, cameraToggleButton, resultField, recognizeButton, spacer, sensitivityLabel, pinchMeter, sensitivityValue);
+        HBox resultRow = new HBox(10, resultField, recognizeButton);
+        resultRow.getStyleClass().add("site-camera-result-row");
+        resultRow.setAlignment(Pos.CENTER_LEFT);
+
+        HBox utilityRow = new HBox(10, clearButton, cameraToggleButton, spacer, sensitivityLabel, pinchMeter, sensitivityValue);
+        utilityRow.getStyleClass().add("site-camera-utility-row");
+        utilityRow.setAlignment(Pos.CENTER_LEFT);
+
+        VBox toolbar = new VBox(10, resultRow, utilityRow);
         toolbar.getStyleClass().add("site-camera-toolbar");
-        toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(12, 18, 12, 18));
+        toolbar.setPadding(new Insets(14, 16, 16, 16));
         return toolbar;
     }
 
@@ -332,26 +447,25 @@ public final class CameraReservationDialog {
         usage.getStyleClass().add("site-camera-usage");
         usage.setWrapText(true);
 
-        Button saveFieldButton = new Button("Enregistrer");
-        saveFieldButton.getStyleClass().add("site-camera-button");
+        Button saveFieldButton = new Button("Enregistrer le champ");
+        saveFieldButton.getStyleClass().addAll("site-camera-soft-button", "site-camera-save-button");
+        saveFieldButton.setMaxWidth(Double.MAX_VALUE);
         saveFieldButton.setOnAction(event -> saveCurrentField());
 
         Button applyButton = new Button("Transferer au formulaire");
         applyButton.getStyleClass().add("site-submit-button");
+        applyButton.setMaxWidth(Double.MAX_VALUE);
         applyButton.setOnAction(event -> {
             saveCurrentFieldIfPresent();
             result = new EnumMap<>(pendingValues);
             stage.close();
         });
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox actionRow = new HBox(10, saveFieldButton, spacer, applyButton);
-        actionRow.setAlignment(Pos.CENTER_LEFT);
+        VBox actionRow = new VBox(8, saveFieldButton, applyButton);
 
         VBox footer = new VBox(10, statusLabel, separator, actionRow, usage);
-        footer.getStyleClass().add("site-camera-footer");
-        footer.setPadding(new Insets(12, 18, 16, 18));
+        footer.getStyleClass().addAll("site-camera-footer", "site-camera-control-card");
+        footer.setPadding(new Insets(14, 16, 16, 16));
         return footer;
     }
 
@@ -379,29 +493,43 @@ public final class CameraReservationDialog {
     private void beginStroke(double x, double y) {
         lastX = x;
         lastY = y;
-        lastMidX = lastX;
-        lastMidY = lastY;
-        hasInk = true;
-        configureInkStroke();
+        lastMidX = x;
+        lastMidY = y;
+        if (strokeEngine != null) {
+            strokeEngine.beginStroke(x, y);
+            hasInk = strokeEngine.hasInk();
+        } else {
+            hasInk = true;
+            configureInkStroke();
+            inkGraphics.beginPath();
+            inkGraphics.moveTo(lastX, lastY);
+            inkGraphics.lineTo(lastX, lastY);
+            inkGraphics.stroke();
+            paintInkDot(lastX, lastY);
+        }
         if (pinchMeter != null) {
             pinchMeter.setProgress(1);
         }
         statusLabel.setText("Trace actif - Champ : " + selectedField.getDisplayName());
         if (drawingModeLabel != null) {
-            drawingModeLabel.setText("TRACE ACTIF : relachez pour terminer puis cliquez sur Reconnaître.");
+            drawingModeLabel.setText(directScreenMode
+                    ? "TRACE ECRAN ACTIF : relachez pour terminer puis cliquez sur Reconnaître."
+                    : "TRACE CAMERA ACTIVE : relachez pour terminer puis cliquez sur Reconnaître.");
         }
         if (resultField != null && hasInk) {
             resultField.clear();
         }
-
-        inkGraphics.beginPath();
-        inkGraphics.moveTo(lastX, lastY);
-        inkGraphics.lineTo(lastX, lastY);
-        inkGraphics.stroke();
-        paintInkDot(lastX, lastY);
     }
 
     private void continueStroke(double x, double y) {
+        if (strokeEngine != null) {
+            strokeEngine.continueStroke(x, y);
+            hasInk = strokeEngine.hasInk();
+            lastX = x;
+            lastY = y;
+            return;
+        }
+
         double distance = Math.hypot(x - lastX, y - lastY);
         if (distance < DRAW_MIN_DISTANCE) {
             return;
@@ -432,27 +560,39 @@ public final class CameraReservationDialog {
     }
 
     private void endStroke() {
+        if (strokeEngine != null) {
+            strokeEngine.endStroke();
+            hasInk = strokeEngine.hasInk();
+        }
         if (pinchMeter != null) {
             pinchMeter.setProgress(0.18);
         }
         statusLabel.setText("Pret - Champ : " + selectedField.getDisplayName());
         if (drawingModeLabel != null) {
-            drawingModeLabel.setText("TRACAGE LIBRE : cliquez sur Reconnaître quand le mot est termine.");
+            drawingModeLabel.setText(directScreenMode
+                    ? "MODE ECRAN ASSISTE : cliquez sur Reconnaître quand le mot est termine."
+                    : "MODE SUIVI CAMERA : cliquez sur Reconnaître quand le mot est termine.");
         }
     }
 
     private void clearCanvas() {
-        inkGraphics.setFill(Color.TRANSPARENT);
-        inkGraphics.clearRect(0, 0, inkCanvas.getWidth(), inkCanvas.getHeight());
-        hasInk = false;
+        if (strokeEngine != null) {
+            strokeEngine.clear();
+            hasInk = strokeEngine.hasInk();
+        } else {
+            inkGraphics.setFill(Color.TRANSPARENT);
+            inkGraphics.clearRect(0, 0, inkCanvas.getWidth(), inkCanvas.getHeight());
+            hasInk = false;
+        }
         if (pinchMeter != null) {
             pinchMeter.setProgress(0);
         }
         if (drawingModeLabel != null) {
-            drawingModeLabel.setText("TRACAGE LIBRE : dessinez directement dans la zone camera.");
+            drawingModeLabel.setText(directScreenMode
+                    ? "MODE ECRAN ASSISTE : dessinez directement sur l'ecran avec la souris ou le tactile."
+                    : "MODE SUIVI CAMERA : fermez la main ou faites un pinch pour tracer.");
         }
         trackingStrokeActive = false;
-        activeTrackingFrames = 0;
         lastTrackingPoint = null;
     }
 
@@ -474,7 +614,6 @@ public final class CameraReservationDialog {
             endStroke();
             trackingStrokeActive = false;
         }
-        activeTrackingFrames = 0;
         lastTrackingPoint = null;
         trackedPointerSmoother.reset();
     }
@@ -557,6 +696,9 @@ public final class CameraReservationDialog {
         if (statusLabel != null) {
             statusLabel.setText("Pret - Champ : " + selectedField.getDisplayName());
         }
+        if (activeFieldBadgeLabel != null) {
+            activeFieldBadgeLabel.setText("Champ : " + selectedField.getDisplayName());
+        }
         if (recognizeButton != null) {
             syncRecognizeButtonState();
         }
@@ -577,6 +719,8 @@ public final class CameraReservationDialog {
 
             Label content = new Label(value == null || value.isBlank() ? "-" : value);
             content.getStyleClass().add("site-camera-value-text");
+            content.setWrapText(true);
+            content.setMaxWidth(118);
             if (value == null || value.isBlank()) {
                 card.getStyleClass().add("site-camera-value-card-empty");
             }
@@ -587,6 +731,10 @@ public final class CameraReservationDialog {
     }
 
     private WritableImage buildOcrReadyImage() {
+        if (strokeEngine != null) {
+            return CanvasOcrPreprocessor.prepare(strokeEngine.snapshot());
+        }
+
         SnapshotParameters params = new SnapshotParameters();
         params.setFill(Color.TRANSPARENT);
         WritableImage raw = inkCanvas.snapshot(params, null);
@@ -780,6 +928,7 @@ public final class CameraReservationDialog {
             handTrackingDetector.start();
         } catch (Exception ignored) {
         }
+        startRenderLoop();
         cameraPreviewService.start();
         syncCameraToggleButton();
     }
@@ -787,10 +936,73 @@ public final class CameraReservationDialog {
     private void toggleCamera() {
         if (cameraPreviewService.isRunning()) {
             cameraPreviewService.stop();
+            clearPreviewFrame();
         } else {
             startCameraPreview();
         }
         syncCameraToggleButton();
+    }
+
+    private void startRenderLoop() {
+        if (renderLoop != null) {
+            return;
+        }
+        renderLoop = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                if (now - lastRenderTick < getRenderIntervalNanos()) {
+                    return;
+                }
+                lastRenderTick = now;
+                renderLatestFrame();
+            }
+        };
+        lastRenderTick = 0L;
+        renderLoop.start();
+    }
+
+    private void stopRenderLoop() {
+        if (renderLoop != null) {
+            renderLoop.stop();
+            renderLoop = null;
+        }
+        lastRenderTick = 0L;
+        lastRenderedFrame = null;
+    }
+
+    private void renderLatestFrame() {
+        CameraPreviewService.CameraFrame frame = cameraPreviewService.getLatestFrame();
+        if (frame == null) {
+            if (lastRenderedFrame != null) {
+                clearPreviewFrame();
+            }
+            return;
+        }
+        if (frame == lastRenderedFrame) {
+            return;
+        }
+
+        lastRenderedFrame = frame;
+        if (previewPane != null) {
+            previewPane.getImageView().setImage(frame.image());
+            previewPane.setSourceDimensions(frame.width(), frame.height());
+        }
+        renderHandTracking(frame);
+    }
+
+    private void clearPreviewFrame() {
+        lastRenderedFrame = null;
+        if (previewPane != null) {
+            previewPane.getImageView().setImage(null);
+        }
+        if (landmarksGraphics != null && landmarksCanvas != null) {
+            landmarksGraphics.clearRect(0, 0, landmarksCanvas.getWidth(), landmarksCanvas.getHeight());
+        }
+    }
+
+    private long getRenderIntervalNanos() {
+        int fps = Math.max(30, config.getRenderFps());
+        return 1_000_000_000L / fps;
     }
 
     private void updateCameraStatus(String message) {
@@ -816,18 +1028,61 @@ public final class CameraReservationDialog {
             return;
         }
 
-        TrackedHandState rawState = mirrorState(handTrackingDetector.detect(frame.bufferedImage()));
-        TrackedHandState effectiveState = stabilizeTrackingState(rawState);
-        HandLandmarkPoint drawingPoint = trackedPointerSmoother.update(effectiveState.drawingPoint());
+        // ÉTAPE 1: Détecter la main (coordonnées brutes caméra)
+        TrackedHandState detectorState = handTrackingDetector.detect(frame.bufferedImage());
+
+        // ÉTAPE 2: Stabiliser l'état de suivi (gérer les frames manquantes)
+        TrackedHandState effectiveState = stabilizeTrackingState(detectorState);
+
+        // ÉTAPE 3: Déterminer si on peut afficher le point rouge
+        boolean canShowRedPoint = effectiveState.phase() == HandTrackingPhase.PINCH_ACTIVE || effectiveState.phase() == HandTrackingPhase.DRAWING;
+        HandLandmarkPoint trackingBasePoint = effectiveState.drawingPoint();
+        HandLandmarkPoint visualGuidePoint = canShowRedPoint ? trackingBasePoint : null;
+
+        // ÉTAPE 4: Appliquer le smoothing (en coordonnées normalisées)
+        HandLandmarkPoint smoothedFingerPoint = trackedPointerSmoother.update(trackingBasePoint);
+        HandLandmarkPoint finalTrackingPoint = canShowRedPoint
+                ? guidePointFilter.filter(smoothedFingerPoint)
+                : null;
+
+        // ÉTAPE 5: Gérer la phase de dessin et les transitions
+        HandTrackingPhase visualPhase = effectiveState.phase();
+        boolean drawingEnabled = false;
+        if (visualPhase == HandTrackingPhase.PINCH_ACTIVE && finalTrackingPoint != null) {
+            visualPhase = HandTrackingPhase.DRAWING;
+            drawingEnabled = true;
+            drawingGraceFrames = DRAWING_GRACE_FRAMES;
+        } else if (visualPhase == HandTrackingPhase.DRAWING && finalTrackingPoint != null) {
+            drawingEnabled = true;
+            drawingGraceFrames = DRAWING_GRACE_FRAMES;
+        } else if (drawingGraceFrames > 0 && trackingStrokeActive && lastTrackingPoint != null) {
+            visualPhase = HandTrackingPhase.DRAWING;
+            finalTrackingPoint = lastTrackingPoint;
+            drawingEnabled = true;
+            drawingGraceFrames--;
+        } else {
+            drawingGraceFrames = 0;
+        }
+
+        // ÉTAPE 6: Créer l'état final avec les coordonnées brutes pour le renderer
+        // (le renderer appliquera le mirroring automatiquement via CoordinateMapper)
         TrackedHandState smoothedState = new TrackedHandState(
                 effectiveState.detected(),
                 effectiveState.landmarks(),
-                drawingPoint,
-                effectiveState.drawingActive(),
+                visualGuidePoint,
+                finalTrackingPoint,
+                drawingEnabled,
+                visualPhase,
                 effectiveState.statusMessage(),
-                effectiveState.gestureStrength()
+                effectiveState.gestureStrength(),
+                effectiveState.pinchDistance()
         );
 
+        // ÉTAPE 7: Mettre à jour les dimensions du mapper et du renderer
+        coordinateMapper.updateCanvasDimensions(landmarksCanvas.getWidth(), landmarksCanvas.getHeight());
+        handTrackingOverlayRenderer.updateCanvasDimensions(landmarksCanvas.getWidth(), landmarksCanvas.getHeight());
+
+        // ÉTAPE 8: Rendre l'overlay des points rouges
         handTrackingOverlayRenderer.render(
                 landmarksGraphics,
                 landmarksCanvas.getWidth(),
@@ -839,49 +1094,63 @@ public final class CameraReservationDialog {
             pinchMeter.setProgress(Math.max(0.0, Math.min(1.0, smoothedState.gestureStrength())));
         }
 
+        // ÉTAPE 9: Piloter le dessin à partir de la main suivi
         driveDrawingFromTrackedHand(smoothedState);
-        if (rawState.detected()) {
+
+        // ÉTAPE 10: Mettre à jour les labels de debug
+        updateTrackingDebug(detectorState, smoothedState);
+        logTrackingState(detectorState, smoothedState);
+
+        if (detectorState.detected()) {
             if (drawingModeLabel != null) {
-                drawingModeLabel.setText(smoothedState.drawingActive()
-                        ? "GESTE ECRITURE ACTIF : le doigt pilote le trace."
-                        : "MAIN OUVERTE : pause. Fermez la main ou faites un pinch pour tracer.");
+                if (directScreenMode) {
+                    drawingModeLabel.setText("MODE ECRAN ASSISTE : dessinez directement sur l'ecran avec la souris ou le tactile.");
+                } else {
+                    drawingModeLabel.setText(switch (smoothedState.phase()) {
+                        case PINCH_ACTIVE -> "PINCH ACTIF : point rouge visible, pret a dessiner.";
+                        case DRAWING -> "DESSIN ACTIF : point rouge visible, trace en cours.";
+                        case HAND_OPEN -> "MAIN OUVERTE : point rouge cache, dessin desactive.";
+                        case NO_HAND -> "Main non detectee : placez votre main au centre de la zone camera.";
+                    });
+                }
             }
         } else if (missingTrackingFrames > TRACKING_GRACE_FRAMES && drawingModeLabel != null) {
-            drawingModeLabel.setText("Main non detectee : placez votre main au centre de la zone camera.");
+            drawingModeLabel.setText(directScreenMode
+                    ? "MODE ECRAN ASSISTE : dessinez directement sur l'ecran avec la souris ou le tactile."
+                    : "Main non detectee : placez votre main au centre de la zone camera.");
         }
     }
 
     private void driveDrawingFromTrackedHand(TrackedHandState state) {
-        if (state == null || state.drawingPoint() == null) {
-            if (trackingStrokeActive) {
-                endStroke();
-                trackingStrokeActive = false;
-            }
-            activeTrackingFrames = 0;
-            lastTrackingPoint = null;
+        if (directScreenMode) {
+            stopTrackingStroke();
+            return;
+        }
+
+        if (state == null || state.phase() != HandTrackingPhase.DRAWING || state.drawingPoint() == null) {
+            stopTrackingStroke();
             return;
         }
 
         if (lastTrackingPoint != null) {
             double jump = Math.hypot(state.drawingPoint().x() - lastTrackingPoint.x(), state.drawingPoint().y() - lastTrackingPoint.y());
             if (jump > MAX_TRACKING_JUMP) {
-                if (trackingStrokeActive) {
-                    endStroke();
-                    trackingStrokeActive = false;
-                }
-                activeTrackingFrames = 0;
+                lastTrackingPoint = limitTrackingJump(lastTrackingPoint, state.drawingPoint());
+            } else {
                 lastTrackingPoint = state.drawingPoint();
-                return;
             }
+        } else {
+            lastTrackingPoint = state.drawingPoint();
         }
-        lastTrackingPoint = state.drawingPoint();
 
-        double x = state.drawingPoint().x() * inkCanvas.getWidth();
-        double y = state.drawingPoint().y() * inkCanvas.getHeight();
+        // Convertir les coordonnées normalisées en pixels du canvas en utilisant CoordinateMapper
+        HandLandmarkPoint canvasPoint = coordinateMapper.normalizedToCanvasPixels(lastTrackingPoint);
+        double x = canvasPoint.x();
+        double y = canvasPoint.y();
 
-        if (state.drawingActive()) {
-            activeTrackingFrames++;
-            if (!trackingStrokeActive && activeTrackingFrames >= TRACKING_ACTIVATION_FRAMES) {
+        boolean writingVisibleAndActive = state.drawingActive() && state.drawingPoint() != null;
+        if (writingVisibleAndActive) {
+            if (!trackingStrokeActive) {
                 beginStroke(x, y);
                 trackingStrokeActive = true;
             } else if (trackingStrokeActive) {
@@ -890,10 +1159,18 @@ public final class CameraReservationDialog {
         } else if (trackingStrokeActive) {
             endStroke();
             trackingStrokeActive = false;
-            activeTrackingFrames = 0;
-        } else {
-            activeTrackingFrames = 0;
         }
+    }
+
+    private void stopTrackingStroke() {
+        if (trackingStrokeActive) {
+            endStroke();
+            trackingStrokeActive = false;
+        }
+        drawingGraceFrames = 0;
+        lastTrackingPoint = null;
+        assistedTrackedPen.reset();
+        guidePointFilter.reset();
     }
 
     private TrackedHandState stabilizeTrackingState(TrackedHandState rawState) {
@@ -905,50 +1182,92 @@ public final class CameraReservationDialog {
 
         missingTrackingFrames++;
         if (lastDetectedState != null && missingTrackingFrames <= TRACKING_GRACE_FRAMES) {
+            HandTrackingPhase heldPhase = lastDetectedState.phase() == HandTrackingPhase.PINCH_ACTIVE || lastDetectedState.phase() == HandTrackingPhase.DRAWING
+                    ? HandTrackingPhase.DRAWING
+                    : HandTrackingPhase.HAND_OPEN;
             return new TrackedHandState(
                     true,
                     lastDetectedState.landmarks(),
-                    lastDetectedState.drawingPoint(),
-                    false,
+                    heldPhase == HandTrackingPhase.DRAWING ? lastDetectedState.guidePoint() : null,
+                    heldPhase == HandTrackingPhase.DRAWING ? lastDetectedState.drawingPoint() : null,
+                    heldPhase == HandTrackingPhase.DRAWING,
+                    heldPhase,
                     "Suivi stabilise.",
-                    lastDetectedState.gestureStrength()
+                    lastDetectedState.gestureStrength(),
+                    lastDetectedState.pinchDistance()
             );
         }
 
-        lastDetectedState = null;
-        trackedPointerSmoother.reset();
-        return rawState == null ? TrackedHandState.unavailable("Main non detectee.") : rawState;
+         lastDetectedState = null;
+         trackedPointerSmoother.reset();
+         assistedTrackedPen.reset();
+         guidePointFilter.reset();
+         return rawState == null ? TrackedHandState.unavailable("Main non detectee.") : rawState;
+     }
+
+     private void updateTrackingDebug(TrackedHandState detectorState, TrackedHandState finalState) {
+        if (trackingDebugLabel == null) {
+            return;
+        }
+        HandLandmarkPoint rawPoint = detectorState == null ? null : detectorState.drawingPoint();
+        HandLandmarkPoint finalPoint = finalState == null ? null : finalState.guidePoint();
+        HandLandmarkPoint canvasPoint = finalPoint == null ? null : coordinateMapper.normalizedToCanvasPixels(finalPoint);
+        trackingDebugLabel.setText(String.format(
+                "raw=(%s,%s) canvas=(%s,%s)",
+                formatCoord(rawPoint == null ? null : rawPoint.x()),
+                formatCoord(rawPoint == null ? null : rawPoint.y()),
+                formatCoord(canvasPoint == null ? null : canvasPoint.x()),
+                formatCoord(canvasPoint == null ? null : canvasPoint.y())
+        ));
     }
 
-    private TrackedHandState mirrorState(TrackedHandState state) {
-        if (state == null) {
-            return TrackedHandState.unavailable("Main non detectee.");
+    private void logTrackingState(TrackedHandState detectorState, TrackedHandState state) {
+        if (!LOG.isInfoEnabled()) {
+            return;
         }
-        if (!state.detected()) {
-            return state;
+        long now = System.nanoTime();
+        if (now - lastDebugLogNanos < DEBUG_LOG_INTERVAL_NANOS) {
+            return;
         }
-
-        List<HandLandmarkPoint> mirroredLandmarks = state.landmarks() == null
-                ? List.of()
-                : state.landmarks().stream()
-                .map(this::mirrorPoint)
-                .collect(Collectors.toList());
-        HandLandmarkPoint mirroredDrawingPoint = mirrorPoint(state.drawingPoint());
-        return new TrackedHandState(
-                true,
-                mirroredLandmarks,
-                mirroredDrawingPoint,
-                state.drawingActive(),
-                state.statusMessage(),
-                state.gestureStrength()
+        lastDebugLogNanos = now;
+        HandLandmarkPoint point = state == null ? null : state.guidePoint();
+        HandLandmarkPoint rawPoint = detectorState == null ? null : detectorState.drawingPoint();
+        HandLandmarkPoint canvasPoint = point == null ? null : coordinateMapper.normalizedToCanvasPixels(point);
+        LOG.info(
+                "handDetected={}, pinchDistance={}, pinchActive={}, drawingActive={}, currentState={}, rawFingertip=({}, {}), canvasPoint=({}, {})",
+                state != null && state.detected(),
+                state == null ? -1.0 : state.pinchDistance(),
+                state != null && (state.phase() == HandTrackingPhase.PINCH_ACTIVE || state.phase() == HandTrackingPhase.DRAWING),
+                state != null && state.drawingActive(),
+                state == null ? HandTrackingPhase.NO_HAND : state.phase(),
+                formatCoord(rawPoint == null ? null : rawPoint.x()),
+                formatCoord(rawPoint == null ? null : rawPoint.y()),
+                formatCoord(canvasPoint == null ? null : canvasPoint.x()),
+                formatCoord(canvasPoint == null ? null : canvasPoint.y())
         );
     }
 
-    private HandLandmarkPoint mirrorPoint(HandLandmarkPoint point) {
-        if (point == null) {
-            return null;
+    private String formatCoord(Double value) {
+        return value == null ? "-" : String.format("%.4f", value);
+    }
+
+
+    private HandLandmarkPoint limitTrackingJump(HandLandmarkPoint previous, HandLandmarkPoint candidate) {
+        if (previous == null) {
+            return candidate;
         }
-        return new HandLandmarkPoint(1.0 - point.x(), point.y(), point.confidence());
+        double deltaX = candidate.x() - previous.x();
+        double deltaY = candidate.y() - previous.y();
+        double distance = Math.hypot(deltaX, deltaY);
+        if (distance <= MAX_TRACKING_JUMP || distance == 0.0) {
+            return candidate;
+        }
+        double ratio = MAX_TRACKING_JUMP / distance;
+        return new HandLandmarkPoint(
+                previous.x() + deltaX * ratio,
+                previous.y() + deltaY * ratio,
+                candidate.confidence()
+        );
     }
 
     private void recognizeOrNormalize() {

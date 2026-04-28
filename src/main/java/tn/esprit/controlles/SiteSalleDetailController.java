@@ -35,6 +35,7 @@ import tn.esprit.services.SiteSalleDetailService;
 import tn.esprit.services.SiteReservationFormService;
 import tn.esprit.tools.Model3dHelper;
 import tn.esprit.tools.ThemeManager;
+import tn.esprit.tools.VisionTestModal;
 
 import java.io.File;
 import java.net.URL;
@@ -203,6 +204,15 @@ public class SiteSalleDetailController {
         } catch (Exception exception) {
             showError("Navigation failed", exception.getMessage());
         }
+    }
+
+    @FXML
+    private void onOpenVisionTest() {
+        Scene scene = heroTitleLabel == null ? null : heroTitleLabel.getScene();
+        new VisionTestModal(
+                scene == null ? null : scene.getWindow(),
+                scene == null ? List.of() : scene.getStylesheets()
+        ).show();
     }
 
     private void configureWebView() {
