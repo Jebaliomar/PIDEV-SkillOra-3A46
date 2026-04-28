@@ -505,6 +505,43 @@ public class LessonShowController implements AdminShellAware {
                         h1, h2, h3 { margin: 0 0 14px; line-height: 1.2; }
                         p { margin: 0 0 16px; }
                         a { color: #2563eb; font-weight: 700; }
+                        img, video, iframe {
+                            max-width: 100%%;
+                            border-radius: 16px;
+                            border: 1px solid #e2e8f0;
+                            margin: 14px 0;
+                            box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+                        }
+                        video {
+                            display: block;
+                            background: #0f172a;
+                        }
+                        figure {
+                            margin: 18px 0;
+                        }
+                        figcaption {
+                            color: #64748b;
+                            font-size: 13px;
+                            text-align: center;
+                            margin-top: 6px;
+                        }
+                        blockquote {
+                            margin: 18px 0;
+                            padding: 8px 0 8px 18px;
+                            border-left: 4px solid #93c5fd;
+                            background: #f8fbff;
+                            border-radius: 0 14px 14px 0;
+                            color: #334155;
+                        }
+                        table {
+                            width: 100%%;
+                            border-collapse: collapse;
+                            margin: 18px 0;
+                        }
+                        th, td {
+                            border: 1px solid #dbe5f1;
+                            padding: 10px 12px;
+                        }
                         code, pre {
                             background: #f1f5f9;
                             border: 1px solid #e2e8f0;

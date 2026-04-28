@@ -34,6 +34,10 @@ public class CourseInsightsService {
     private static final Duration CACHE_TTL = Duration.ofHours(6);
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
     private static final String STACKOVERFLOW_SITE = "stackoverflow";
+    private static final Map<String, String> JSON_HEADERS = Map.of(
+            "Accept", "application/json",
+            "User-Agent", "SkillORA-Course-Insights/1.0"
+    );
     private static final int RECENT_MONTHS = 12;
     private static final Pattern WORD_SPLIT = Pattern.compile("\\s+");
 
@@ -141,6 +145,9 @@ public class CourseInsightsService {
         map.put("node", "node.js");
         map.put("typescript", "typescript");
         map.put("javascript", "javascript");
+        map.put("html", "HTML");
+        map.put("css", "CSS");
+        map.put("swift", "Swift (programming language)");
         map.put("python", "python");
         map.put("django", "django");
         map.put("flask", "flask");
@@ -209,13 +216,13 @@ public class CourseInsightsService {
             return cached;
         }
 
-        JsonNode summary = requestJson("https://en.wikipedia.org/api/rest_v1/page/summary/" + encode(keyword), Map.of());
+        JsonNode summary = requestJson("https://en.wikipedia.org/api/rest_v1/page/summary/" + encode(keyword), JSON_HEADERS);
         WikipediaData data = parseWikipediaSummary(summary, keyword);
         if (!data.ok()) {
-            JsonNode search = requestJson("https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&srlimit=1&utf8=1&srsearch=" + encode(keyword), Map.of());
+            JsonNode search = requestJson("https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&srlimit=1&utf8=1&srsearch=" + encode(keyword), JSON_HEADERS);
             String firstTitle = search == null ? "" : search.path("query").path("search").path(0).path("title").asText("");
             if (!firstTitle.isBlank()) {
-                data = parseWikipediaSummary(requestJson("https://en.wikipedia.org/api/rest_v1/page/summary/" + encode(firstTitle), Map.of()), firstTitle);
+                data = parseWikipediaSummary(requestJson("https://en.wikipedia.org/api/rest_v1/page/summary/" + encode(firstTitle), JSON_HEADERS), firstTitle);
             }
         }
 

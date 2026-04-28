@@ -789,12 +789,56 @@ public class FrontCourseConsumeController implements FrontShellAware {
                         img, iframe, video, table {
                             max-width: 100%%;
                         }
+                        img, video, iframe {
+                            border-radius: 16px;
+                            border: 1px solid #e2e8f0;
+                            margin: 14px 0;
+                            box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+                        }
+                        video {
+                            display: block;
+                            background: #0f172a;
+                        }
+                        figure {
+                            margin: 18px 0;
+                        }
+                        figcaption {
+                            color: #64748b;
+                            font-size: 13px;
+                            text-align: center;
+                            margin-top: 6px;
+                        }
                         h1, h2, h3 {
                             color: #102a43;
-                            margin-top: 0;
+                            line-height: 1.18;
+                            margin: 1em 0 .45em;
                         }
                         p, li {
                             color: #334e68;
+                        }
+                        blockquote {
+                            margin: 18px 0;
+                            padding: 8px 0 8px 18px;
+                            border-left: 4px solid #93c5fd;
+                            background: #f8fbff;
+                            border-radius: 0 14px 14px 0;
+                            color: #334155;
+                        }
+                        table {
+                            width: 100%%;
+                            border-collapse: collapse;
+                            margin: 18px 0;
+                        }
+                        th, td {
+                            border: 1px solid #dbe5f1;
+                            padding: 10px 12px;
+                        }
+                        pre {
+                            background: #0f172a;
+                            color: #e2e8f0;
+                            padding: 16px;
+                            border-radius: 14px;
+                            overflow: auto;
                         }
                     </style>
                 </head>

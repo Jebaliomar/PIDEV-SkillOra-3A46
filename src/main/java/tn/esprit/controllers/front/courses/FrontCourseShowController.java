@@ -15,6 +15,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.ColumnConstraints;
 import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
 import tn.esprit.entities.Certificate;
@@ -422,29 +424,33 @@ public class FrontCourseShowController implements FrontShellAware {
         }
 
         insightsKeywordLabel.setText(insights.keyword());
-        insightsCardsBox.getChildren().setAll(buildReasonRows(insights.reasons()));
+        insightsCardsBox.getChildren().setAll(buildReasonGrid(insights.reasons()));
         renderStrengthChart(insights.chart());
         setManagedVisible(insightsResultBox, true);
     }
 
-    private List<HBox> buildReasonRows(List<CourseInsightsService.InsightReason> reasons) {
-        List<HBox> rows = new java.util.ArrayList<>();
-        for (int index = 0; index < reasons.size(); index += 2) {
-            HBox row = new HBox(14);
-            row.getStyleClass().add("course-insights-card-row");
+    private GridPane buildReasonGrid(List<CourseInsightsService.InsightReason> reasons) {
+        GridPane grid = new GridPane();
+        grid.getStyleClass().add("course-insights-card-grid");
+        grid.setHgap(14);
+        grid.setVgap(14);
+        grid.setMaxWidth(Double.MAX_VALUE);
 
-            VBox first = buildReasonCard(reasons.get(index));
-            HBox.setHgrow(first, Priority.ALWAYS);
-            row.getChildren().add(first);
+        ColumnConstraints firstColumn = new ColumnConstraints();
+        firstColumn.setPercentWidth(50);
+        firstColumn.setHgrow(Priority.ALWAYS);
+        ColumnConstraints secondColumn = new ColumnConstraints();
+        secondColumn.setPercentWidth(50);
+        secondColumn.setHgrow(Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(firstColumn, secondColumn);
 
-            if (index + 1 < reasons.size()) {
-                VBox second = buildReasonCard(reasons.get(index + 1));
-                HBox.setHgrow(second, Priority.ALWAYS);
-                row.getChildren().add(second);
-            }
-            rows.add(row);
+        for (int index = 0; index < reasons.size(); index++) {
+            VBox card = buildReasonCard(reasons.get(index));
+            GridPane.setHgrow(card, Priority.ALWAYS);
+            GridPane.setFillWidth(card, true);
+            grid.add(card, index % 2, index / 2);
         }
-        return rows;
+        return grid;
     }
 
     private VBox buildReasonCard(CourseInsightsService.InsightReason reason) {
@@ -454,13 +460,18 @@ public class FrontCourseShowController implements FrontShellAware {
         Label value = new Label(safeValue(reason.value(), "Unavailable"));
         value.getStyleClass().add("course-insights-card-value");
         value.setWrapText(true);
+        value.setMinWidth(0);
+        value.setMaxWidth(Double.MAX_VALUE);
 
         Label detail = new Label(safeValue(reason.detail(), "No detail available."));
         detail.getStyleClass().add("course-insights-card-detail");
         detail.setWrapText(true);
+        detail.setMinWidth(0);
+        detail.setMaxWidth(Double.MAX_VALUE);
 
         VBox card = new VBox(8, title, value, detail);
         card.getStyleClass().add("course-insights-reason-card");
+        card.setMinWidth(0);
         card.setMaxWidth(Double.MAX_VALUE);
 
         String link = reason.link();
