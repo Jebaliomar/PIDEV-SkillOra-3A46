@@ -4,17 +4,21 @@ import javafx.application.Platform;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -28,7 +32,9 @@ import java.util.regex.Pattern;
 public class AIService {
 
     private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+    private static final String GROQ_AUDIO_API_URL = "https://api.groq.com/openai/v1/audio/transcriptions";
     private static final String MODEL = "llama3-8b-8192";
+    private static final String WHISPER_MODEL = "whisper-large-v3";
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(25);
     private static final Pattern SLOT_DATE_TIME_PATTERN = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})\\s+(\\d{2}:\\d{2})");
@@ -97,6 +103,129 @@ public class AIService {
         // Keep the API call for consistency, then enforce the exact output contract.
         executeWithFallback(prompt, strictTemplate);
         return strictTemplate;
+    }
+
+    public String transcribeAudio(File audioFile) {
+        if (audioFile == null || !audioFile.exists() || !audioFile.isFile()) {
+            return "";
+        }
+        if (apiKey == null || apiKey.isBlank() || "YOUR_GROQ_KEY_HERE".equals(apiKey.trim())) {
+            return "";
+        }
+
+        try {
+            String boundary = "----SkillOraBoundary" + System.currentTimeMillis();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(GROQ_AUDIO_API_URL))
+                    .timeout(Duration.ofSeconds(45))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                    .POST(buildMultipartTranscriptionBodyPublisher(audioFile.toPath(), boundary))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                return "";
+            }
+
+            JSONObject root = new JSONObject(response.body());
+            return sanitizeSingleLine(root.optString("text", ""));
+        } catch (Exception exception) {
+            return "";
+        }
+    }
+
+    public VoiceBookingIntent extractVoiceBookingIntent(String transcribedText) {
+        String transcript = sanitizeSingleLine(transcribedText);
+        if (transcript.isBlank()) {
+            return new VoiceBookingIntent(null, null, null);
+        }
+
+        String prompt = "You are a voice assistant for a university appointment booking system. "
+                + "Extract from the user's message:\n"
+                + "- professor_name: the professor they want to meet\n"
+                + "- preferred_day: the day they prefer (if mentioned)\n"
+                + "- subject: the meeting subject (if mentioned)\n"
+                + "Respond ONLY in JSON format with double quotes like:\n"
+                + "{\"professor_name\":\"Ben Ali\",\"preferred_day\":\"Friday\",\"subject\":\"PFE\"}\n\n"
+                + "User message: " + transcript;
+
+        String fallbackJson = "{\"professor_name\":\"\",\"preferred_day\":\"\",\"subject\":\"\"}";
+        String rawResponse = executeWithFallback(prompt, fallbackJson);
+        return parseVoiceBookingIntent(rawResponse);
+    }
+
+    private VoiceBookingIntent parseVoiceBookingIntent(String rawResponse) {
+        String jsonCandidate = extractJsonObject(rawResponse);
+        if (jsonCandidate.isBlank()) {
+            return new VoiceBookingIntent(null, null, null);
+        }
+
+        try {
+            JSONObject object = new JSONObject(jsonCandidate);
+            return new VoiceBookingIntent(
+                    normalizeToNull(object.optString("professor_name", null)),
+                    normalizeToNull(object.optString("preferred_day", null)),
+                    normalizeToNull(object.optString("subject", null))
+            );
+        } catch (Exception firstException) {
+            try {
+                String repaired = jsonCandidate.replace('\'', '"');
+                JSONObject object = new JSONObject(repaired);
+                return new VoiceBookingIntent(
+                        normalizeToNull(object.optString("professor_name", null)),
+                        normalizeToNull(object.optString("preferred_day", null)),
+                        normalizeToNull(object.optString("subject", null))
+                );
+            } catch (Exception secondException) {
+                return new VoiceBookingIntent(null, null, null);
+            }
+        }
+    }
+
+    private String extractJsonObject(String raw) {
+        String value = sanitizeSingleLine(raw);
+        if (value.isBlank()) {
+            return "";
+        }
+        int firstBrace = value.indexOf('{');
+        int lastBrace = value.lastIndexOf('}');
+        if (firstBrace < 0 || lastBrace <= firstBrace) {
+            return "";
+        }
+        return value.substring(firstBrace, lastBrace + 1);
+    }
+
+    private HttpRequest.BodyPublisher buildMultipartTranscriptionBodyPublisher(Path audioPath, String boundary) throws IOException {
+        String lineBreak = "\r\n";
+        List<byte[]> parts = new ArrayList<>();
+
+        parts.add(("--" + boundary + lineBreak).getBytes(StandardCharsets.UTF_8));
+        parts.add(("Content-Disposition: form-data; name=\"model\"" + lineBreak + lineBreak).getBytes(StandardCharsets.UTF_8));
+        parts.add((WHISPER_MODEL + lineBreak).getBytes(StandardCharsets.UTF_8));
+
+        String fileName = audioPath.getFileName() == null ? "audio.wav" : audioPath.getFileName().toString();
+        String mimeType = detectAudioMimeType(audioPath);
+        parts.add(("--" + boundary + lineBreak).getBytes(StandardCharsets.UTF_8));
+        parts.add(("Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"" + lineBreak).getBytes(StandardCharsets.UTF_8));
+        parts.add(("Content-Type: " + mimeType + lineBreak + lineBreak).getBytes(StandardCharsets.UTF_8));
+        parts.add(Files.readAllBytes(audioPath));
+        parts.add(lineBreak.getBytes(StandardCharsets.UTF_8));
+
+        parts.add(("--" + boundary + "--" + lineBreak).getBytes(StandardCharsets.UTF_8));
+        return HttpRequest.BodyPublishers.ofByteArrays(parts);
+    }
+
+    private String detectAudioMimeType(Path audioPath) {
+        try {
+            String detected = Files.probeContentType(audioPath);
+            if (detected != null && !detected.isBlank()) {
+                return detected;
+            }
+        } catch (IOException ignored) {
+            // Fallback below.
+        }
+        return "audio/wav";
     }
 
     private String executeWithFallback(String prompt, String fallback) {
@@ -258,6 +387,14 @@ public class AIService {
         return trimmed.isEmpty() ? fallback : trimmed;
     }
 
+    private String normalizeToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
     private boolean isJavaFxThread() {
         try {
             return Platform.isFxApplicationThread();
@@ -267,5 +404,8 @@ public class AIService {
     }
 
     private record DayTime(String day, String time) {
+    }
+
+    public record VoiceBookingIntent(String professorName, String preferredDay, String subject) {
     }
 }

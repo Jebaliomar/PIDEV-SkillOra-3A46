@@ -1,5 +1,9 @@
 package tn.esprit.controllers.rendezvous;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,6 +37,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.FlowPane;
@@ -46,6 +51,7 @@ import javafx.stage.Stage;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.util.Duration;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -69,10 +75,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.Normalizer;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -91,6 +100,13 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.TargetDataLine;
 
 public class RendezVousController {
 
@@ -108,6 +124,10 @@ public class RendezVousController {
     private static final int MAX_REFUSAL_REASON_LENGTH = 500;
     private static final int MAX_FILE_NAME_LENGTH = 255;
     private static final int RENDEZ_VOUS_PER_PAGE = 8;
+    private static final int VOICE_MAX_RECORD_SECONDS = 5;
+    private static final String MIC_IDLE_STYLE = "-fx-background-color: #d0d5dd; -fx-text-fill: #ffffff; -fx-font-size: 18px; -fx-font-weight: 900; -fx-background-radius: 999; -fx-min-width: 46; -fx-min-height: 46; -fx-max-width: 46; -fx-max-height: 46;";
+    private static final String MIC_LISTENING_STYLE = "-fx-background-color: #e03131; -fx-text-fill: #ffffff; -fx-font-size: 18px; -fx-font-weight: 900; -fx-background-radius: 999; -fx-min-width: 46; -fx-min-height: 46; -fx-max-width: 46; -fx-max-height: 46;";
+    private static final String MIC_PROCESSING_STYLE = "-fx-background-color: #f08c00; -fx-text-fill: #ffffff; -fx-font-size: 18px; -fx-font-weight: 900; -fx-background-radius: 999; -fx-min-width: 46; -fx-min-height: 46; -fx-max-width: 46; -fx-max-height: 46;";
 
     @FXML
     private Label statusLabel;
@@ -1479,6 +1499,11 @@ public class RendezVousController {
     }
 
     @FXML
+    private void goToSlotsCalendar(ActionEvent event) {
+        switchScene(event, "/tn/esprit/views/availability-slot/slot-calendar.fxml", "SkillOra - Slots Calendar");
+    }
+
+    @FXML
     private void goToSlotsBackOffice(ActionEvent event) {
         switchScene(event, "/tn/esprit/views/backoffice/availability-slot-backoffice.fxml", "SkillOra - BackOffice Slots");
     }
@@ -1853,6 +1878,35 @@ public class RendezVousController {
         aiSuggestionLabel.setStyle("-fx-text-fill: #264fb2; -fx-font-size: 13px; -fx-font-weight: 700;");
         aiSuggestBtn.setOnAction(event -> suggestSlotWithAi(slotsListView, courseCombo, aiSuggestBtn, aiProgressIndicator, aiSuggestionLabel));
 
+        Button voiceMicBtn = new Button("🎤");
+        voiceMicBtn.setStyle(MIC_IDLE_STYLE);
+        ProgressIndicator voiceProgressIndicator = new ProgressIndicator();
+        voiceProgressIndicator.setManaged(false);
+        voiceProgressIndicator.setVisible(false);
+        voiceProgressIndicator.setPrefSize(20, 20);
+
+        Timeline micPulseTimeline = new Timeline(
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(voiceMicBtn.scaleXProperty(), 1.0),
+                        new KeyValue(voiceMicBtn.scaleYProperty(), 1.0),
+                        new KeyValue(voiceMicBtn.opacityProperty(), 1.0)),
+                new KeyFrame(Duration.millis(450),
+                        new KeyValue(voiceMicBtn.scaleXProperty(), 1.12),
+                        new KeyValue(voiceMicBtn.scaleYProperty(), 1.12),
+                        new KeyValue(voiceMicBtn.opacityProperty(), 0.88)),
+                new KeyFrame(Duration.millis(900),
+                        new KeyValue(voiceMicBtn.scaleXProperty(), 1.0),
+                        new KeyValue(voiceMicBtn.scaleYProperty(), 1.0),
+                        new KeyValue(voiceMicBtn.opacityProperty(), 1.0))
+        );
+        micPulseTimeline.setCycleCount(Animation.INDEFINITE);
+
+        Label voiceHintLabel = new Label("Use voice to find and confirm a slot.");
+        voiceHintLabel.setStyle("-fx-text-fill: #5f739a; -fx-font-size: 13px; -fx-font-weight: 600;");
+
+        VBox voiceChatLogBox = new VBox(6);
+        voiceChatLogBox.setStyle("-fx-background-color: #ffffff; -fx-border-color: #c6d3eb; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 10;");
+
         ToggleGroup typeGroup = new ToggleGroup();
         RadioButton onlineRadio = new RadioButton("En ligne");
         RadioButton inPersonRadio = new RadioButton("En personne");
@@ -1915,6 +1969,9 @@ public class RendezVousController {
         Label aiLabel = sectionLabel("AI Suggestion");
         HBox aiSuggestRow = new HBox(10, aiSuggestBtn, aiProgressIndicator);
         aiSuggestRow.setStyle("-fx-alignment: center-left;");
+        Label voiceLabel = sectionLabel("Voice Assistant");
+        HBox voiceControlRow = new HBox(10, voiceMicBtn, voiceProgressIndicator);
+        voiceControlRow.setStyle("-fx-alignment: center-left;");
         Label courseLabel = sectionLabel("Cours existant");
         Label typeLabel = sectionLabel("Type de rendez-vous");
         Label infoTitle = sectionLabel("Information");
@@ -1997,6 +2054,7 @@ public class RendezVousController {
                 slotSelectLabel, slotCombo,
                 slotLabel, slotsListView,
                 aiLabel, aiSuggestRow, aiSuggestionLabel,
+                voiceLabel, voiceControlRow, voiceHintLabel, voiceChatLogBox,
                 courseLabel, courseCombo,
                 typeLabel, typeBox,
                 locationPreviewBox,
@@ -2020,6 +2078,24 @@ public class RendezVousController {
 
         AtomicReference<RendezVous> createdRef = new AtomicReference<>();
         Button createBtn = (Button) dialog.getDialogPane().lookupButton(createType);
+        if (createBtn == null) {
+            voiceMicBtn.setDisable(true);
+        } else {
+            voiceMicBtn.setOnAction(event -> startVoiceAssistantForBooking(
+                    voiceMicBtn,
+                    voiceProgressIndicator,
+                    micPulseTimeline,
+                    voiceChatLogBox,
+                    slotOptions,
+                    professorOptions,
+                    professorCombo,
+                    slotCombo,
+                    slotsListView,
+                    courseCombo,
+                    createBtn,
+                    inlineError
+            ));
+        }
         if (createBtn != null) {
             createBtn.addEventFilter(ActionEvent.ACTION, actionEvent -> {
                 clearInlineDialogError(inlineError);
@@ -2132,6 +2208,653 @@ public class RendezVousController {
         Thread worker = new Thread(suggestTask, "rdv-ai-suggest-task");
         worker.setDaemon(true);
         worker.start();
+    }
+
+    private void startVoiceAssistantForBooking(
+            Button voiceMicBtn,
+            ProgressIndicator voiceProgressIndicator,
+            Timeline micPulseTimeline,
+            VBox voiceChatLogBox,
+            List<SlotOption> allVisibleSlots,
+            List<ProfessorOption> professorOptions,
+            ComboBox<ProfessorOption> professorCombo,
+            ComboBox<SlotOption> slotCombo,
+            ListView<SlotOption> slotsListView,
+            ComboBox<CourseOption> courseCombo,
+            Button createBtn,
+            Label inlineError
+    ) {
+        if (allVisibleSlots == null || allVisibleSlots.isEmpty()) {
+            addVoiceLogEntry(voiceChatLogBox, false, "No slots are available right now.");
+            return;
+        }
+
+        setMicListeningState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline);
+        voiceMicBtn.setDisable(true);
+
+        Task<VoiceFlowResult> voiceTask = new Task<>() {
+            @Override
+            protected VoiceFlowResult call() {
+                try {
+                    File requestAudio = recordVoiceClip(VOICE_MAX_RECORD_SECONDS);
+                    Platform.runLater(() -> setMicProcessingState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline));
+
+                    String requestText = aiService.transcribeAudio(requestAudio);
+                    if (requestText == null || requestText.isBlank()) {
+                        return new VoiceFlowResult(
+                                VoiceFlowStatus.NEEDS_TEXT_FALLBACK,
+                                null,
+                                "I could not transcribe your voice request.",
+                                null,
+                                null,
+                                null,
+                                "Transcription failed"
+                        );
+                    }
+
+                    AIService.VoiceBookingIntent intent = resolveVoiceIntent(requestText, allVisibleSlots);
+                    SlotOption matchedSlot = findMatchingVoiceSlot(allVisibleSlots, intent);
+                    if (matchedSlot == null) {
+                        String requestedProfessor = normalizeDefault(toNull(intent.professorName()), "that professor");
+                        String noSlotMessage = "Sorry, no available slots found for Dr. " + requestedProfessor + ". Please try another professor or day.";
+                        speakWithFreeTts(noSlotMessage);
+                        return new VoiceFlowResult(
+                                VoiceFlowStatus.NO_SLOT_FOUND,
+                                requestText,
+                                noSlotMessage,
+                                null,
+                                null,
+                                toNull(intent.subject()),
+                                null
+                        );
+                    }
+
+                    String askMessage = buildVoiceConfirmationPrompt(matchedSlot);
+                    speakWithFreeTts(askMessage);
+
+                    Platform.runLater(() -> setMicListeningState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline));
+                    File confirmationAudio = recordVoiceClip(VOICE_MAX_RECORD_SECONDS);
+                    Platform.runLater(() -> setMicProcessingState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline));
+
+                    String confirmationText = aiService.transcribeAudio(confirmationAudio);
+                    VoiceDecision decision = parseVoiceDecision(confirmationText);
+
+                    if (decision == VoiceDecision.YES) {
+                        return new VoiceFlowResult(
+                                VoiceFlowStatus.CONFIRMED,
+                                requestText,
+                                askMessage,
+                                confirmationText,
+                                matchedSlot,
+                                toNull(intent.subject()),
+                                null
+                        );
+                    }
+                    if (decision == VoiceDecision.NO) {
+                        String cancelledMessage = "Request cancelled. You can try another voice search.";
+                        speakWithFreeTts(cancelledMessage);
+                        return new VoiceFlowResult(
+                                VoiceFlowStatus.CANCELLED,
+                                requestText,
+                                askMessage,
+                                confirmationText,
+                                matchedSlot,
+                                toNull(intent.subject()),
+                                cancelledMessage
+                        );
+                    }
+
+                    return new VoiceFlowResult(
+                            VoiceFlowStatus.NEEDS_TEXT_FALLBACK,
+                            requestText,
+                            askMessage,
+                            confirmationText,
+                            matchedSlot,
+                            toNull(intent.subject()),
+                            "Could not detect \"yes\" or \"no\"."
+                    );
+                } catch (IllegalStateException exception) {
+                    return new VoiceFlowResult(
+                            VoiceFlowStatus.ERROR,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            normalizeDefault(exception.getMessage(), "Microphone not found")
+                    );
+                } catch (Exception exception) {
+                    return new VoiceFlowResult(
+                            VoiceFlowStatus.ERROR,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            "Voice assistant failed. Please try again."
+                    );
+                }
+            }
+        };
+
+        voiceTask.setOnSucceeded(event -> {
+            VoiceFlowResult result = voiceTask.getValue();
+            setMicIdleState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline);
+
+            if (result == null) {
+                voiceMicBtn.setDisable(false);
+                return;
+            }
+
+            if (toNull(result.requestText()) != null) {
+                addVoiceLogEntry(voiceChatLogBox, true, result.requestText());
+            }
+            if (toNull(result.assistantText()) != null) {
+                addVoiceLogEntry(voiceChatLogBox, false, result.assistantText());
+            }
+            if (toNull(result.confirmationText()) != null) {
+                addVoiceLogEntry(voiceChatLogBox, true, result.confirmationText());
+            }
+
+            if (result.status() == VoiceFlowStatus.CONFIRMED && result.matchedSlot() != null) {
+                applyVoiceSelectionToForm(result.matchedSlot(), result.subjectHint(), professorOptions, professorCombo, slotCombo, slotsListView, courseCombo);
+                addVoiceLogEntry(voiceChatLogBox, false, "Booking confirmed! ✅");
+                clearInlineDialogError(inlineError);
+                createBtn.fire();
+            } else if (result.status() == VoiceFlowStatus.CANCELLED) {
+                addVoiceLogEntry(voiceChatLogBox, false, normalizeDefault(result.detailMessage(), "Booking cancelled."));
+            } else if (result.status() == VoiceFlowStatus.NEEDS_TEXT_FALLBACK) {
+                handleVoiceTextFallback(
+                        result.detailMessage(),
+                        voiceMicBtn,
+                        voiceProgressIndicator,
+                        micPulseTimeline,
+                        voiceChatLogBox,
+                        allVisibleSlots,
+                        professorOptions,
+                        professorCombo,
+                        slotCombo,
+                        slotsListView,
+                        courseCombo,
+                        createBtn,
+                        inlineError
+                );
+                return;
+            } else if (result.status() == VoiceFlowStatus.ERROR) {
+                String detail = normalizeDefault(result.detailMessage(), "Voice assistant failed.");
+                if ("Microphone not found".equalsIgnoreCase(detail)) {
+                    showWarning("Microphone", "Microphone not found.");
+                } else {
+                    showWarning("Voice assistant", detail);
+                }
+            }
+
+            voiceMicBtn.setDisable(false);
+        });
+
+        voiceTask.setOnFailed(event -> {
+            setMicIdleState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline);
+            voiceMicBtn.setDisable(false);
+            showWarning("Voice assistant", "Voice assistant failed. Please try again.");
+        });
+
+        Thread worker = new Thread(voiceTask, "rdv-voice-assistant-task");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private void handleVoiceTextFallback(
+            String fallbackReason,
+            Button voiceMicBtn,
+            ProgressIndicator voiceProgressIndicator,
+            Timeline micPulseTimeline,
+            VBox voiceChatLogBox,
+            List<SlotOption> allVisibleSlots,
+            List<ProfessorOption> professorOptions,
+            ComboBox<ProfessorOption> professorCombo,
+            ComboBox<SlotOption> slotCombo,
+            ListView<SlotOption> slotsListView,
+            ComboBox<CourseOption> courseCombo,
+            Button createBtn,
+            Label inlineError
+    ) {
+        voiceMicBtn.setDisable(true);
+
+        TextInputDialog textInputDialog = new TextInputDialog();
+        textInputDialog.setTitle("Voice fallback");
+        textInputDialog.setHeaderText("Voice API failed. Type your request.");
+        textInputDialog.setContentText("Request:");
+        Optional<String> typedResult = textInputDialog.showAndWait();
+        if (typedResult.isEmpty() || toNull(typedResult.get()) == null) {
+            addVoiceLogEntry(voiceChatLogBox, false, normalizeDefault(fallbackReason, "Voice request cancelled."));
+            setMicIdleState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline);
+            voiceMicBtn.setDisable(false);
+            return;
+        }
+
+        String typedText = typedResult.get().trim();
+        addVoiceLogEntry(voiceChatLogBox, true, typedText);
+        setMicProcessingState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline);
+
+        Task<VoiceFlowResult> fallbackTask = new Task<>() {
+            @Override
+            protected VoiceFlowResult call() {
+                AIService.VoiceBookingIntent intent = resolveVoiceIntent(typedText, allVisibleSlots);
+                SlotOption matchedSlot = findMatchingVoiceSlot(allVisibleSlots, intent);
+                if (matchedSlot == null) {
+                    String requestedProfessor = normalizeDefault(toNull(intent.professorName()), "that professor");
+                    String noSlotMessage = "Sorry, no available slots found for Dr. " + requestedProfessor + ". Please try another professor or day.";
+                    speakWithFreeTts(noSlotMessage);
+                    return new VoiceFlowResult(
+                            VoiceFlowStatus.NO_SLOT_FOUND,
+                            typedText,
+                            noSlotMessage,
+                            null,
+                            null,
+                            toNull(intent.subject()),
+                            null
+                    );
+                }
+
+                return new VoiceFlowResult(
+                        VoiceFlowStatus.CONFIRMED,
+                        typedText,
+                        buildVoiceConfirmationPrompt(matchedSlot),
+                        null,
+                        matchedSlot,
+                        toNull(intent.subject()),
+                        null
+                );
+            }
+        };
+
+        fallbackTask.setOnSucceeded(event -> {
+            setMicIdleState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline);
+            VoiceFlowResult result = fallbackTask.getValue();
+
+            if (result != null && toNull(result.assistantText()) != null) {
+                addVoiceLogEntry(voiceChatLogBox, false, result.assistantText());
+            }
+
+            if (result != null && result.status() == VoiceFlowStatus.CONFIRMED && result.matchedSlot() != null) {
+                applyVoiceSelectionToForm(result.matchedSlot(), result.subjectHint(), professorOptions, professorCombo, slotCombo, slotsListView, courseCombo);
+                Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                confirmAlert.setTitle("Confirm booking");
+                confirmAlert.setHeaderText("Book this slot?");
+                confirmAlert.setContentText(result.assistantText());
+                Optional<ButtonType> confirm = confirmAlert.showAndWait();
+                if (confirm.isPresent() && confirm.get() == ButtonType.OK) {
+                    addVoiceLogEntry(voiceChatLogBox, false, "Booking confirmed! ✅");
+                    clearInlineDialogError(inlineError);
+                    createBtn.fire();
+                } else {
+                    addVoiceLogEntry(voiceChatLogBox, false, "Booking cancelled.");
+                }
+            }
+
+            voiceMicBtn.setDisable(false);
+        });
+
+        fallbackTask.setOnFailed(event -> {
+            setMicIdleState(voiceMicBtn, voiceProgressIndicator, micPulseTimeline);
+            addVoiceLogEntry(voiceChatLogBox, false, "Voice fallback failed.");
+            voiceMicBtn.setDisable(false);
+        });
+
+        Thread worker = new Thread(fallbackTask, "rdv-voice-fallback-task");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    private AIService.VoiceBookingIntent resolveVoiceIntent(String requestText, List<SlotOption> slotOptions) {
+        AIService.VoiceBookingIntent aiIntent = aiService.extractVoiceBookingIntent(requestText);
+
+        String professorName = toNull(aiIntent.professorName());
+        if (professorName == null) {
+            professorName = inferProfessorNameFromText(requestText, slotOptions);
+        }
+
+        String preferredDay = toNull(aiIntent.preferredDay());
+        if (preferredDay == null) {
+            preferredDay = inferPreferredDayFromText(requestText);
+        }
+
+        String subject = toNull(aiIntent.subject());
+        if (subject == null) {
+            subject = inferSubjectFromText(requestText);
+        }
+
+        return new AIService.VoiceBookingIntent(professorName, preferredDay, subject);
+    }
+
+    private SlotOption findMatchingVoiceSlot(List<SlotOption> allSlots, AIService.VoiceBookingIntent intent) {
+        if (allSlots == null || allSlots.isEmpty()) {
+            return null;
+        }
+
+        String professorNeedle = normalizeSearchText(intent == null ? null : intent.professorName());
+        DayOfWeek preferredDay = parsePreferredDay(intent == null ? null : intent.preferredDay());
+
+        List<SlotOption> ordered = allSlots.stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator
+                        .comparing((SlotOption option) -> option.startAt() == null ? LocalDateTime.MAX : option.startAt())
+                        .thenComparing(option -> option.id() == null ? Integer.MAX_VALUE : option.id()))
+                .collect(Collectors.toList());
+
+        List<SlotOption> professorMatches = ordered.stream()
+                .filter(option -> matchesProfessorName(option, professorNeedle))
+                .collect(Collectors.toList());
+        if (professorNeedle != null && !professorNeedle.isBlank() && professorMatches.isEmpty()) {
+            return null;
+        }
+
+        List<SlotOption> dayScoped = professorMatches.isEmpty() ? ordered : professorMatches;
+        if (preferredDay != null) {
+            dayScoped = dayScoped.stream()
+                    .filter(option -> option.startAt() != null && option.startAt().getDayOfWeek() == preferredDay)
+                    .collect(Collectors.toList());
+            if (dayScoped.isEmpty()) {
+                return null;
+            }
+        }
+
+        return dayScoped.isEmpty() ? null : dayScoped.get(0);
+    }
+
+    private void applyVoiceSelectionToForm(
+            SlotOption matchedSlot,
+            String subjectHint,
+            List<ProfessorOption> professorOptions,
+            ComboBox<ProfessorOption> professorCombo,
+            ComboBox<SlotOption> slotCombo,
+            ListView<SlotOption> slotsListView,
+            ComboBox<CourseOption> courseCombo
+    ) {
+        if (matchedSlot == null) {
+            return;
+        }
+
+        if (professorOptions != null && !professorOptions.isEmpty()) {
+            professorCombo.getItems().setAll(professorOptions);
+        }
+        ProfessorOption matchedProfessor = findProfessorOptionById(professorCombo.getItems(), matchedSlot.professorId());
+        if (matchedProfessor != null) {
+            professorCombo.setValue(matchedProfessor);
+        }
+
+        SlotOption scopedMatchedSlot = findSlotOptionById(slotCombo.getItems(), matchedSlot.id());
+        if (scopedMatchedSlot != null) {
+            slotCombo.setValue(scopedMatchedSlot);
+            slotsListView.getSelectionModel().select(scopedMatchedSlot);
+            refreshCourseOptionsForSlot(scopedMatchedSlot, courseCombo, null);
+        }
+
+        CourseOption chosenCourse = findCourseOptionForSubject(courseCombo.getItems(), subjectHint);
+        if (chosenCourse == null && !courseCombo.getItems().isEmpty()) {
+            chosenCourse = courseCombo.getItems().get(0);
+        }
+        courseCombo.setValue(chosenCourse);
+    }
+
+    private CourseOption findCourseOptionForSubject(List<CourseOption> courseOptions, String subjectHint) {
+        if (courseOptions == null || courseOptions.isEmpty()) {
+            return null;
+        }
+        String normalizedSubject = normalizeSearchText(subjectHint);
+        if (normalizedSubject == null || normalizedSubject.isBlank()) {
+            return null;
+        }
+        return courseOptions.stream()
+                .filter(Objects::nonNull)
+                .filter(option -> {
+                    String title = normalizeSearchText(option.title());
+                    return title != null && title.contains(normalizedSubject);
+                })
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String buildVoiceConfirmationPrompt(SlotOption slot) {
+        String professor = normalizeDefault(toNull(slot.professorName()), "Professor");
+        String day = formatVoiceDay(slot.startAt());
+        String time = formatVoiceTime(slot.startAt());
+        return "I found a slot with Dr. " + professor + " on " + day + " at " + time + ". Say yes to confirm or no to cancel.";
+    }
+
+    private String formatVoiceDay(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return "the selected day";
+        }
+        return dateTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+    }
+
+    private String formatVoiceTime(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return "the selected time";
+        }
+        return dateTime.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
+    private VoiceDecision parseVoiceDecision(String confirmationText) {
+        String normalized = normalizeSearchText(confirmationText);
+        if (normalized == null || normalized.isBlank()) {
+            return VoiceDecision.UNKNOWN;
+        }
+        if (normalized.matches(".*\\b(yes|yeah|yep|sure|confirm|confirmed|oui)\\b.*")) {
+            return VoiceDecision.YES;
+        }
+        if (normalized.matches(".*\\b(no|nope|cancel|cancelled|non)\\b.*")) {
+            return VoiceDecision.NO;
+        }
+        return VoiceDecision.UNKNOWN;
+    }
+
+    private File recordVoiceClip(int seconds) {
+        AudioFormat audioFormat = new AudioFormat(16000f, 16, 1, true, false);
+        DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
+        if (!AudioSystem.isLineSupported(info)) {
+            throw new IllegalStateException("Microphone not found");
+        }
+
+        try {
+            TargetDataLine line = (TargetDataLine) AudioSystem.getLine(info);
+            line.open(audioFormat);
+
+            File tempFile = Files.createTempFile("skillora-voice-", ".wav").toFile();
+            tempFile.deleteOnExit();
+
+            line.start();
+            Thread writerThread = new Thread(() -> {
+                try (AudioInputStream stream = new AudioInputStream(line)) {
+                    AudioSystem.write(stream, AudioFileFormat.Type.WAVE, tempFile);
+                } catch (IOException ignored) {
+                    // Keep silent and fallback in the caller.
+                }
+            }, "voice-recorder-writer");
+            writerThread.setDaemon(true);
+            writerThread.start();
+
+            try {
+                Thread.sleep(Math.max(1, seconds) * 1000L);
+            } catch (InterruptedException interruptedException) {
+                Thread.currentThread().interrupt();
+            }
+
+            line.stop();
+            line.close();
+
+            try {
+                writerThread.join(1500L);
+            } catch (InterruptedException interruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return tempFile;
+        } catch (LineUnavailableException | IOException exception) {
+            throw new IllegalStateException("Microphone not found", exception);
+        }
+    }
+
+    private void speakWithFreeTts(String text) {
+        String safeText = toNull(text);
+        if (safeText == null) {
+            return;
+        }
+        try {
+            Class<?> voiceManagerClass = Class.forName("com.sun.speech.freetts.VoiceManager");
+            Object voiceManager = voiceManagerClass.getMethod("getInstance").invoke(null);
+            if (voiceManager == null) {
+                return;
+            }
+            Object voice = voiceManagerClass.getMethod("getVoice", String.class).invoke(voiceManager, "kevin16");
+            if (voice == null) {
+                return;
+            }
+            Class<?> voiceClass = Class.forName("com.sun.speech.freetts.Voice");
+            voiceClass.getMethod("allocate").invoke(voice);
+            try {
+                voiceClass.getMethod("speak", String.class).invoke(voice, safeText);
+            } finally {
+                voiceClass.getMethod("deallocate").invoke(voice);
+            }
+        } catch (Exception ignored) {
+            // TTS is optional, never break booking flow.
+        }
+    }
+
+    private String inferProfessorNameFromText(String text, List<SlotOption> slots) {
+        String normalizedInput = normalizeSearchText(text);
+        if (normalizedInput == null || normalizedInput.isBlank() || slots == null || slots.isEmpty()) {
+            return null;
+        }
+
+        return slots.stream()
+                .filter(Objects::nonNull)
+                .map(SlotOption::professorName)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(name -> !name.isBlank())
+                .distinct()
+                .sorted(Comparator.comparingInt((String name) -> normalizeSearchText(name).length()).reversed())
+                .filter(name -> normalizedInput.contains(normalizeSearchText(name)))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String inferPreferredDayFromText(String text) {
+        DayOfWeek dayOfWeek = parsePreferredDay(text);
+        if (dayOfWeek == null) {
+            return null;
+        }
+        return dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+    }
+
+    private String inferSubjectFromText(String text) {
+        String value = toNull(text);
+        if (value == null) {
+            return null;
+        }
+        if (value.length() <= 120) {
+            return value;
+        }
+        return value.substring(0, 120).trim();
+    }
+
+    private DayOfWeek parsePreferredDay(String rawDay) {
+        String normalized = normalizeSearchText(rawDay);
+        if (normalized == null || normalized.isBlank()) {
+            return null;
+        }
+
+        if (normalized.contains("monday") || normalized.contains("lundi")) {
+            return DayOfWeek.MONDAY;
+        }
+        if (normalized.contains("tuesday") || normalized.contains("mardi")) {
+            return DayOfWeek.TUESDAY;
+        }
+        if (normalized.contains("wednesday") || normalized.contains("mercredi")) {
+            return DayOfWeek.WEDNESDAY;
+        }
+        if (normalized.contains("thursday") || normalized.contains("jeudi")) {
+            return DayOfWeek.THURSDAY;
+        }
+        if (normalized.contains("friday") || normalized.contains("vendredi")) {
+            return DayOfWeek.FRIDAY;
+        }
+        if (normalized.contains("saturday") || normalized.contains("samedi")) {
+            return DayOfWeek.SATURDAY;
+        }
+        if (normalized.contains("sunday") || normalized.contains("dimanche")) {
+            return DayOfWeek.SUNDAY;
+        }
+        return null;
+    }
+
+    private boolean matchesProfessorName(SlotOption slot, String normalizedProfessorNeedle) {
+        if (slot == null) {
+            return false;
+        }
+        if (normalizedProfessorNeedle == null || normalizedProfessorNeedle.isBlank()) {
+            return true;
+        }
+        String professorName = normalizeSearchText(slot.professorName());
+        if (professorName == null || professorName.isBlank()) {
+            return false;
+        }
+        return professorName.contains(normalizedProfessorNeedle);
+    }
+
+    private String normalizeSearchText(String rawText) {
+        String value = toNull(rawText);
+        if (value == null) {
+            return null;
+        }
+        String withoutDiacritics = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+        return withoutDiacritics.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9\\s]", " ").replaceAll("\\s+", " ").trim();
+    }
+
+    private void addVoiceLogEntry(VBox voiceChatLogBox, boolean student, String message) {
+        String safeMessage = toNull(message);
+        if (voiceChatLogBox == null || safeMessage == null) {
+            return;
+        }
+        Label logLine = new Label((student ? "🎤 Student: " : "🤖 Assistant: ") + safeMessage);
+        logLine.setWrapText(true);
+        logLine.setMaxWidth(Double.MAX_VALUE);
+        if (student) {
+            logLine.setStyle("-fx-background-color: #e7efff; -fx-text-fill: #1f2a44; -fx-font-size: 12px; -fx-font-weight: 700; -fx-padding: 8 10; -fx-background-radius: 10;");
+        } else {
+            logLine.setStyle("-fx-background-color: #f2f4f7; -fx-text-fill: #26344f; -fx-font-size: 12px; -fx-font-weight: 700; -fx-padding: 8 10; -fx-background-radius: 10;");
+        }
+        voiceChatLogBox.getChildren().add(logLine);
+    }
+
+    private void setMicIdleState(Button voiceMicBtn, ProgressIndicator voiceProgressIndicator, Timeline micPulseTimeline) {
+        micPulseTimeline.stop();
+        voiceMicBtn.setStyle(MIC_IDLE_STYLE);
+        voiceMicBtn.setOpacity(1.0);
+        voiceMicBtn.setScaleX(1.0);
+        voiceMicBtn.setScaleY(1.0);
+        voiceProgressIndicator.setVisible(false);
+        voiceProgressIndicator.setManaged(false);
+    }
+
+    private void setMicListeningState(Button voiceMicBtn, ProgressIndicator voiceProgressIndicator, Timeline micPulseTimeline) {
+        voiceMicBtn.setStyle(MIC_LISTENING_STYLE);
+        voiceProgressIndicator.setVisible(false);
+        voiceProgressIndicator.setManaged(false);
+        micPulseTimeline.playFromStart();
+    }
+
+    private void setMicProcessingState(Button voiceMicBtn, ProgressIndicator voiceProgressIndicator, Timeline micPulseTimeline) {
+        micPulseTimeline.stop();
+        voiceMicBtn.setStyle(MIC_PROCESSING_STYLE);
+        voiceMicBtn.setOpacity(1.0);
+        voiceMicBtn.setScaleX(1.0);
+        voiceMicBtn.setScaleY(1.0);
+        voiceProgressIndicator.setVisible(true);
+        voiceProgressIndicator.setManaged(true);
     }
 
     private Optional<RendezVous> showEditRendezVousDialog(RendezVous source) {
@@ -2257,6 +2980,8 @@ public class RendezVousController {
                             slot.getProfessorId(),
                             professorName,
                             formatSlotRange(slot, professorName),
+                            slot.getStartAt(),
+                            slot.getEndAt(),
                             slot.getLocationLabel(),
                             slot.getLocationLat(),
                             slot.getLocationLng()
@@ -2935,6 +3660,31 @@ public class RendezVousController {
         }
     }
 
+    private enum VoiceFlowStatus {
+        CONFIRMED,
+        CANCELLED,
+        NO_SLOT_FOUND,
+        NEEDS_TEXT_FALLBACK,
+        ERROR
+    }
+
+    private enum VoiceDecision {
+        YES,
+        NO,
+        UNKNOWN
+    }
+
+    private record VoiceFlowResult(
+            VoiceFlowStatus status,
+            String requestText,
+            String assistantText,
+            String confirmationText,
+            SlotOption matchedSlot,
+            String subjectHint,
+            String detailMessage
+    ) {
+    }
+
     private record ProfessorOption(Integer id, String name) {
         @Override
         public String toString() {
@@ -2954,6 +3704,8 @@ public class RendezVousController {
             Integer professorId,
             String professorName,
             String label,
+            LocalDateTime startAt,
+            LocalDateTime endAt,
             String locationLabel,
             Float locationLat,
             Float locationLng

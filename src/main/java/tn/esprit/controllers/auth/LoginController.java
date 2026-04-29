@@ -26,7 +26,7 @@ public class LoginController {
     @FXML
     private Label errorLabel;
 
-    private final AuthService authService = new AuthService();
+    private AuthService authService;
 
     @FXML
     public void initialize() {
@@ -58,6 +58,9 @@ public class LoginController {
         }
 
         try {
+            if (authService == null) {
+                authService = new AuthService();
+            }
             Optional<AuthService.AuthResult> authenticated = authService.authenticate(identifier, password);
             if (authenticated.isEmpty()) {
                 showError("Identifiants invalides ou compte inactif.");
@@ -70,6 +73,8 @@ public class LoginController {
             openHomePage((Stage) identifierField.getScene().getWindow(), session.role());
         } catch (SQLException exception) {
             showError("Erreur SQL: " + exception.getMessage());
+        } catch (IllegalStateException exception) {
+            showError("Connexion base de donnees indisponible. Verifiez MySQL et db.properties.");
         } catch (IOException exception) {
             showError("Erreur d'ouverture de page: " + exception.getMessage());
         }

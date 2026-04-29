@@ -60,7 +60,7 @@
                 <Button fx:id="filterRefusedBtn" onAction="#setFilterRefused" text="Refusés (0)"
                         styleClass="btn-secondary" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button mnemonicParsing="false" onAction="#goToSlots" text="Voir les créneaux"
+                <Button mnemonicParsing="false" onAction="#goToSlotsCalendar" text="Voir les créneaux"
                         styleClass="btn-ghost" />
                 <Button fx:id="createTopBtn" mnemonicParsing="false" onAction="#handleCreate" text="Nouveau rendez-vous"
                         styleClass="btn-primary" />

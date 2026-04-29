@@ -273,23 +273,14 @@ public class AvailabilitySlotController {
             reservedSlotIds = Set.of();
         }
         try {
-            JSONArray events = fetchGoogleCalendarEvents();
+            List<AvailabilitySlot> slots = availabilitySlotService.getAll();
+            JSONArray events = mapSlotsToCalendarEvents(slots);
             calendarWebView.getEngine().loadContent(buildSlotsCalendarHtml(events.toString()));
             if (statusLabel != null) {
-                statusLabel.setText(events.length() + " événement(s) Google Calendar chargé(s)");
+                statusLabel.setText(events.length() + " créneau(x) chargé(s)");
             }
-        } catch (Exception exception) {
-            // Keep calendar usable even if Google API is temporarily unavailable.
-            try {
-                List<AvailabilitySlot> slots = availabilitySlotService.getAll();
-                JSONArray fallbackEvents = mapSlotsToCalendarEvents(slots);
-                calendarWebView.getEngine().loadContent(buildSlotsCalendarHtml(fallbackEvents.toString()));
-                if (statusLabel != null) {
-                    statusLabel.setText("Google indisponible, fallback local: " + slots.size() + " créneau(x)");
-                }
-            } catch (SQLException fallbackException) {
-                showError("Unable to load slots calendar", fallbackException);
-            }
+        } catch (SQLException exception) {
+            showError("Unable to load slots calendar", exception);
         }
     }
 
@@ -398,7 +389,7 @@ public class AvailabilitySlotController {
     private JSONArray mapSlotsToCalendarEvents(List<AvailabilitySlot> slots) {
         JSONArray events = new JSONArray();
         for (AvailabilitySlot slot : slots) {
-            if (slot == null || slot.getStartAt() == null || slot.getEndAt() == null || isPastSlot(slot)) {
+            if (slot == null || slot.getStartAt() == null || slot.getEndAt() == null) {
                 continue;
             }
 
@@ -453,6 +444,7 @@ public class AvailabilitySlotController {
                       padding: 0;
                       width: 100%;
                       height: 100%;
+                      overflow: hidden;
                       font-family: "Segoe UI", Arial, sans-serif;
                       background: var(--bg);
                       color: var(--text);
@@ -462,8 +454,8 @@ public class AvailabilitySlotController {
                       height: 100%;
                       display: flex;
                       flex-direction: column;
-                      gap: 10px;
-                      padding: 12px;
+                      gap: 8px;
+                      padding: 8px;
                     }
                     .toolbar {
                       display: flex;
@@ -472,7 +464,7 @@ public class AvailabilitySlotController {
                       background: var(--panel);
                       border: 1px solid var(--border);
                       border-radius: 12px;
-                      padding: 10px 12px;
+                      padding: 8px 10px;
                     }
                     .toolbar-left {
                       display: flex;
@@ -509,13 +501,16 @@ public class AvailabilitySlotController {
                     .calendar {
                       display: grid;
                       grid-template-columns: repeat(7, minmax(0, 1fr));
-                      gap: 8px;
-                      height: calc(100% - 64px);
+                      grid-template-rows: 30px repeat(6, minmax(0, 1fr));
+                      gap: 6px;
+                      flex: 1;
+                      min-height: 0;
+                      height: 100%;
                     }
                     .weekday {
                       text-align: center;
-                      padding: 8px;
-                      font-size: 12px;
+                      padding: 6px;
+                      font-size: 11px;
                       font-weight: 700;
                       color: #264fb2;
                       background: var(--panel-2);
@@ -525,8 +520,8 @@ public class AvailabilitySlotController {
                     .day {
                       background: var(--panel);
                       border: 1px solid var(--border);
-                      border-radius: 10px;
-                      min-height: 110px;
+                      border-radius: 8px;
+                      min-height: 0;
                       display: flex;
                       flex-direction: column;
                       overflow: hidden;
@@ -535,28 +530,35 @@ public class AvailabilitySlotController {
                       opacity: 0.45;
                     }
                     .day-number {
-                      font-size: 12px;
+                      font-size: 11px;
                       font-weight: 800;
                       color: #223a6d;
-                      padding: 6px 8px 4px 8px;
+                      padding: 4px 6px 2px 6px;
                     }
                     .slots {
                       display: flex;
                       flex-direction: column;
-                      gap: 4px;
-                      padding: 0 6px 6px 6px;
-                      overflow: auto;
+                      gap: 3px;
+                      padding: 0 4px 4px 4px;
+                      overflow: hidden;
                     }
                     .slot {
                       border-radius: 7px;
-                      padding: 4px 6px;
+                      padding: 2px 4px;
                       font-size: 11px;
                       font-weight: 700;
+                      line-height: 1.2;
                       color: #fff;
                       border: 1px solid rgba(0,0,0,0.06);
                       white-space: nowrap;
                       overflow: hidden;
                       text-overflow: ellipsis;
+                    }
+                    .more-label {
+                      color: #7d8aa6;
+                      font-size: 10px;
+                      font-weight: 700;
+                      padding-left: 2px;
                     }
                     .slot.available { background: #16a34a; }
                     .slot.booked { background: #dc2626; }
@@ -591,6 +593,7 @@ public class AvailabilitySlotController {
                     const nextBtn = document.getElementById('nextBtn');
                     const weekdays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
                     const locale = 'fr-FR';
+                    const maxVisibleSlots = 2;
                     const current = new Date();
                     current.setDate(1);
 
@@ -664,7 +667,8 @@ public class AvailabilitySlotController {
                           hint.textContent = '';
                           slotsEl.appendChild(hint);
                         } else {
-                          dayEvents.forEach((event) => {
+                          const visibleEvents = dayEvents.slice(0, maxVisibleSlots);
+                          visibleEvents.forEach((event) => {
                             const chip = document.createElement('div');
                             chip.className = 'slot ' + (event.booked ? 'booked' : 'available');
                             const range = formatRange(event.start, event.end);
@@ -672,6 +676,12 @@ public class AvailabilitySlotController {
                             chip.textContent = range + ' ' + event.title;
                             slotsEl.appendChild(chip);
                           });
+                          if (dayEvents.length > maxVisibleSlots) {
+                            const more = document.createElement('div');
+                            more.className = 'more-label';
+                            more.textContent = '+' + (dayEvents.length - maxVisibleSlots) + ' more';
+                            slotsEl.appendChild(more);
+                          }
                         }
 
                         dayEl.appendChild(numEl);
