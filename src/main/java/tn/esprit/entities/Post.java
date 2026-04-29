@@ -12,6 +12,9 @@ public class Post {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Integer userId;
+    private String imageUrl;
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public Post() {
     }

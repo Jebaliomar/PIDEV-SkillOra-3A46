@@ -6,6 +6,7 @@ public class Report {
 
     private Integer id;
     private Integer postId;
+    private Integer replyId; // nullable
     private Integer userId;
     private String reason;
     private String description;
@@ -17,9 +18,10 @@ public class Report {
     public Report() {
     }
 
-    public Report(Integer id, Integer postId, Integer userId, String reason, String description, String status, LocalDateTime createdAt, LocalDateTime reviewedAt, Integer reviewedBy) {
+    public Report(Integer id, Integer postId, Integer replyId, Integer userId, String reason, String description, String status, LocalDateTime createdAt, LocalDateTime reviewedAt, Integer reviewedBy) {
         this.id = id;
         this.postId = postId;
+        this.replyId = replyId;
         this.userId = userId;
         this.reason = reason;
         this.description = description;
@@ -27,6 +29,10 @@ public class Report {
         this.createdAt = createdAt;
         this.reviewedAt = reviewedAt;
         this.reviewedBy = reviewedBy;
+    }
+
+    public Report(Integer id, Integer postId, Integer userId, String reason, String description, String status, LocalDateTime createdAt, LocalDateTime reviewedAt, Integer reviewedBy) {
+        this(id, postId, null, userId, reason, description, status, createdAt, reviewedAt, reviewedBy);
     }
 
     public Integer getId() {
@@ -43,6 +49,14 @@ public class Report {
 
     public void setPostId(Integer postId) {
         this.postId = postId;
+    }
+
+    public Integer getReplyId() {
+        return replyId;
+    }
+
+    public void setReplyId(Integer replyId) {
+        this.replyId = replyId;
     }
 
     public Integer getUserId() {
@@ -104,7 +118,16 @@ public class Report {
     @Override
     public String toString() {
         return "Report{" +
-                "id=" + id + ", " + "postId=" + postId + ", " + "userId=" + userId + ", " + "reason=" + reason + ", " + "description=" + description + ", " + "status=" + status + ", " + "createdAt=" + createdAt + ", " + "reviewedAt=" + reviewedAt + ", " + "reviewedBy=" + reviewedBy +
-                "}";
+                "id=" + id +
+                ", postId=" + postId +
+                ", replyId=" + replyId +
+                ", userId=" + userId +
+                ", reason=" + reason +
+                ", description=" + description +
+                ", status=" + status +
+                ", createdAt=" + createdAt +
+                ", reviewedAt=" + reviewedAt +
+                ", reviewedBy=" + reviewedBy +
+                '}';
     }
 }

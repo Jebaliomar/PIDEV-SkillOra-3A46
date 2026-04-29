@@ -21,7 +21,7 @@ public class UserService {
             return "Unknown user";
         }
 
-        String sql = "SELECT username FROM `user` WHERE id = ?";
+        String sql = "SELECT username FROM `users` WHERE id = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, userId);
@@ -30,7 +30,7 @@ public class UserService {
                 if (resultSet.next()) {
                     String username = resultSet.getString("username");
                     if (username != null && !username.isBlank()) {
-                        return username;
+                        return username.trim();
                     }
                 }
             }
@@ -44,7 +44,7 @@ public class UserService {
             return null;
         }
 
-        String sql = "SELECT id, username FROM `user` WHERE id = ?";
+        String sql = "SELECT id, username FROM `users` WHERE id = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, userId);
@@ -60,7 +60,7 @@ public class UserService {
     }
 
     public User getFirstUser() throws SQLException {
-        String sql = "SELECT id, username FROM `user` ORDER BY id ASC LIMIT 1";
+        String sql = "SELECT id, username FROM `users` ORDER BY id ASC LIMIT 1";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -77,7 +77,7 @@ public class UserService {
             return false;
         }
 
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM user_role WHERE user_id = ? AND UPPER(role) IN (");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM user_roles WHERE user_id = ? AND UPPER(role) IN (");
         for (int index = 0; index < roleNames.length; index++) {
             if (index > 0) {
                 sql.append(", ");
@@ -89,7 +89,8 @@ public class UserService {
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
             preparedStatement.setInt(1, userId);
             for (int index = 0; index < roleNames.length; index++) {
-                preparedStatement.setString(index + 2, roleNames[index] == null ? "" : roleNames[index].trim().toUpperCase());
+                String role = roleNames[index] == null ? "" : roleNames[index].trim().toUpperCase();
+                preparedStatement.setString(index + 2, role);
             }
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {

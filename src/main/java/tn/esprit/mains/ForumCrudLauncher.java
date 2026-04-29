@@ -11,9 +11,13 @@ import tn.esprit.controllers.forum.AdminPostManagementController;
 import tn.esprit.controllers.forum.CreatePostController;
 import tn.esprit.controllers.forum.PostDetailsController;
 import tn.esprit.controllers.forum.PostOverviewController;
+import tn.esprit.controllers.forum.ReportManagementController;
 import tn.esprit.entities.User;
 import tn.esprit.services.PostService;
+import tn.esprit.services.ReactionService;
 import tn.esprit.services.ReplyService;
+import tn.esprit.services.ReportService;
+import tn.esprit.services.ShareService;
 import tn.esprit.services.UserService;
 
 import java.io.IOException;
@@ -25,19 +29,27 @@ public class ForumCrudLauncher extends Application {
 
     private static final double WINDOW_WIDTH = 980;
     private static final double WINDOW_HEIGHT = 720;
-    private static final int STATIC_USER_ID = 1;
+    private static final int STATIC_USER_ID = 2;
     private static final String STATIC_USERNAME = "Forum User";
 
     private final Map<Integer, String> usernameCache = new HashMap<>();
 
     private Stage primaryStage;
     private PostService postService;
+    private ReactionService reactionService;
     private ReplyService replyService;
+    private ReportService reportService;
     private UserService userService;
     private User currentUser;
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private final ShareService shareService = new ShareService();
+
+    public ShareService getShareService() {
+        return shareService;
     }
 
     @Override
@@ -46,7 +58,9 @@ public class ForumCrudLauncher extends Application {
 
         try {
             this.postService = new PostService();
+            this.reactionService = new ReactionService();
             this.replyService = new ReplyService();
+            this.reportService = new ReportService();
             this.userService = new UserService();
             this.currentUser = createStaticUser();
         } catch (RuntimeException exception) {
@@ -59,79 +73,66 @@ public class ForumCrudLauncher extends Application {
     }
 
     public void showOverviewScene() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/post-overview.fxml"));
-            Parent root = loader.load();
-
-            PostOverviewController controller = loader.getController();
-            controller.setApplication(this);
-            controller.loadPosts();
-
-            setScene(root, "Posts Overview");
-        } catch (IOException exception) {
-            showError("View loading failed", exception.getMessage());
-        }
+        loadScene("/tn/esprit/forum/post-overview.fxml", "Posts Overview", controller -> {
+            PostOverviewController view = (PostOverviewController) controller;
+            view.setApplication(this);
+            view.loadPosts();
+        });
     }
 
     public void showCreatePostScene() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/create-post.fxml"));
-            Parent root = loader.load();
-
-            CreatePostController controller = loader.getController();
-            controller.setApplication(this);
-
-            setScene(root, "Create Post");
-        } catch (IOException exception) {
-            showError("View loading failed", exception.getMessage());
-        }
+        loadScene("/tn/esprit/forum/create-post.fxml", "Create Post", controller -> {
+            CreatePostController view = (CreatePostController) controller;
+            view.setApplication(this);
+        });
     }
 
     public void showEditPostScene(int postId) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/create-post.fxml"));
-            Parent root = loader.load();
-
-            CreatePostController controller = loader.getController();
-            controller.setApplication(this);
-            if (!controller.loadPostForEdit(postId)) {
-                return;
-            }
-
-            setScene(root, "Edit Post");
-        } catch (IOException exception) {
-            showError("View loading failed", exception.getMessage());
-        }
+        loadScene("/tn/esprit/forum/create-post.fxml", "Edit Post", controller -> {
+            CreatePostController view = (CreatePostController) controller;
+            view.setApplication(this);
+            view.loadPostForEdit(postId);
+        });
     }
 
     public void showPostDetailsScene(int postId) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/post-details.fxml"));
-            Parent root = loader.load();
-
-            PostDetailsController controller = loader.getController();
-            controller.setApplication(this);
-            if (!controller.loadPost(postId)) {
-                return;
-            }
-
-            setScene(root, "Post Details");
-        } catch (IOException exception) {
-            showError("View loading failed", exception.getMessage());
-        }
+        loadScene("/tn/esprit/forum/post-details.fxml", "Post Details", controller -> {
+            PostDetailsController view = (PostDetailsController) controller;
+            view.setApplication(this);
+            view.loadPost(postId);
+        });
     }
 
     public void showAdminPostManagementScene() {
+        loadScene("/tn/esprit/forum/admin-post-management.fxml", "Admin Posts", controller -> {
+            AdminPostManagementController view = (AdminPostManagementController) controller;
+            view.setApplication(this);
+            view.loadPosts();
+        });
+    }
+
+    public void showReportManagementScene() {
+        if (!canModeratePosts()) {
+            showError("Access denied", "You do not have permission to open the moderation reports screen.");
+            return;
+        }
+
+        loadScene("/tn/esprit/forum/report-management.fxml", "Reports", controller -> {
+            ReportManagementController view = (ReportManagementController) controller;
+            view.setApplication(this);
+            view.loadReports();
+        });
+    }
+
+    private void loadScene(String fxmlPath, String title, SceneInitializer initializer) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/admin-post-management.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
-            AdminPostManagementController controller = loader.getController();
-            controller.setApplication(this);
-            controller.loadPosts();
-
-            setScene(root, "Admin Posts");
+            initializer.initialize(loader.getController());
+            setScene(root, title);
         } catch (IOException exception) {
+            exception.printStackTrace();
             showError("View loading failed", exception.getMessage());
         }
     }
@@ -149,12 +150,20 @@ public class ForumCrudLauncher extends Application {
         return replyService;
     }
 
+    public ReactionService getReactionService() {
+        return reactionService;
+    }
+
+    public ReportService getReportService() {
+        return reportService;
+    }
+
     public User getCurrentUser() {
         return currentUser;
     }
 
     public String getCurrentUserDisplay() {
-        return currentUser.getUsername() + " (ID: " + currentUser.getId() + ")";
+        return currentUser == null ? "No active user" : currentUser.getUsername() + " (ID: " + currentUser.getId() + ")";
     }
 
     public boolean canModeratePosts() {
@@ -183,7 +192,9 @@ public class ForumCrudLauncher extends Application {
             usernameCache.put(userId, username);
             return username;
         } catch (SQLException exception) {
-            return "User #" + userId;
+            String fallback = "User #" + userId;
+            usernameCache.put(userId, fallback);
+            return fallback;
         }
     }
 
@@ -217,5 +228,10 @@ public class ForumCrudLauncher extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         return alert.showAndWait().filter(ButtonType.OK::equals).isPresent();
+    }
+
+    @FunctionalInterface
+    private interface SceneInitializer {
+        void initialize(Object controller);
     }
 }
