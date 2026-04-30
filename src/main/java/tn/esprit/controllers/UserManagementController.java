@@ -11,6 +11,11 @@ import tn.esprit.entities.User;
 import tn.esprit.services.UserService;
 
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -209,8 +214,19 @@ public class UserManagementController implements Initializable {
             banBtn = new Button("Ban");
             banBtn.getStyleClass().add("btn-danger");
             banBtn.setOnAction(e -> {
-                try { userService.banUser(user.getId()); loadData(); }
-                catch (Exception ex) { ex.printStackTrace(); }
+                Optional<String> reason = ReasonDialogController.prompt(
+                        banBtn.getScene().getWindow(),
+                        "Ban this user?",
+                        "Banned users can no longer sign in. " + user.getEmail(),
+                        "Ban user",
+                        ReasonDialogController.Variant.WARNING);
+                reason.ifPresent(r -> {
+                    try {
+                        userService.banUser(user.getId());
+                        auditLog("BAN", user, r);
+                        loadData();
+                    } catch (Exception ex) { ex.printStackTrace(); }
+                });
             });
         } else {
             banBtn = new Button("Unban");
@@ -225,13 +241,18 @@ public class UserManagementController implements Initializable {
         Button deleteBtn = new Button("Delete");
         deleteBtn.getStyleClass().add("btn-danger-outline");
         deleteBtn.setOnAction(e -> {
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete user " + user.getEmail() + "?", ButtonType.YES, ButtonType.NO);
-            confirm.setHeaderText("Confirm Deletion");
-            confirm.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.YES) {
-                    try { userService.delete(user.getId()); loadData(); }
-                    catch (Exception ex) { ex.printStackTrace(); }
-                }
+            Optional<String> reason = ReasonDialogController.prompt(
+                    deleteBtn.getScene().getWindow(),
+                    "Delete this user?",
+                    "This permanently removes " + user.getEmail() + ". This cannot be undone.",
+                    "Delete user",
+                    ReasonDialogController.Variant.DANGER);
+            reason.ifPresent(r -> {
+                try {
+                    auditLog("DELETE", user, r);
+                    userService.delete(user.getId());
+                    loadData();
+                } catch (Exception ex) { ex.printStackTrace(); }
             });
         });
 
@@ -245,6 +266,21 @@ public class UserManagementController implements Initializable {
         card.setAlignment(Pos.TOP_CENTER);
 
         return card;
+    }
+
+    private void auditLog(String action, User target, String reason) {
+        try {
+            Path dir = Paths.get(System.getProperty("user.home"), ".skillora");
+            Files.createDirectories(dir);
+            Path file = dir.resolve("admin-actions.log");
+            String ts = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            String adminEmail = AdminPanelController.getCurrentUser() != null
+                    ? AdminPanelController.getCurrentUser().getEmail() : "?";
+            String line = ts + " | " + adminEmail + " | " + action
+                    + " | userId=" + target.getId() + " (" + target.getEmail() + ")"
+                    + " | reason=\"" + reason.replace("\"", "'") + "\"" + System.lineSeparator();
+            Files.writeString(file, line, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (Exception ignored) {}
     }
 
     @FXML

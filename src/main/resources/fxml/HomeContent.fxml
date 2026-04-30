@@ -12,12 +12,12 @@
         <!-- Hero -->
         <VBox styleClass="hero-card" spacing="18" alignment="CENTER_LEFT">
             <padding><Insets top="60" right="60" bottom="60" left="60"/></padding>
-            <Label text="Welcome back" styleClass="hero-eyebrow"/>
-            <Label fx:id="heroTitle" text="Learn deeply. Grow visibly." styleClass="hero-title" wrapText="true"/>
-            <Label text="Master new skills with courses built by top instructors. Track your progress, earn certificates, and grow your career." styleClass="hero-subtitle" wrapText="true"/>
+            <Label text="%home.welcome" styleClass="hero-eyebrow"/>
+            <Label fx:id="heroTitle" text="%home.title" styleClass="hero-title" wrapText="true"/>
+            <Label text="%home.subtitle" styleClass="hero-subtitle" wrapText="true"/>
             <HBox spacing="16">
-                <Button text="Browse Courses" styleClass="btn-primary"/>
-                <Button text="View My Profile" onAction="#goToProfile" styleClass="btn-outline"/>
+                <Button text="%home.btn.browse" styleClass="btn-primary"/>
+                <Button text="%home.btn.profile" onAction="#goToProfile" styleClass="btn-outline"/>
             </HBox>
         </VBox>
 
@@ -25,70 +25,70 @@
         <HBox spacing="24">
             <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS">
                 <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                <Label text="Courses" styleClass="metric-label"/>
+                <Label text="%home.metric.courses" styleClass="metric-label"/>
                 <Label text="10K+" styleClass="metric-value"/>
             </VBox>
             <VBox styleClass="stat-card, stat-card-green" HBox.hgrow="ALWAYS">
                 <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                <Label text="Students" styleClass="metric-label"/>
+                <Label text="%home.metric.students" styleClass="metric-label"/>
                 <Label text="500K+" styleClass="metric-value"/>
             </VBox>
             <VBox styleClass="stat-card, stat-card-purple" HBox.hgrow="ALWAYS">
                 <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                <Label text="Instructors" styleClass="metric-label"/>
+                <Label text="%home.metric.instructors" styleClass="metric-label"/>
                 <Label text="2K+" styleClass="metric-value"/>
             </VBox>
             <VBox styleClass="stat-card, stat-card-orange" HBox.hgrow="ALWAYS">
                 <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                <Label text="Rating" styleClass="metric-label"/>
+                <Label text="%home.metric.rating" styleClass="metric-label"/>
                 <Label text="4.8" styleClass="metric-value"/>
             </VBox>
         </HBox>
 
         <!-- Featured categories -->
         <VBox spacing="18">
-            <Label text="Featured Categories" styleClass="dashboard-title"/>
-            <Label text="Explore skills across every domain" styleClass="dashboard-subtitle"/>
+            <Label text="%home.featured" styleClass="dashboard-title"/>
+            <Label text="%home.featured.subtitle" styleClass="dashboard-subtitle"/>
             <FlowPane hgap="18" vgap="18">
                 <VBox styleClass="chart-card" prefWidth="220">
                     <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                    <Label text="Development" styleClass="chart-title"/>
-                    <Label text="1200+ courses" styleClass="chart-subtitle"/>
+                    <Label text="%home.cat.dev" styleClass="chart-title"/>
+                    <Label text="1200+" styleClass="chart-subtitle"/>
                 </VBox>
                 <VBox styleClass="chart-card" prefWidth="220">
                     <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                    <Label text="Design" styleClass="chart-title"/>
-                    <Label text="850+ courses" styleClass="chart-subtitle"/>
+                    <Label text="%home.cat.design" styleClass="chart-title"/>
+                    <Label text="850+" styleClass="chart-subtitle"/>
                 </VBox>
                 <VBox styleClass="chart-card" prefWidth="220">
                     <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                    <Label text="Business" styleClass="chart-title"/>
-                    <Label text="960+ courses" styleClass="chart-subtitle"/>
+                    <Label text="%home.cat.business" styleClass="chart-title"/>
+                    <Label text="960+" styleClass="chart-subtitle"/>
                 </VBox>
                 <VBox styleClass="chart-card" prefWidth="220">
                     <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                    <Label text="Marketing" styleClass="chart-title"/>
-                    <Label text="720+ courses" styleClass="chart-subtitle"/>
+                    <Label text="%home.cat.marketing" styleClass="chart-title"/>
+                    <Label text="720+" styleClass="chart-subtitle"/>
                 </VBox>
                 <VBox styleClass="chart-card" prefWidth="220">
                     <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                    <Label text="Data Science" styleClass="chart-title"/>
-                    <Label text="540+ courses" styleClass="chart-subtitle"/>
+                    <Label text="%home.cat.data" styleClass="chart-title"/>
+                    <Label text="540+" styleClass="chart-subtitle"/>
                 </VBox>
                 <VBox styleClass="chart-card" prefWidth="220">
                     <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                    <Label text="Photography" styleClass="chart-title"/>
-                    <Label text="380+ courses" styleClass="chart-subtitle"/>
+                    <Label text="%home.cat.photo" styleClass="chart-title"/>
+                    <Label text="380+" styleClass="chart-subtitle"/>
                 </VBox>
                 <VBox styleClass="chart-card" prefWidth="220">
                     <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                    <Label text="Music" styleClass="chart-title"/>
-                    <Label text="290+ courses" styleClass="chart-subtitle"/>
+                    <Label text="%home.cat.music" styleClass="chart-title"/>
+                    <Label text="290+" styleClass="chart-subtitle"/>
                 </VBox>
                 <VBox styleClass="chart-card" prefWidth="220">
                     <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
-                    <Label text="Languages" styleClass="chart-title"/>
-                    <Label text="410+ courses" styleClass="chart-subtitle"/>
+                    <Label text="%home.cat.lang" styleClass="chart-title"/>
+                    <Label text="410+" styleClass="chart-subtitle"/>
                 </VBox>
             </FlowPane>
         </VBox>
@@ -96,9 +96,9 @@
         <!-- Testimonial-style CTA -->
         <VBox styleClass="cta-card" spacing="12" alignment="CENTER">
             <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
-            <Label text="Ready to level up?" styleClass="hero-title"/>
-            <Label text="Complete your profile to get personalized recommendations." styleClass="hero-subtitle"/>
-            <Button text="Go to Settings" onAction="#goToSettings" styleClass="btn-primary"/>
+            <Label text="%home.cta.title" styleClass="hero-title"/>
+            <Label text="%home.cta.subtitle" styleClass="hero-subtitle"/>
+            <Button text="%home.cta.btn" onAction="#goToSettings" styleClass="btn-primary"/>
         </VBox>
     </VBox>
 </ScrollPane>

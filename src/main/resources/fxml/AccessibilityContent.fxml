@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.AccessibilityController"
+            fitToWidth="true" hbarPolicy="NEVER"
+            style="-fx-background-color: transparent; -fx-background: transparent;">
+
+    <VBox spacing="20" styleClass="content-padding">
+        <padding><Insets top="30" bottom="30" left="30" right="30"/></padding>
+
+        <VBox spacing="4">
+            <Label text="%access.title" styleClass="dashboard-title"/>
+            <Label text="%access.subtitle" styleClass="dashboard-subtitle"/>
+        </VBox>
+
+        <!-- Language -->
+        <VBox styleClass="chart-card" spacing="14">
+            <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+            <Label text="%access.language.section" styleClass="chart-title"/>
+            <VBox spacing="6">
+                <Label text="%access.language" styleClass="input-label"/>
+                <ComboBox fx:id="languageCombo" prefWidth="240"/>
+            </VBox>
+        </VBox>
+
+        <!-- Presets -->
+        <VBox styleClass="chart-card" spacing="14">
+            <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+            <Label text="%access.presets" styleClass="chart-title"/>
+            <Label text="%access.presets.subtitle" styleClass="dashboard-subtitle"/>
+            <HBox spacing="12">
+                <Button text="%access.preset.day" onAction="#presetDay" styleClass="acc-preset, acc-preset-day" prefWidth="150"/>
+                <Button text="%access.preset.night" onAction="#presetNight" styleClass="acc-preset, acc-preset-night" prefWidth="150"/>
+                <Button text="%access.preset.reading" onAction="#presetReading" styleClass="acc-preset, acc-preset-read" prefWidth="150"/>
+                <Button text="%access.preset.presentation" onAction="#presetPresentation" styleClass="acc-preset, acc-preset-pres" prefWidth="170"/>
+            </HBox>
+        </VBox>
+
+        <!-- Display -->
+        <VBox styleClass="chart-card" spacing="14">
+            <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+            <Label text="%access.display" styleClass="chart-title"/>
+
+            <HBox spacing="20" alignment="CENTER_LEFT">
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="%access.font.size" styleClass="input-label"/>
+                    <ComboBox fx:id="fontScaleCombo" prefWidth="220"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="%access.font.family" styleClass="input-label"/>
+                    <ComboBox fx:id="fontFamilyCombo" prefWidth="220"/>
+                </VBox>
+                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                    <Label text="%access.density" styleClass="input-label"/>
+                    <ComboBox fx:id="densityCombo" prefWidth="220"/>
+                </VBox>
+            </HBox>
+
+            <VBox spacing="6">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="%access.zoom" styleClass="input-label"/>
+                    <Label fx:id="zoomValueLabel" text="100%"/>
+                </HBox>
+                <Slider fx:id="zoomSlider" min="0.7" max="1.6" value="1.0"
+                        majorTickUnit="0.1" minorTickCount="0" snapToTicks="false"
+                        showTickMarks="true" showTickLabels="false"/>
+            </VBox>
+        </VBox>
+
+        <!-- Colors -->
+        <VBox styleClass="chart-card" spacing="14">
+            <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+            <Label text="%access.colors" styleClass="chart-title"/>
+
+            <HBox spacing="20" alignment="CENTER_LEFT">
+                <VBox spacing="6">
+                    <Label text="%access.color.accent" styleClass="input-label"/>
+                    <ColorPicker fx:id="accentPicker" prefWidth="180"/>
+                </VBox>
+                <VBox spacing="6">
+                    <Label text="%access.color.background" styleClass="input-label"/>
+                    <ColorPicker fx:id="backgroundPicker" prefWidth="180"/>
+                </VBox>
+                <VBox spacing="6" alignment="BOTTOM_LEFT">
+                    <Label text=" "/>
+                    <Button text="%access.color.clear" onAction="#handleClearBackground" styleClass="acc-btn"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="%access.color.swatches" styleClass="input-label"/>
+                <Button styleClass="swatch-btn" style="-fx-background-color:#7C3AED;" onAction="#applySwatchPurple" prefWidth="32" prefHeight="32"/>
+                <Button styleClass="swatch-btn" style="-fx-background-color:#0EA5E9;" onAction="#applySwatchBlue" prefWidth="32" prefHeight="32"/>
+                <Button styleClass="swatch-btn" style="-fx-background-color:#22C55E;" onAction="#applySwatchGreen" prefWidth="32" prefHeight="32"/>
+                <Button styleClass="swatch-btn" style="-fx-background-color:#F59E0B;" onAction="#applySwatchOrange" prefWidth="32" prefHeight="32"/>
+                <Button styleClass="swatch-btn" style="-fx-background-color:#EF4444;" onAction="#applySwatchRed" prefWidth="32" prefHeight="32"/>
+                <Button styleClass="swatch-btn" style="-fx-background-color:#EC4899;" onAction="#applySwatchPink" prefWidth="32" prefHeight="32"/>
+            </HBox>
+        </VBox>
+
+        <!-- Vision -->
+        <VBox styleClass="chart-card" spacing="14">
+            <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+            <Label text="%access.vision" styleClass="chart-title"/>
+
+            <VBox spacing="6">
+                <Label text="%access.color.blind" styleClass="input-label"/>
+                <ComboBox fx:id="colorBlindCombo" prefWidth="280"/>
+            </VBox>
+
+            <CheckBox fx:id="highContrastCheck" text="%access.high.contrast"/>
+            <CheckBox fx:id="focusRingCheck" text="%access.focus.ring"/>
+
+            <VBox spacing="6">
+                <Label text="%access.color.filter" styleClass="input-label"/>
+                <ComboBox fx:id="colorFilterCombo" prefWidth="280"/>
+            </VBox>
+
+            <CheckBox fx:id="autoDarkCheck" text="%access.auto.dark"/>
+        </VBox>
+
+        <!-- Motion & Sound -->
+        <VBox styleClass="chart-card" spacing="14">
+            <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+            <Label text="%access.motion" styleClass="chart-title"/>
+            <CheckBox fx:id="reducedMotionCheck" text="%access.reduced.motion"/>
+            <CheckBox fx:id="soundCuesCheck" text="%access.sound.cues"/>
+            <CheckBox fx:id="shortcutsCheck" text="%access.shortcuts"/>
+        </VBox>
+
+        <!-- Live preview -->
+        <VBox styleClass="chart-card" spacing="14">
+            <padding><Insets top="20" bottom="20" left="20" right="20"/></padding>
+            <Label text="%access.preview" styleClass="chart-title"/>
+            <VBox fx:id="previewCard" spacing="10" styleClass="stat-card, stat-card-purple">
+                <padding><Insets top="16" bottom="16" left="16" right="16"/></padding>
+                <Label text="%access.preview.headline" styleClass="stat-card-label"/>
+                <Label text="42" styleClass="stat-card-value"/>
+                <Label text="%access.preview.body" styleClass="stat-card-desc" wrapText="true"/>
+                <HBox spacing="8">
+                    <Button text="%access.preview.primary" styleClass="btn-primary" prefHeight="36"/>
+                    <Button text="%access.preview.secondary" prefHeight="36"/>
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <!-- Actions -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button text="%access.action.export" onAction="#handleExport" styleClass="acc-btn"/>
+            <Button text="%access.action.import" onAction="#handleImport" styleClass="acc-btn"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="%access.action.reset" onAction="#handleReset" styleClass="acc-btn-ghost"/>
+        </HBox>
+
+    </VBox>
+</ScrollPane>

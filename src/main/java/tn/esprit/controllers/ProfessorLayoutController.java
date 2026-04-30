@@ -87,7 +87,7 @@ public class ProfessorLayoutController implements Initializable {
 
     private void loadContent(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), fxmlPath);
             Parent content = loader.load();
             contentArea.getChildren().setAll(content);
         } catch (Exception e) {
@@ -123,7 +123,7 @@ public class ProfessorLayoutController implements Initializable {
             if (token != null) new SessionService().deleteSession(token);
             SessionStore.clear();
             currentUser = null;
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), "/fxml/Login.fxml");
             Parent root = loader.load();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());

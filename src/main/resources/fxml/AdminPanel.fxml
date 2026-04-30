@@ -21,8 +21,8 @@
                     <Label text="S" styleClass="logo-icon"/>
                 </StackPane>
                 <VBox spacing="0">
-                    <Label text="SkillORA" styleClass="sidebar-brand"/>
-                    <Label text="Admin Panel" styleClass="sidebar-subtitle"/>
+                    <Label text="%common.brand" styleClass="sidebar-brand"/>
+                    <Label text="%admin.subtitle" styleClass="sidebar-subtitle"/>
                 </VBox>
             </HBox>
 
@@ -30,11 +30,13 @@
 
             <!-- Nav Items -->
             <VBox spacing="4" fx:id="navContainer">
-                <Button fx:id="navDashboard" text="   Dashboard" onAction="#showDashboard"
+                <Button fx:id="navDashboard" text="%admin.nav.dashboard" onAction="#showDashboard"
                         styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
-                <Button fx:id="navUsers" text="   User Management" onAction="#showUserManagement"
+                <Button fx:id="navUsers" text="%admin.nav.users" onAction="#showUserManagement"
                         styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
-                <Button fx:id="navStats" text="   Statistics" onAction="#showStatistics"
+                <Button fx:id="navStats" text="%admin.nav.stats" onAction="#showStatistics"
+                        styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
+                <Button fx:id="navAccessibility" text="%admin.nav.accessibility" onAction="#showAccessibility"
                         styleClass="nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
             </VBox>
 
@@ -47,7 +49,7 @@
             <Region prefHeight="8"/>
 
             <!-- Logout -->
-            <Button text="   Sign Out" onAction="#handleLogout"
+            <Button text="%admin.nav.signout" onAction="#handleLogout"
                     styleClass="nav-item-danger" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
         </VBox>
     </left>

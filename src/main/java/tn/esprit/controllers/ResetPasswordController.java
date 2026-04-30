@@ -105,7 +105,7 @@ public class ResetPasswordController {
     @FXML
     public void goBackToLogin() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), "/fxml/Login.fxml");
             Parent root = loader.load();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());

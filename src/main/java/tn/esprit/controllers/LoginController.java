@@ -13,6 +13,7 @@ import tn.esprit.services.FaceIdService;
 import tn.esprit.services.SessionService;
 import tn.esprit.services.UserService;
 import tn.esprit.tools.FaceIdServer;
+import tn.esprit.tools.Loaders;
 import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
 import tn.esprit.tools.SessionStore;
@@ -104,7 +105,7 @@ public class LoginController implements Initializable {
 
                 rememberIfChecked(user);
 
-                FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
+                FXMLLoader dashLoader = Loaders.loader(getClass(), fxmlPath);
                 Parent dashRoot = dashLoader.load();
                 Scene dashScene = new Scene(dashRoot);
                 dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
@@ -179,7 +180,7 @@ public class LoginController implements Initializable {
 
             rememberIfChecked(user);
 
-            FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
+            FXMLLoader dashLoader = Loaders.loader(getClass(), fxmlPath);
             Parent dashRoot = dashLoader.load();
             Scene dashScene = new Scene(dashRoot);
             dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
@@ -202,7 +203,7 @@ public class LoginController implements Initializable {
             return;
         }
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ForgotPassword.fxml"));
+            FXMLLoader loader = Loaders.loader(getClass(), "/fxml/ForgotPassword.fxml");
             Parent root = loader.load();
             ForgotPasswordController controller = loader.getController();
             controller.setLoginEmail(email);
@@ -221,7 +222,7 @@ public class LoginController implements Initializable {
     @FXML
     public void goToSignUp() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SignUp.fxml"));
+            FXMLLoader loader = Loaders.loader(getClass(), "/fxml/SignUp.fxml");
             Parent root = loader.load();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());

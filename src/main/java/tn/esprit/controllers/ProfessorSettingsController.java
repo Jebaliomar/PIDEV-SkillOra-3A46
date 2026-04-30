@@ -148,7 +148,7 @@ public class ProfessorSettingsController implements Initializable {
         User u = ProfessorLayoutController.getCurrentUser();
         if (u == null) return;
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AvatarPicker.fxml"));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), "/fxml/AvatarPicker.fxml");
             Parent root = loader.load();
             AvatarPickerController ctrl = loader.getController();
             Stage dialog = new Stage();

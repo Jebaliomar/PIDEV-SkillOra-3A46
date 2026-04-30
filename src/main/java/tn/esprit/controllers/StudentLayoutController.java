@@ -25,6 +25,7 @@ public class StudentLayoutController implements Initializable {
     @FXML private StackPane contentArea;
     @FXML private Button themeToggleBtn;
     @FXML private Button navHome;
+    @FXML private Button navSkills;
     @FXML private MenuButton userMenu;
     @FXML private MenuItem menuProfile;
     @FXML private MenuItem menuSettings;
@@ -72,6 +73,12 @@ public class StudentLayoutController implements Initializable {
     }
 
     @FXML
+    public void showSkills() {
+        loadContent("/fxml/SkillGraphContent.fxml");
+        setActiveNav(navSkills);
+    }
+
+    @FXML
     public void showSettings() {
         loadContent("/fxml/SettingsContent.fxml");
         setActiveNav(null);
@@ -79,7 +86,7 @@ public class StudentLayoutController implements Initializable {
 
     private void loadContent(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), fxmlPath);
             Parent content = loader.load();
             contentArea.getChildren().setAll(content);
         } catch (Exception e) {
@@ -88,8 +95,8 @@ public class StudentLayoutController implements Initializable {
     }
 
     private void setActiveNav(Button active) {
-        for (Button b : new Button[]{navHome}) {
-            b.getStyleClass().remove("student-nav-btn-active");
+        for (Button b : new Button[]{navHome, navSkills}) {
+            if (b != null) b.getStyleClass().remove("student-nav-btn-active");
         }
         if (active != null && !active.getStyleClass().contains("student-nav-btn-active")) {
             active.getStyleClass().add("student-nav-btn-active");
@@ -115,7 +122,7 @@ public class StudentLayoutController implements Initializable {
             if (token != null) new SessionService().deleteSession(token);
             SessionStore.clear();
             currentUser = null;
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), "/fxml/Login.fxml");
             Parent root = loader.load();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());

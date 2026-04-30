@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.SkillEditorController"
+      styleClass="reason-dialog"
+      prefWidth="460" spacing="0">
+
+    <HBox styleClass="reason-dialog-header" alignment="CENTER_LEFT" spacing="14"
+          style="-fx-background-color: linear-gradient(to right, #7c3aed, #a855f7);">
+        <padding><Insets top="22" right="24" bottom="22" left="24"/></padding>
+        <StackPane style="-fx-background-color: rgba(255,255,255,0.22); -fx-background-radius: 12; -fx-min-width: 44; -fx-min-height: 44;">
+            <Label text="✦" style="-fx-text-fill:white; -fx-font-weight:bold; -fx-font-size:22px;"/>
+        </StackPane>
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="titleLabel" text="Add a skill" styleClass="reason-dialog-title"/>
+            <Label text="Track a skill you're learning - it appears on your graph." styleClass="reason-dialog-subtitle" wrapText="true"/>
+        </VBox>
+    </HBox>
+
+    <VBox spacing="14" styleClass="reason-dialog-body">
+        <padding><Insets top="22" right="24" bottom="20" left="24"/></padding>
+
+        <VBox spacing="6">
+            <Label text="Category" styleClass="reason-dialog-label"/>
+            <ComboBox fx:id="categoryCombo" prefWidth="412"/>
+        </VBox>
+
+        <VBox spacing="6">
+            <Label text="Skill name" styleClass="reason-dialog-label"/>
+            <TextField fx:id="nameField" promptText="e.g. Docker, Public speaking, French..."
+                       styleClass="custom-text-field" prefHeight="40"/>
+        </VBox>
+
+        <VBox spacing="6">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Label text="Progress" styleClass="reason-dialog-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="progressLabel" text="0%" styleClass="reason-dialog-counter"/>
+            </HBox>
+            <Slider fx:id="progressSlider" min="0" max="100" value="0"
+                    majorTickUnit="25" minorTickCount="0" showTickMarks="true" showTickLabels="true"/>
+        </VBox>
+
+        <VBox spacing="6">
+            <Label text="Notes (optional)" styleClass="reason-dialog-label"/>
+            <TextArea fx:id="descArea" wrapText="true" prefRowCount="3" styleClass="reason-dialog-textarea"
+                      promptText="What you've learned or want to learn next."/>
+        </VBox>
+
+        <Label fx:id="errorLabel" styleClass="reason-dialog-error" wrapText="true" managed="false" visible="false"/>
+    </VBox>
+
+    <HBox styleClass="reason-dialog-footer" spacing="10" alignment="CENTER_LEFT">
+        <padding><Insets top="14" right="24" bottom="18" left="24"/></padding>
+        <Button fx:id="deleteBtn" text="Delete" onAction="#handleDelete"
+                style="-fx-background-color: transparent; -fx-text-fill: #dc2626; -fx-font-weight: 600; -fx-padding: 10 16; -fx-background-radius: 10; -fx-cursor: hand;"
+                managed="false" visible="false"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Cancel" onAction="#handleCancel" styleClass="reason-dialog-btn-cancel"/>
+        <Button fx:id="saveBtn" text="Save" onAction="#handleSave"
+                style="-fx-background-color: #7c3aed; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 22; -fx-background-radius: 10; -fx-cursor: hand;"/>
+    </HBox>
+</VBox>

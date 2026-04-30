@@ -1,0 +1,375 @@
+/* === Skill graph screen === */
+
+.skill-graph-root {
+    -fx-background-color: linear-gradient(to bottom right, #fafbff, #f3f4f6);
+}
+.dark-theme .skill-graph-root {
+    -fx-background-color: linear-gradient(to bottom right, #0f172a, #1e293b);
+}
+.skill-graph-pane {
+    -fx-background-color: transparent;
+}
+
+.skill-detail-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 22, 0.25, 0, 6);
+}
+.dark-theme .skill-detail-card {
+    -fx-background-color: #1f2937;
+}
+
+.skill-detail-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #111827;
+}
+.dark-theme .skill-detail-title { -fx-text-fill: #f9fafb; }
+
+.skill-detail-category {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.skill-detail-progress {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+.dark-theme .skill-detail-progress { -fx-text-fill: #9ca3af; }
+
+.skill-detail-desc {
+    -fx-font-size: 12.5px;
+    -fx-text-fill: #4b5563;
+}
+.dark-theme .skill-detail-desc { -fx-text-fill: #d1d5db; }
+
+/* === Reusable reason dialog === */
+
+.reason-dialog {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.18), 22, 0.25, 0, 8);
+}
+
+.reason-dialog-header {
+    -fx-background-radius: 14 14 0 0;
+}
+
+.reason-dialog-title {
+    -fx-text-fill: white;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+.reason-dialog-subtitle {
+    -fx-text-fill: rgba(255,255,255,0.85);
+    -fx-font-size: 12.5px;
+}
+
+.reason-dialog-body {
+    -fx-background-color: white;
+}
+
+.reason-dialog-label {
+    -fx-text-fill: #374151;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.reason-dialog-textarea {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-border-width: 1;
+    -fx-font-size: 13px;
+    -fx-padding: 4;
+}
+.reason-dialog-textarea .content {
+    -fx-background-color: transparent;
+    -fx-padding: 8;
+}
+.reason-dialog-textarea:focused {
+    -fx-border-color: #7c3aed;
+    -fx-effect: dropshadow(three-pass-box, rgba(124,58,237,0.15), 8, 0.3, 0, 0);
+}
+
+.reason-dialog-counter {
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 11px;
+}
+
+.reason-dialog-error {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 12px;
+    -fx-background-color: #fee2e2;
+    -fx-padding: 8 12 8 12;
+    -fx-background-radius: 8;
+}
+
+.reason-dialog-footer {
+    -fx-background-color: #f9fafb;
+    -fx-background-radius: 0 0 14 14;
+    -fx-border-color: #e5e7eb transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.reason-dialog-btn-cancel {
+    -fx-background-color: white;
+    -fx-text-fill: #4b5563;
+    -fx-font-weight: 600;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+.reason-dialog-btn-cancel:hover {
+    -fx-background-color: #f3f4f6;
+}
+
+.reason-dialog-btn-confirm:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 10, 0.3, 0, 4);
+}
+
+/* Dark theme variants */
+.dark-theme .reason-dialog,
+.dark-theme .reason-dialog-body {
+    -fx-background-color: #1f2937;
+}
+.dark-theme .reason-dialog-label { -fx-text-fill: #d1d5db; }
+.dark-theme .reason-dialog-textarea {
+    -fx-background-color: #111827;
+    -fx-border-color: #374151;
+    -fx-text-fill: #f9fafb;
+}
+.dark-theme .reason-dialog-counter { -fx-text-fill: #6b7280; }
+.dark-theme .reason-dialog-footer {
+    -fx-background-color: #111827;
+    -fx-border-color: #374151 transparent transparent transparent;
+}
+.dark-theme .reason-dialog-btn-cancel {
+    -fx-background-color: #1f2937;
+    -fx-text-fill: #e5e7eb;
+    -fx-border-color: #374151;
+}
+.dark-theme .reason-dialog-btn-cancel:hover { -fx-background-color: #273548; }
+
+/* Accessibility styles. The root scene gets style classes that drive these rules. */
+
+.swatch-btn {
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(0,0,0,0.15);
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+.swatch-btn:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
+}
+
+/* === Clean accessibility button system === */
+
+.acc-btn {
+    -fx-background-color: white;
+    -fx-text-fill: #1f2937;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 10 18 10 18;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+.acc-btn:hover {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #d1d5db;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 6, 0.2, 0, 2);
+}
+.acc-btn:pressed {
+    -fx-background-color: #f3f4f6;
+}
+
+/* Preset buttons — coloured top accent bar via gradient */
+.acc-preset {
+    -fx-background-color: white;
+    -fx-text-fill: #111827;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 12 18 12 18;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #e5e7eb;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 8;
+}
+.acc-preset:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.10), 10, 0.25, 0, 4);
+    -fx-translate-y: -1;
+}
+.acc-preset:pressed {
+    -fx-translate-y: 0;
+}
+.acc-preset-day    { -fx-border-color: #fbbf24; -fx-border-width: 0 0 0 4; }
+.acc-preset-night  { -fx-border-color: #6366f1; -fx-border-width: 0 0 0 4; }
+.acc-preset-read   { -fx-border-color: #f59e0b; -fx-border-width: 0 0 0 4; }
+.acc-preset-pres   { -fx-border-color: #ef4444; -fx-border-width: 0 0 0 4; }
+
+/* Primary action (Reset row could use this if wanted) */
+.acc-btn-primary {
+    -fx-background-color: linear-gradient(to right, #7c3aed, #22d3ee);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 10 20 10 20;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+.acc-btn-primary:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(124,58,237,0.35), 10, 0.3, 0, 4);
+}
+
+/* Danger-tinted (reset) */
+.acc-btn-ghost {
+    -fx-background-color: transparent;
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+}
+.acc-btn-ghost:hover {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #111827;
+}
+
+/* Dark theme variants */
+.dark-theme .acc-btn {
+    -fx-background-color: #1f2937;
+    -fx-text-fill: #e5e7eb;
+    -fx-border-color: #374151;
+}
+.dark-theme .acc-btn:hover {
+    -fx-background-color: #273548;
+    -fx-border-color: #4b5563;
+}
+.dark-theme .acc-preset {
+    -fx-background-color: #1f2937;
+    -fx-text-fill: #f9fafb;
+    -fx-border-color: #374151;
+}
+.dark-theme .acc-btn-ghost {
+    -fx-text-fill: #9ca3af;
+}
+.dark-theme .acc-btn-ghost:hover {
+    -fx-background-color: #1f2937;
+    -fx-text-fill: #f9fafb;
+}
+
+/* Density - tweak default control padding via -fx-padding inheritance where possible. */
+.access-density-compact .button,
+.access-density-compact .toggle-button,
+.access-density-compact .text-field,
+.access-density-compact .password-field,
+.access-density-compact .text-area,
+.access-density-compact .combo-box,
+.access-density-compact .choice-box {
+    -fx-padding: 4 8 4 8;
+}
+.access-density-spacious .button,
+.access-density-spacious .toggle-button,
+.access-density-spacious .text-field,
+.access-density-spacious .password-field,
+.access-density-spacious .text-area,
+.access-density-spacious .combo-box,
+.access-density-spacious .choice-box {
+    -fx-padding: 12 18 12 18;
+}
+
+/* High-contrast: stronger borders + black/yellow accents for low-vision users */
+.access-high-contrast {
+    -fx-base: #000000;
+    -fx-background: #000000;
+    -fx-control-inner-background: #000000;
+    -fx-text-fill: #FFFFFF;
+}
+.access-high-contrast .label,
+.access-high-contrast .text {
+    -fx-text-fill: #FFFFFF;
+}
+.access-high-contrast .button,
+.access-high-contrast .toggle-button {
+    -fx-background-color: #000000;
+    -fx-text-fill: #FFEB3B;
+    -fx-border-color: #FFEB3B;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+.access-high-contrast .button:hover,
+.access-high-contrast .toggle-button:hover {
+    -fx-background-color: #FFEB3B;
+    -fx-text-fill: #000000;
+}
+.access-high-contrast .text-field,
+.access-high-contrast .password-field,
+.access-high-contrast .text-area,
+.access-high-contrast .combo-box {
+    -fx-background-color: #000000;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #FFFFFF;
+    -fx-border-width: 2;
+}
+
+/* Focus ring - much louder focus indicator */
+.access-focus-ring *:focused {
+    -fx-effect: dropshadow(three-pass-box, #FFEB3B, 8, 0.7, 0, 0);
+    -fx-border-color: #FFEB3B;
+    -fx-border-width: 2;
+}
+
+/* Reduced motion: disable transitions/animations where the app uses them */
+.access-reduced-motion .animated-fade,
+.access-reduced-motion .animated-slide,
+.access-reduced-motion .right-panel,
+.access-reduced-motion .left-panel {
+    -fx-transition: none;
+}
+
+/* Color-blind palettes: remap commonly used red/green pairs.
+   These overrides target stat cards and status colors used across the app. */
+
+/* Protanopia / Deuteranopia: red↔green confusion → swap to blue/orange */
+.access-cb-protanopia .stat-card-red,
+.access-cb-deuteranopia .stat-card-red {
+    -fx-background-color: linear-gradient(to bottom right, #1F77B4, #4F9DD0);
+}
+.access-cb-protanopia .stat-card-green,
+.access-cb-deuteranopia .stat-card-green {
+    -fx-background-color: linear-gradient(to bottom right, #FF7F0E, #FFA94D);
+}
+.access-cb-protanopia .error-text,
+.access-cb-deuteranopia .error-text {
+    -fx-text-fill: #1F77B4;
+}
+.access-cb-protanopia .success-text,
+.access-cb-deuteranopia .success-text {
+    -fx-text-fill: #FF7F0E;
+}
+
+/* Tritanopia: blue↔yellow confusion → swap to magenta/teal */
+.access-cb-tritanopia .stat-card-blue {
+    -fx-background-color: linear-gradient(to bottom right, #C71585, #E754A8);
+}
+.access-cb-tritanopia .stat-card-purple {
+    -fx-background-color: linear-gradient(to bottom right, #008B8B, #20B2AA);
+}

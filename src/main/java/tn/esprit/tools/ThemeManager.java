@@ -28,6 +28,13 @@ public class ThemeManager {
         applyTheme(scene);
     }
 
+    public static void setDark(Scene scene, boolean dark) {
+        if (isDark == dark) return;
+        isDark = dark;
+        prefs.put(THEME_KEY, isDark ? DARK : LIGHT);
+        applyTheme(scene);
+    }
+
     public static void applyTheme(Scene scene) {
         String darkCss = ThemeManager.class.getResource("/styles/dark-theme.css").toExternalForm();
         if (isDark) {
@@ -37,5 +44,7 @@ public class ThemeManager {
         } else {
             scene.getStylesheets().remove(darkCss);
         }
+        AccessibilityManager.apply(scene);
+        LanguageManager.applyToScene(scene);
     }
 }

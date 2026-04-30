@@ -75,7 +75,7 @@ public class FaceIdDialogController {
     public static FaceIdDialogController show(SessionType type, String title, String subtitle, String email) {
         try {
             Session session = FaceIdServer.get().createSession(type, email);
-            FXMLLoader loader = new FXMLLoader(FaceIdDialogController.class.getResource("/fxml/FaceIdDialog.fxml"));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(FaceIdDialogController.class, "/fxml/FaceIdDialog.fxml");
             javafx.scene.Parent root = loader.load();
             FaceIdDialogController ctrl = loader.getController();
             Stage dialog = new Stage(StageStyle.UTILITY);

@@ -181,7 +181,7 @@ public class SignUpController implements Initializable {
 
     private String pickAvatar() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AvatarPicker.fxml"));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), "/fxml/AvatarPicker.fxml");
             Parent root = loader.load();
             AvatarPickerController ctrl = loader.getController();
             Stage dialog = new Stage();
@@ -256,7 +256,7 @@ public class SignUpController implements Initializable {
     @FXML
     public void goToLogin() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), "/fxml/Login.fxml");
             Parent root = loader.load();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());

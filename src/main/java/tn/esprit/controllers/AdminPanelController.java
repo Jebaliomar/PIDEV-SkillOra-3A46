@@ -10,6 +10,8 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.services.SessionService;
+import tn.esprit.tools.LanguageManager;
+import tn.esprit.tools.Loaders;
 import tn.esprit.tools.SessionStore;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
@@ -24,10 +26,28 @@ public class AdminPanelController implements Initializable {
     @FXML private Button navDashboard;
     @FXML private Button navUsers;
     @FXML private Button navStats;
+    @FXML private Button navAccessibility;
     @FXML private Button themeToggleBtn;
 
     private static User currentUser;
+    private static AdminPanelController instance;
     private Button activeNav;
+
+    public static AdminPanelController getInstance() { return instance; }
+
+    /** Reloads the whole admin shell - used when language changes so the sidebar/header re-render. */
+    public void reloadShell() {
+        try {
+            Scene scene = contentArea.getScene();
+            if (scene == null) return;
+            FXMLLoader loader = Loaders.loader(getClass(), "/fxml/AdminPanel.fxml");
+            Parent root = loader.load();
+            scene.setRoot(root);
+            ThemeManager.applyTheme(scene);
+            AdminPanelController fresh = loader.getController();
+            if (fresh != null) fresh.showAccessibility();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 
     public static void setCurrentUser(User user) {
         currentUser = user;
@@ -39,6 +59,7 @@ public class AdminPanelController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        instance = this;
         updateThemeButton();
         showDashboard();
     }
@@ -62,6 +83,12 @@ public class AdminPanelController implements Initializable {
     }
 
     @FXML
+    public void showAccessibility() {
+        loadContent("/fxml/AccessibilityContent.fxml");
+        setActiveNav(navAccessibility);
+    }
+
+    @FXML
     public void toggleTheme() {
         ThemeManager.toggle(themeToggleBtn.getScene());
         updateThemeButton();
@@ -74,7 +101,7 @@ public class AdminPanelController implements Initializable {
             if (token != null) new SessionService().deleteSession(token);
             SessionStore.clear();
             currentUser = null;
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
+            FXMLLoader loader = Loaders.loader(getClass(), "/fxml/Login.fxml");
             Parent root = loader.load();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
@@ -90,8 +117,13 @@ public class AdminPanelController implements Initializable {
 
     private void loadContent(String fxmlPath) {
         try {
-            Parent content = FXMLLoader.load(getClass().getResource(fxmlPath));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            loader.setResources(LanguageManager.bundle());
+            Parent content = loader.load();
             contentArea.getChildren().setAll(content);
+            if (contentArea.getScene() != null) {
+                LanguageManager.applyToScene(contentArea.getScene());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

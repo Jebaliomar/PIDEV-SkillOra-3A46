@@ -11,6 +11,7 @@ import tn.esprit.controllers.StudentLayoutController;
 import tn.esprit.entities.User;
 import tn.esprit.services.SessionService;
 import tn.esprit.services.UserService;
+import tn.esprit.tools.Loaders;
 import tn.esprit.tools.MyConnection;
 import tn.esprit.tools.SessionStore;
 import tn.esprit.tools.ThemeManager;
@@ -30,7 +31,7 @@ public class MainApp extends Application {
         }
 
         // Load the Login screen
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
+        FXMLLoader loader = Loaders.loader(getClass(), "/fxml/Login.fxml");
         Parent root = loader.load();
 
         Scene scene = new Scene(root);
@@ -68,7 +69,7 @@ public class MainApp extends Application {
                 AdminPanelController.setCurrentUser(user);
             }
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            FXMLLoader loader = Loaders.loader(getClass(), fxmlPath);
             Parent root = loader.load();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());

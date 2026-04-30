@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="tn.esprit.controllers.SkillGraphController"
+           styleClass="skill-graph-root">
+
+    <!-- Graph canvas (back layer) -->
+    <Pane fx:id="graphPane" styleClass="skill-graph-pane" pickOnBounds="false"/>
+
+    <!-- Floating detail card (above the graph) -->
+    <VBox fx:id="detailCard" styleClass="skill-detail-card" spacing="8"
+          maxWidth="320" maxHeight="280" pickOnBounds="false"
+          managed="false" visible="false"
+          StackPane.alignment="BOTTOM_RIGHT">
+        <padding><Insets top="18" right="22" bottom="18" left="22"/></padding>
+        <Label fx:id="detailTitle" text="" styleClass="skill-detail-title"/>
+        <Label fx:id="detailCategory" text="" styleClass="skill-detail-category"/>
+        <Label fx:id="detailProgress" text="" styleClass="skill-detail-progress"/>
+        <ProgressBar fx:id="detailBar" prefWidth="280" maxWidth="Infinity"/>
+        <Label fx:id="detailDesc" text="" wrapText="true" styleClass="skill-detail-desc"/>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Button text="Edit" onAction="#handleEdit" styleClass="acc-btn"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Close" onAction="#handleCloseDetail" styleClass="acc-btn-ghost"/>
+        </HBox>
+        <StackPane.margin><Insets bottom="40" right="40"/></StackPane.margin>
+    </VBox>
+
+    <!-- Header on top so its button always receives clicks -->
+    <HBox StackPane.alignment="TOP_LEFT" alignment="CENTER_LEFT" spacing="14"
+          pickOnBounds="false" maxHeight="-Infinity">
+        <padding><Insets top="24" left="40" right="40"/></padding>
+        <VBox spacing="4" HBox.hgrow="ALWAYS" pickOnBounds="false">
+            <Label text="%skills.title" styleClass="dashboard-title"/>
+            <Label text="%skills.subtitle" styleClass="dashboard-subtitle"/>
+        </VBox>
+        <Button text="+ Add skill" onAction="#handleAdd" styleClass="acc-btn-primary"/>
+    </HBox>
+
+</StackPane>

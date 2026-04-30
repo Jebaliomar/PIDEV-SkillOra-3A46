@@ -84,7 +84,7 @@ public class ForgotPasswordController {
 
     private void openResetScreen(String email) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ResetPassword.fxml"));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), "/fxml/ResetPassword.fxml");
             Parent root = loader.load();
             ResetPasswordController controller = loader.getController();
             controller.setEmail(email);
@@ -103,7 +103,7 @@ public class ForgotPasswordController {
 
     private void navigate(String fxml, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), fxml);
             Parent root = loader.load();
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
