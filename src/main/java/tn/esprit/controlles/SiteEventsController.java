@@ -3,6 +3,7 @@ package tn.esprit.controlles;
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -29,7 +30,9 @@ import javafx.stage.Stage;
 import tn.esprit.entities.Event;
 import tn.esprit.entities.Salle;
 import tn.esprit.services.EventService;
+import tn.esprit.services.ReservationService;
 import tn.esprit.services.SalleService;
+import tn.esprit.services.VoiceRecognitionService;
 import tn.esprit.tools.ThemeManager;
 
 import java.io.File;
@@ -38,9 +41,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import javafx.util.Duration;
 
 public class SiteEventsController {
@@ -58,10 +64,21 @@ public class SiteEventsController {
     private VBox sectionsContainer;
     @FXML
     private Button themeToggleButton;
+    @FXML
+    private Button micButton;
+    @FXML
+    private Button stopListeningButton;
+    @FXML
+    private Label voiceStatusLabel;
 
     private EventService eventService;
     private SalleService salleService;
+    private ReservationService reservationService;
+    private final VoiceRecognitionService voiceRecognitionService = new VoiceRecognitionService();
     private final Map<Integer, Salle> salleMap = new LinkedHashMap<>();
+    private final Map<String, Integer> reservedSeatsByEventSalle = new HashMap<>();
+    private CompletableFuture<String> activeVoiceSearch;
+    private long voiceSearchGeneration;
 
     @FXML
     public void initialize() {
@@ -76,6 +93,7 @@ public class SiteEventsController {
         try {
             eventService = new EventService();
             salleService = new SalleService();
+            reservationService = new ReservationService();
             loadData();
         } catch (Exception e) {
             sectionsContainer.getChildren().setAll(new Label("Database unavailable. Start MySQL to load public events."));
@@ -96,7 +114,51 @@ public class SiteEventsController {
     }
 
     @FXML
+    private void onStartVoiceSearch() {
+        if (activeVoiceSearch != null && !activeVoiceSearch.isDone()) {
+            showVoiceStatus("Listening...", false);
+            return;
+        }
+
+        long requestId = ++voiceSearchGeneration;
+        setListeningState(true, "Please say the event name to search. Listening...");
+
+        activeVoiceSearch = voiceRecognitionService.recognizeEventSearchText();
+        activeVoiceSearch.whenComplete((recognizedText, error) -> Platform.runLater(() -> {
+            if (requestId != voiceSearchGeneration) {
+                return;
+            }
+
+            activeVoiceSearch = null;
+            setListeningState(false, null);
+
+            if (error != null) {
+                showVoiceStatus("Voice search failed: " + getVoiceErrorMessage(error), true);
+                return;
+            }
+
+            String query = recognizedText == null ? "" : recognizedText.trim();
+            if (query.isEmpty()) {
+                showVoiceStatus("No speech recognized. Try again.", true);
+                return;
+            }
+
+            heroSearchField.setText(query);
+            searchField.setText(query);
+            refreshView();
+            showVoiceStatus("Recognized: " + query, false);
+        }));
+    }
+
+    @FXML
+    private void onStopVoiceSearch() {
+        cancelVoiceSearch();
+        setListeningState(false, "Listening stopped.");
+    }
+
+    @FXML
     private void onBackToAdmin() {
+        cancelVoiceSearch();
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewsadmin/event/EventDashboard.fxml"));
             Parent root = loader.load();
@@ -120,6 +182,9 @@ public class SiteEventsController {
                 salleMap.put(salle.getId(), salle);
             }
         }
+
+        reservedSeatsByEventSalle.clear();
+        reservedSeatsByEventSalle.putAll(reservationService.getReservedSeatsByEventAndSalle());
 
         List<String> types = new ArrayList<>();
         types.add(ALL_TYPES);
@@ -225,11 +290,24 @@ public class SiteEventsController {
         Label title = new Label(safe(event.getTitle()));
         title.getStyleClass().add("site-event-title");
 
+        Salle salle = event.getSalleId() == null ? null : salleMap.get(event.getSalleId());
+        int reservedSeats = getReservedSeats(event, salle);
+        int rating = calculateRatingFromReservedSeats(reservedSeats);
+
+        HBox ratingRow = new HBox(8);
+        ratingRow.setAlignment(Pos.CENTER_LEFT);
+        ratingRow.getStyleClass().add("site-event-rating-row");
+
+        Label ratingStars = new Label(generateStars(rating));
+        ratingStars.getStyleClass().add("site-event-rating-stars");
+
+        Label reservedSeatsLabel = new Label(formatReservedSeats(reservedSeats));
+        reservedSeatsLabel.getStyleClass().add("site-event-rating-count");
+        ratingRow.getChildren().addAll(ratingStars, reservedSeatsLabel);
+
         Label description = new Label(safe(event.getDescription()));
         description.getStyleClass().add("site-event-copy");
         description.setWrapText(true);
-
-        Salle salle = event.getSalleId() == null ? null : salleMap.get(event.getSalleId());
 
         Label location = new Label("Lieu : " + (salle == null ? "-" : safe(salle.getLocation())));
         location.getStyleClass().add("site-event-meta-strong");
@@ -262,9 +340,85 @@ public class SiteEventsController {
         openButton.setOnAction(actionEvent -> openSalleDetail(event, salle));
 
         footer.getChildren().addAll(salleName, spacer, openButton);
-        body.getChildren().addAll(title, description, location, metaRow, separator, footer);
+        body.getChildren().addAll(title, ratingRow, description, location, metaRow, separator, footer);
         card.getChildren().addAll(imageShell, body);
         return card;
+    }
+
+    private int getReservedSeats(Event event, Salle salle) {
+        if (event == null || event.getId() == null) {
+            return 0;
+        }
+
+        Integer salleId = event.getSalleId() != null ? event.getSalleId() : salle == null ? null : salle.getId();
+        if (salleId == null) {
+            return 0;
+        }
+
+        return reservedSeatsByEventSalle.getOrDefault(reservationService.buildEventSalleKey(event.getId(), salleId), 0);
+    }
+
+    private int calculateRatingFromReservedSeats(int reservedSeats) {
+        if (reservedSeats <= 0) {
+            return 0;
+        }
+        if (reservedSeats <= 5) {
+            return 1;
+        }
+        if (reservedSeats <= 10) {
+            return 2;
+        }
+        if (reservedSeats <= 15) {
+            return 3;
+        }
+        if (reservedSeats <= 20) {
+            return 4;
+        }
+        return 5;
+    }
+
+    private String generateStars(int rating) {
+        StringBuilder stars = new StringBuilder();
+        for (int i = 1; i <= 5; i++) {
+            stars.append(i <= rating ? "★" : "☆");
+        }
+        return stars.toString();
+    }
+
+    private String formatReservedSeats(int reservedSeats) {
+        return reservedSeats == 1 ? "1 reserved seat" : reservedSeats + " reserved seats";
+    }
+
+    private void setListeningState(boolean listening, String message) {
+        micButton.setDisable(listening);
+        stopListeningButton.setVisible(listening);
+        stopListeningButton.setManaged(listening);
+        if (message != null) {
+            showVoiceStatus(message, false);
+        }
+    }
+
+    private void showVoiceStatus(String message, boolean error) {
+        String text = message == null ? "" : message.trim();
+        voiceStatusLabel.setText(text);
+        voiceStatusLabel.setVisible(!text.isEmpty());
+        voiceStatusLabel.setManaged(!text.isEmpty());
+        voiceStatusLabel.getStyleClass().remove("site-voice-status-error");
+        if (error) {
+            voiceStatusLabel.getStyleClass().add("site-voice-status-error");
+        }
+    }
+
+    private String getVoiceErrorMessage(Throwable error) {
+        Throwable cause = error instanceof CompletionException && error.getCause() != null ? error.getCause() : error;
+        String message = cause.getMessage();
+        return message == null || message.isBlank() ? "Unknown error" : message;
+    }
+
+    private void cancelVoiceSearch() {
+        voiceSearchGeneration++;
+        activeVoiceSearch = null;
+        voiceRecognitionService.stopListening();
     }
 
     private void animateCardEntry(VBox card, int index) {
@@ -341,6 +495,7 @@ public class SiteEventsController {
     }
 
     private void openSalleDetail(Event event, Salle salle) {
+        cancelVoiceSearch();
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/viewsadmin/event/SiteSalleDetailView.fxml"));
             Parent root = loader.load();

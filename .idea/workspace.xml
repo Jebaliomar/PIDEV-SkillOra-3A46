@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="5e6560b1-a4f3-418b-9b66-9c9e72f502da" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/TWILIO_SMS_COMPLETE_SUMMARY.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/TWILIO_SMS_INTEGRATION_GUIDE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/TWILIO_SMS_INTEGRATION_STEPS.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VISION_TEST_CLOSE_WINDOW.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VISION_TEST_IMPLEMENTATION.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VISION_TEST_SUMMARY.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VISION_TEST_UPDATED_BEHAVIOR.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/VISION_TEST_USER_FLOW.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/ReservationSmsSectionController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/VisionTestController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/VisionTestLauncher.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/VisionTestResultController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/entities/VisionLevel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/entities/VisionTestResult.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/examples/VisionTestIntegrationExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/services/VisionTestService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/tools/TwilioTestCli.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/ReservationSmsSectionView.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/VisionTestResultView.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/VisionTestView.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/EventDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/EventDashboardController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/ReservationDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/ReservationDashboardController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/SiteEventsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/SiteEventsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/SiteReservationFormController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/SiteReservationFormController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/SiteSalleDetailController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/controlles/SiteSalleDetailController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/entities/Event.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/entities/Event.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/entities/Reservation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/entities/Reservation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/services/EventService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/services/EventService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/services/ReservationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/services/ReservationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/services/TwilioSmsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/services/TwilioSmsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tn/esprit/tools/VisionTestModal.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tn/esprit/tools/VisionTestModal.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/styles/event.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/styles/event.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/styles/reservations.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/styles/reservations.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/styles/site-events.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/styles/site-events.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/twilio.properties.example" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/twilio.properties.example" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/EventDashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/EventDashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/ReservationDashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/ReservationDashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/SiteEventsView.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/SiteEventsView.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/SiteReservationFormView.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/SiteReservationFormView.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/SiteSalleDetailView.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/viewsadmin/event/SiteSalleDetailView.fxml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_C:/Users/jebal/Desktop/PIDEV-SkillOra-3A46-6a2148dbf5dbade540de8eb9363f1c22fd1bbd2c" value="3CgMRWI99Mr9mxym45yE8zsDRHB" />
+    </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedChatMode">
+    <option name="chatModeId" value="Agent" />
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="chat-panel" value="Auto" />
+      <entry key="agent-panel" value="Auto" />
+    </selectedModels>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="192" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Jebaliomar&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Jebaliomar/PIDEV-SkillOra-3A46.git&quot;,
+    &quot;accountId&quot;: &quot;66b7b84f-4ec1-4620-bbb4-3e33566b33ed&quot;
+  }
+}</component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3CgMRWI99Mr9mxym45yE8zsDRHB" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.skillora [org.openjfx:javafx-maven-plugin:0.0.8:run].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;gestion-events&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;MavenSettings&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="PIDEV-SkillOra-3A46-6a2148dbf5dbade540de8eb9363f1c22fd1bbd2c" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5e6560b1-a4f3-418b-9b66-9c9e72f502da" name="Changes" comment="" />
+      <created>1776802753164</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1776802753164</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>

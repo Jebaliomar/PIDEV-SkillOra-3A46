@@ -250,7 +250,7 @@ public class SiteSalleDetailController {
         equipmentFlow.getChildren().clear();
         String equipmentText = safe(salle == null ? null : salle.getEquipment());
         if ("-".equals(equipmentText)) {
-            equipmentFlow.getChildren().add(createChip("No equipment"));
+            equipmentFlow.getChildren().add(createChip("Aucun équipement"));
             return;
         }
 
@@ -389,7 +389,7 @@ public class SiteSalleDetailController {
             selectedCountLabel.setText(String.valueOf(selectedCount));
         }
         if (seatsSummaryLabel != null) {
-            seatsSummaryLabel.setText("Capacity matrix " + capacity + " seats" + (selectedCount > 0 ? " • Selected " + selectedCount : ""));
+            seatsSummaryLabel.setText(capacity + " places au total" + (selectedCount > 0 ? " • " + selectedCount + " sélectionnée(s)" : ""));
         }
         if (reservationButton != null) {
             reservationButton.setDisable(selectedCount == 0);
@@ -401,7 +401,7 @@ public class SiteSalleDetailController {
         pendingModelName = null;
 
         if (salle == null || salle.getImage3d() == null || salle.getImage3d().isBlank()) {
-            showModelFallback("No 3D model available", "This salle does not have a .glb or .gltf model yet.");
+            showModelFallback("Aucun modèle 3D disponible", "Cette salle n'a pas encore de modèle .glb ou .gltf valide.");
             return;
         }
 
@@ -410,14 +410,14 @@ public class SiteSalleDetailController {
             pendingModelName = new File(salle.getImage3d()).getName();
 
             if (pendingModelUrl == null) {
-                showModelFallback("No 3D model available", "Unable to resolve the salle model path.");
+                showModelFallback("Aucun modèle 3D disponible", "Impossible de résoudre le chemin du modèle de la salle.");
                 return;
             }
 
             showModelViewer();
             pushModelToViewer(pendingModelUrl, pendingModelName);
         } catch (Exception exception) {
-            showModelFallback("No 3D model available", exception.getMessage());
+            showModelFallback("Aucun modèle 3D disponible", exception.getMessage());
         }
     }
 
@@ -432,7 +432,7 @@ public class SiteSalleDetailController {
             );
             showModelViewer();
         } catch (Exception exception) {
-            showModelFallback("No 3D model available", "JavaFX could not render the 3D model in the embedded viewer.");
+            showModelFallback("Aucun modèle 3D disponible", "JavaFX n'a pas pu afficher le modèle 3D dans l'aperçu intégré.");
         }
     }
 
@@ -488,7 +488,7 @@ public class SiteSalleDetailController {
         modelPlaceholderBox.setVisible(true);
         modelPlaceholderBox.setManaged(true);
         modelStatusTitle.setText(title);
-        modelStatusSubtitle.setText(subtitle == null || subtitle.isBlank() ? "No preview available." : subtitle);
+        modelStatusSubtitle.setText(subtitle == null || subtitle.isBlank() ? "Aucun aperçu disponible." : subtitle);
         fullscreenButton.setDisable(true);
         modelFrame.getStyleClass().remove("site-model-frame-ready");
         if (webEngine != null) {

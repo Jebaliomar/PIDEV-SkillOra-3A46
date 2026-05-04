@@ -5,18 +5,18 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
@@ -31,9 +31,22 @@ public class VisionTestModal {
             "A", "B", "C", "D", "E", "F", "G", "H", "K", "L", "M", "N", "P", "R", "S", "T", "U", "V", "Z"
     };
     private static final int[] LETTER_SIZES = {140, 112, 90, 72, 58, 46, 36, 28, 22, 18};
-    private static final String[] DISTANCES = {
-            "6 meters", "5 meters", "4 meters", "3 meters", "2.5 meters",
-            "2 meters", "1.5 meters", "1 meter", "75 cm", "50 cm"
+    private static final String[] RESULT_DISTANCES = {
+            "N/A", "> 200 cm", "160-200 cm", "120-160 cm", "100-140 cm", "80-120 cm",
+            "60-100 cm", "40-80 cm", "30-60 cm", "20-50 cm", "< 10 cm"
+    };
+    private static final String[] RESULT_ADVICE = {
+            "⚠️ Consultation ophthalmologue urgente",
+            "Reduced vision, consultation advised",
+            "Between 160 and 200 cm",
+            "Between 120 and 160 cm",
+            "Between 100 and 140 cm",
+            "Between 80 and 120 cm",
+            "Between 60 and 100 cm",
+            "Between 40 and 80 cm",
+            "Between 30 and 60 cm",
+            "Ideal comfort distance for screen use",
+            "Extraordinary near vision! Keep healthy posture"
     };
 
     private final Window owner;
@@ -68,7 +81,7 @@ public class VisionTestModal {
 
         StackPane root = new StackPane();
         root.getStyleClass().add("vision-test-root");
-        if (owner != null && owner.getScene() != null && owner.getScene().getRoot().getStyleClass().contains("theme-dark")) {
+        if (isOwnerDarkTheme()) {
             root.getStyleClass().add("theme-dark");
         }
         root.setPadding(new Insets(24));
@@ -185,11 +198,14 @@ public class VisionTestModal {
     private void answer(boolean visible) {
         if (visible) {
             lastVisibleLevel = currentLevelIndex + 1;
+            finishTestAndShowResult();
+            return;
         }
+
         currentLevelIndex++;
         updateProgress();
         if (currentLevelIndex >= LETTER_SIZES.length) {
-            showResultScreen();
+            finishTestAndShowResult();
         } else {
             renderLevel();
         }
@@ -229,73 +245,102 @@ public class VisionTestModal {
         new ParallelTransition(fade, scale).play();
     }
 
-    private void showResultScreen() {
-        updateProgress();
+    private void finishTestAndShowResult() {
+        int level = normalizedResultLevel();
+        if (stage != null) {
+            stage.close();
+        }
+        showResultDialog(level);
+    }
+
+    private void showResultDialog(int level) {
+        Stage resultStage = new Stage();
+        resultStage.setTitle("Vision Test Result");
+        resultStage.initStyle(StageStyle.TRANSPARENT);
+        if (owner != null) {
+            resultStage.initOwner(owner);
+            resultStage.initModality(Modality.WINDOW_MODAL);
+        } else {
+            resultStage.initModality(Modality.APPLICATION_MODAL);
+        }
+
+        StackPane root = new StackPane();
+        root.getStyleClass().add("vision-result-root");
+        if (isOwnerDarkTheme()) {
+            root.getStyleClass().add("theme-dark");
+        }
+        root.setPadding(new Insets(22));
+
+        VBox card = new VBox(18);
+        card.getStyleClass().add("vision-result-card");
+        card.setAlignment(Pos.CENTER);
+        card.setPadding(new Insets(28));
+        card.setMaxWidth(520);
+
+        Label icon = new Label("👁");
+        icon.getStyleClass().add("vision-result-icon");
 
         Label title = new Label("Vision Test Result");
-        title.getStyleClass().add("vision-test-title");
+        title.getStyleClass().add("vision-result-title");
 
-        Label visibleLevel = new Label(buildVisibleLevelText());
-        visibleLevel.getStyleClass().add("vision-test-result-main");
-        visibleLevel.setWrapText(true);
+        Label heading = new Label("Résultat du test de vision");
+        heading.getStyleClass().add("vision-result-heading");
+        heading.setWrapText(true);
 
-        Label distance = new Label(buildDistanceText());
-        distance.getStyleClass().add("vision-test-result-distance");
-        distance.setWrapText(true);
-
-        Label tip = new Label(buildTipText());
-        tip.getStyleClass().add("vision-test-result-tip");
-        tip.setWrapText(true);
-
-        Button closeButton = new Button("Close");
-        closeButton.getStyleClass().addAll("vision-test-button", "vision-test-button-close");
-        closeButton.setOnAction(event -> stage.close());
-
-        Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
-
-        content.getChildren().setAll(
-                title,
-                buildProgressSection(),
-                buildResultPanel(visibleLevel, distance, tip),
-                closeButton
+        VBox rows = new VBox(12);
+        rows.getStyleClass().add("vision-result-rows");
+        rows.getChildren().addAll(
+                buildResultRow("Niveau", String.valueOf(level)),
+                buildResultRow("Distance Recommandée", RESULT_DISTANCES[level]),
+                buildResultRow("Conseil", RESULT_ADVICE[level])
         );
-        currentLevelIndex = LETTER_SIZES.length;
-        updateProgress();
+
+        Button okButton = new Button("OK");
+        okButton.getStyleClass().addAll("vision-test-button", "vision-test-button-close", "vision-result-ok-button");
+        okButton.setOnAction(event -> resultStage.close());
+
+        card.getChildren().addAll(icon, title, heading, rows, okButton);
+        root.getChildren().add(card);
+
+        Scene scene = new Scene(root, 580, 520);
+        scene.setFill(Color.TRANSPARENT);
+        scene.getStylesheets().addAll(stylesheets);
+        resultStage.setScene(scene);
+        resultStage.setOnShown(event -> centerOnOwner(resultStage));
+        resultStage.showAndWait();
     }
 
-    private VBox buildResultPanel(Node visibleLevel, Node distance, Node tip) {
-        VBox panel = new VBox(14, visibleLevel, distance, tip);
-        panel.getStyleClass().add("vision-test-result-panel");
-        panel.setAlignment(Pos.CENTER);
-        panel.setMaxWidth(Double.MAX_VALUE);
-        return panel;
+    private VBox buildResultRow(String labelText, String valueText) {
+        Label label = new Label(labelText);
+        label.getStyleClass().add("vision-result-row-label");
+
+        Label value = new Label(valueText);
+        value.getStyleClass().add("vision-result-row-value");
+        value.setWrapText(true);
+        value.setMaxWidth(Double.MAX_VALUE);
+
+        VBox row = new VBox(5, label, value);
+        row.getStyleClass().add("vision-result-row");
+        row.setMaxWidth(Double.MAX_VALUE);
+        return row;
     }
 
-    private String buildVisibleLevelText() {
-        if (lastVisibleLevel <= 0) {
-            return "No visible level was recorded.";
+    private void centerOnOwner(Stage childStage) {
+        if (owner == null) {
+            childStage.centerOnScreen();
+            return;
         }
-        return "Last visible level: Level " + lastVisibleLevel + " — " + LETTER_SIZES[lastVisibleLevel - 1] + "px";
+        childStage.setX(owner.getX() + (owner.getWidth() - childStage.getWidth()) / 2);
+        childStage.setY(owner.getY() + (owner.getHeight() - childStage.getHeight()) / 2);
     }
 
-    private String buildDistanceText() {
-        if (lastVisibleLevel <= 0) {
-            return "Recommendation: consult an eye specialist.";
-        }
-        return "Recommended viewing distance: " + DISTANCES[lastVisibleLevel - 1];
+    private boolean isOwnerDarkTheme() {
+        return owner != null
+                && owner.getScene() != null
+                && owner.getScene().getRoot().getStyleClass().contains("theme-dark");
     }
 
-    private String buildTipText() {
-        if (lastVisibleLevel <= 0) {
-            return "Please consult an eye specialist for a complete vision exam.";
-        }
-        if (lastVisibleLevel <= 3) {
-            return "Your visual acuity seems weak. Consider increasing text size and consulting an eye specialist.";
-        }
-        if (lastVisibleLevel <= 6) {
-            return "Your visual acuity seems moderate. Use good lighting and avoid screen fatigue.";
-        }
-        return "Your visual acuity seems good. Keep healthy viewing habits.";
+    private int normalizedResultLevel() {
+        return Math.max(0, Math.min(lastVisibleLevel, 10));
     }
 }

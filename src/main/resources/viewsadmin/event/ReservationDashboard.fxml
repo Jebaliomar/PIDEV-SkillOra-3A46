@@ -7,6 +7,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -76,6 +77,31 @@
                     </HBox>
 
                     <Label fx:id="deleteFlashLabel" managed="false" visible="false" text="" styleClass="delete-success-flash" maxWidth="1.7976931348623157E308"/>
+
+                    <VBox spacing="14" styleClass="reservation-sms-card">
+                        <padding>
+                            <Insets top="16" right="16" bottom="16" left="16"/>
+                        </padding>
+                        <HBox alignment="CENTER_LEFT" spacing="14">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Send SMS" styleClass="reservation-card-title"/>
+                                <Label fx:id="smsReservationDetailsLabel" text="Select a reservation phone number to load phone details." wrapText="true" styleClass="reservation-card-copy"/>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Select reservation phone" styleClass="field-caption"/>
+                                <ComboBox fx:id="reservationComboBox" prefWidth="240" promptText="Select reservation phone" styleClass="type-combo"/>
+                            </VBox>
+                        </HBox>
+                        <VBox spacing="6">
+                            <Label text="Message" styleClass="field-caption"/>
+                            <TextArea fx:id="smsMessageArea" prefRowCount="4" promptText="Write your message here..." wrapText="true" styleClass="form-input form-area"/>
+                        </VBox>
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label fx:id="smsStatusLabel" text="" managed="false" visible="false" wrapText="true" styleClass="sms-status-label"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="sendSmsButton" text="Send SMS" onAction="#onSendSms" styleClass="btn-primary"/>
+                        </HBox>
+                    </VBox>
 
                     <GridPane hgap="14" vgap="14">
                         <columnConstraints>

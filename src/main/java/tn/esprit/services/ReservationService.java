@@ -10,9 +10,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ReservationService {
+
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("(\\d+)");
 
     private final Connection connection;
 
@@ -112,6 +118,58 @@ public class ReservationService {
             preparedStatement.setInt(1, id);
             return preparedStatement.executeUpdate() > 0;
         }
+    }
+
+    public Map<String, Integer> getReservedSeatsByEventAndSalle() throws SQLException {
+        String sql = "SELECT event_id, salle_id, nombre_places FROM reservation";
+        Map<String, Integer> totals = new HashMap<>();
+
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+            while (resultSet.next()) {
+                int eventId = resultSet.getInt("event_id");
+                if (resultSet.wasNull()) {
+                    continue;
+                }
+
+                int salleId = resultSet.getInt("salle_id");
+                if (resultSet.wasNull()) {
+                    continue;
+                }
+
+                int seatsCount = extractSeatsCount(resultSet.getString("nombre_places"));
+                totals.merge(buildEventSalleKey(eventId, salleId), seatsCount, Integer::sum);
+            }
+        }
+
+        return totals;
+    }
+
+    public String buildEventSalleKey(Integer eventId, Integer salleId) {
+        return eventId + ":" + salleId;
+    }
+
+    private int extractSeatsCount(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return 0;
+        }
+
+        if (raw.contains(",")) {
+            return (int) java.util.Arrays.stream(raw.split(","))
+                    .map(String::trim)
+                    .filter(value -> !value.isEmpty())
+                    .count();
+        }
+
+        Matcher matcher = NUMBER_PATTERN.matcher(raw);
+        if (matcher.find()) {
+            try {
+                return Integer.parseInt(matcher.group(1));
+            } catch (NumberFormatException ignored) {
+                return 0;
+            }
+        }
+        return 0;
     }
 
     private Reservation mapResultSetToReservation(ResultSet resultSet) throws SQLException {

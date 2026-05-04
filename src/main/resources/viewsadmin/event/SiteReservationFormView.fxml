@@ -3,6 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
@@ -93,10 +95,18 @@
                                 </VBox>
 
                                 <VBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2">
+                                    <Button fx:id="reservationVoiceButton" text="🎤 Fill reservation by voice"
+                                            onAction="#startReservationVoiceFill" minWidth="280" maxWidth="1.7976931348623157E308"
+                                            styleClass="site-voice-fill-button">
+                                        <tooltip>
+                                            <Tooltip text="Use voice to fill first name, last name, and phone"/>
+                                        </tooltip>
+                                    </Button>
                                     <HBox alignment="CENTER_LEFT" spacing="12">
                                         <Button fx:id="cameraReservationButton" text="📹 Reservation Camera" onAction="#onOpenCameraReservation" styleClass="site-camera-button"/>
                                         <Label fx:id="cameraHelperLabel" text="Fill the fields with gesture handwriting." styleClass="site-camera-helper"/>
                                     </HBox>
+                                    <Label fx:id="reservationVoiceStatusLabel" text="" managed="false" visible="false" styleClass="site-reservation-voice-status"/>
                                     <FlowPane fx:id="cameraPendingValuesPane" hgap="8" vgap="8" prefWrapLength="620"/>
                                 </VBox>
 
@@ -108,6 +118,7 @@
                                 <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                     <Label text="Seats" styleClass="site-form-label"/>
                                     <TextField fx:id="seatsField" editable="false" styleClass="site-form-input"/>
+                                    <Label fx:id="seatsErrorLabel" text="" managed="false" visible="false" styleClass="site-form-error"/>
                                     <Label fx:id="maxSeatsHelperLabel" text="Max seats: 0" styleClass="site-form-helper"/>
                                 </VBox>
 
@@ -128,13 +139,49 @@
                                     <TextField fx:id="reservationDateField" editable="false" styleClass="site-form-input"/>
                                     <Label fx:id="reservationDateHelperLabel" text="Set automatically to the current time." styleClass="site-form-helper"/>
                                 </VBox>
+
+                                <VBox alignment="CENTER" spacing="14" GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2" styleClass="site-verification-card">
+                                    <VBox alignment="CENTER" spacing="6">
+                                        <Label text="Verify your account" styleClass="site-verification-title"/>
+                                        <Label text="Use the arrows to rotate the image on the right to match the direction of the one on the left."
+                                               wrapText="true" textAlignment="CENTER" styleClass="site-verification-copy"/>
+                                    </VBox>
+
+                                    <HBox alignment="CENTER" spacing="18">
+                                        <VBox alignment="CENTER" spacing="8">
+                                            <Label text="Reference image" styleClass="site-verification-caption"/>
+                                            <StackPane prefWidth="168" prefHeight="168" styleClass="site-verification-image-frame">
+                                                <ImageView fx:id="verificationReferenceImageView" fitWidth="136" fitHeight="136" preserveRatio="true" smooth="true"/>
+                                            </StackPane>
+                                        </VBox>
+
+                                        <VBox alignment="CENTER" spacing="8">
+                                            <Label text="Image to rotate" styleClass="site-verification-caption"/>
+                                            <StackPane prefWidth="168" prefHeight="168" styleClass="site-verification-image-frame">
+                                                <ImageView fx:id="verificationChallengeImageView" fitWidth="136" fitHeight="136" preserveRatio="true" smooth="true"/>
+                                            </StackPane>
+                                        </VBox>
+                                    </HBox>
+
+                                    <HBox alignment="CENTER" spacing="12">
+                                        <Button text="←" onAction="#rotateVerificationLeft" styleClass="site-verification-rotate-button"/>
+                                        <Button text="→" onAction="#rotateVerificationRight" styleClass="site-verification-rotate-button"/>
+                                    </HBox>
+
+                                    <Button fx:id="submitVerificationButton" text="Submit verification" onAction="#submitImageVerification" styleClass="site-verification-submit-button"/>
+
+                                    <HBox alignment="CENTER" spacing="8">
+                                        <Label fx:id="verificationStatusDot" text="●" styleClass="site-verification-status-dot"/>
+                                        <Label fx:id="verificationStatusLabel" text="Rotate the right image, then submit verification." wrapText="true" styleClass="site-verification-status"/>
+                                    </HBox>
+                                </VBox>
                             </GridPane>
 
                             <HBox alignment="CENTER_LEFT" spacing="14" styleClass="site-form-actions">
                                 <padding>
                                     <Insets top="18" right="0" bottom="0" left="0"/>
                                 </padding>
-                                <Button text="Submit Reservation" onAction="#onSubmitReservation" styleClass="site-submit-button"/>
+                                <Button fx:id="submitReservationButton" text="Submit Reservation" onAction="#onSubmitReservation" disable="true" styleClass="site-submit-button"/>
                                 <Button text="Cancel" onAction="#onCancel" styleClass="site-cancel-button"/>
                             </HBox>
                         </VBox>

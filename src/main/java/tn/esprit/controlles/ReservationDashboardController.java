@@ -2,6 +2,7 @@ package tn.esprit.controlles;
 
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -13,6 +14,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -20,9 +22,12 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import tn.esprit.entities.AdminReservationRow;
+import tn.esprit.entities.Reservation;
 import tn.esprit.services.ReservationDashboardService;
 import tn.esprit.services.ReservationService;
+import tn.esprit.services.TwilioSmsService;
 import tn.esprit.tools.ThemeManager;
 
 import java.io.File;
@@ -69,10 +74,22 @@ public class ReservationDashboardController {
     private Label deleteFlashLabel;
     @FXML
     private VBox reservationRowsContainer;
+    @FXML
+    private ComboBox<Reservation> reservationComboBox;
+    @FXML
+    private Label smsReservationDetailsLabel;
+    @FXML
+    private TextArea smsMessageArea;
+    @FXML
+    private Button sendSmsButton;
+    @FXML
+    private Label smsStatusLabel;
 
     private final ReservationDashboardService dashboardService = new ReservationDashboardService();
     private final ReservationService reservationService = new ReservationService();
+    private final TwilioSmsService twilioSmsService = new TwilioSmsService();
     private List<AdminReservationRow> allRows = new ArrayList<>();
+    private List<Reservation> smsReservations = new ArrayList<>();
     private final PauseTransition deleteFlashTimer = new PauseTransition(Duration.seconds(2.8));
 
     @FXML
@@ -89,6 +106,8 @@ public class ReservationDashboardController {
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> refreshView());
         sortCombo.valueProperty().addListener((obs, oldValue, newValue) -> refreshView());
+        configureReservationComboBox();
+        reservationComboBox.valueProperty().addListener((obs, oldValue, newValue) -> loadSelectedReservationData(newValue));
 
         loadData();
         setActiveNav(reservationsNavButton);
@@ -148,13 +167,130 @@ public class ReservationDashboardController {
         }
     }
 
+    @FXML
+    private void onSendSms() {
+        Reservation selectedReservation = reservationComboBox.getValue();
+        if (selectedReservation == null) {
+            showSmsStatus("Select a reservation phone number.", false);
+            return;
+        }
+
+        String phoneNumber = selectedReservation.getPhone();
+        if (isBlank(phoneNumber) || "-".equals(phoneNumber.trim())) {
+            showSmsStatus("Phone number is missing for this reservation.", false);
+            return;
+        }
+
+        String message = smsMessageArea.getText() == null ? "" : smsMessageArea.getText().trim();
+        if (message.isEmpty()) {
+            showSmsStatus("Message is required.", false);
+            return;
+        }
+
+        sendSmsButton.setDisable(true);
+        showSmsStatus("Sending SMS...", true);
+
+        Task<TwilioSmsService.SmsSendResult> smsTask = new Task<>() {
+            @Override
+            protected TwilioSmsService.SmsSendResult call() {
+                return twilioSmsService.sendSms(phoneNumber, message);
+            }
+        };
+
+        smsTask.setOnSucceeded(event -> {
+            sendSmsButton.setDisable(false);
+            TwilioSmsService.SmsSendResult result = smsTask.getValue();
+            if (result != null && result.delivered()) {
+                showSmsStatus("SMS delivered successfully.", true);
+            } else if (result != null) {
+                showSmsStatus("SMS accepted by Twilio. Status: " + result.status()
+                        + " (" + result.shortMessageSid() + ")", true);
+            } else {
+                showSmsStatus("SMS sent successfully.", true);
+            }
+        });
+        smsTask.setOnFailed(event -> {
+            sendSmsButton.setDisable(false);
+            Throwable error = smsTask.getException();
+            showSmsStatus("Failed to send SMS: " + safeErrorMessage(error), false);
+        });
+
+        Thread thread = new Thread(smsTask, "reservation-dashboard-sms");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     private void loadData() {
         try {
+            Integer selectedReservationId = reservationComboBox.getValue() == null ? null : reservationComboBox.getValue().getId();
             allRows = dashboardService.loadRows();
+            smsReservations = reservationService.getAll();
+            refreshReservationComboBox(selectedReservationId);
             refreshView();
         } catch (SQLException e) {
             showError("Load failed", e.getMessage());
         }
+    }
+
+    private void configureReservationComboBox() {
+        reservationComboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Reservation reservation) {
+                return reservation == null ? "" : safePhone(reservation);
+            }
+
+            @Override
+            public Reservation fromString(String phone) {
+                if (isBlank(phone)) {
+                    return null;
+                }
+                return smsReservations.stream()
+                        .filter(reservation -> phone.trim().equals(safePhone(reservation)))
+                        .findFirst()
+                        .orElse(null);
+            }
+        });
+    }
+
+    private void refreshReservationComboBox(Integer selectedReservationId) {
+        reservationComboBox.setItems(FXCollections.observableArrayList(smsReservations));
+
+        Reservation selectedReservation = findSmsReservation(selectedReservationId);
+        if (selectedReservation != null) {
+            reservationComboBox.setValue(selectedReservation);
+            loadSelectedReservationData(selectedReservation);
+        } else {
+            reservationComboBox.setValue(null);
+            loadSelectedReservationData(null);
+        }
+    }
+
+    private Reservation findSmsReservation(Integer reservationId) {
+        if (reservationId == null) {
+            return null;
+        }
+        return smsReservations.stream()
+                .filter(reservation -> reservationId.equals(reservation.getId()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void loadSelectedReservationData(Reservation reservation) {
+        if (reservation == null) {
+            smsReservationDetailsLabel.setText("Select a reservation phone number to load phone details.");
+            return;
+        }
+
+        smsReservationDetailsLabel.setText("Phone: " + safePhone(reservation)
+                + " | " + safe(reservation.getPrenom()) + " " + safe(reservation.getNom()));
+    }
+
+    private void showSmsStatus(String message, boolean success) {
+        smsStatusLabel.setText(message);
+        smsStatusLabel.setVisible(true);
+        smsStatusLabel.setManaged(true);
+        smsStatusLabel.getStyleClass().removeAll("sms-status-success", "sms-status-error");
+        smsStatusLabel.getStyleClass().add(success ? "sms-status-success" : "sms-status-error");
     }
 
     private void refreshView() {
@@ -426,6 +562,22 @@ public class ReservationDashboardController {
 
     private String safe(Object value) {
         return value == null ? "-" : String.valueOf(value);
+    }
+
+    private String safePhone(Reservation reservation) {
+        String phone = reservation == null ? null : reservation.getPhone();
+        return phone == null ? "" : phone.trim();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private String safeErrorMessage(Throwable throwable) {
+        if (throwable == null || throwable.getMessage() == null || throwable.getMessage().isBlank()) {
+            return "Unknown error";
+        }
+        return throwable.getMessage();
     }
 
     private void showInfo(String header, String content) {

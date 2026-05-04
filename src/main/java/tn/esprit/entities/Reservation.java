@@ -59,8 +59,16 @@ public class Reservation {
         return telephone;
     }
 
+    public String getPhone() {
+        return telephone;
+    }
+
     public void setTelephone(String telephone) {
         this.telephone = telephone;
+    }
+
+    public void setPhone(String phone) {
+        this.telephone = phone;
     }
 
     public String getAdresse() {

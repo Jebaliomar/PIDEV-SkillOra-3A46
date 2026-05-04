@@ -73,7 +73,12 @@
                         <HBox alignment="CENTER_LEFT" spacing="16" styleClass="site-filter-shell">
                             <VBox spacing="8" HBox.hgrow="ALWAYS">
                                 <Label text="Search" styleClass="site-field-label"/>
-                                <TextField fx:id="searchField" promptText="Search by event title or salle name" styleClass="site-input" HBox.hgrow="ALWAYS"/>
+                                <HBox alignment="CENTER_LEFT" spacing="8" styleClass="site-voice-search-row">
+                                    <TextField fx:id="searchField" promptText="Search by event title or description" styleClass="site-input" HBox.hgrow="ALWAYS"/>
+                                    <Button fx:id="micButton" text="🎤" onAction="#onStartVoiceSearch" styleClass="site-mic-button"/>
+                                    <Button fx:id="stopListeningButton" text="Stop" onAction="#onStopVoiceSearch" managed="false" visible="false" styleClass="site-stop-listening-button"/>
+                                </HBox>
+                                <Label fx:id="voiceStatusLabel" text="" managed="false" visible="false" styleClass="site-voice-status"/>
                             </VBox>
                             <VBox spacing="8" HBox.hgrow="ALWAYS">
                                 <Label text="Filter by type" styleClass="site-field-label"/>

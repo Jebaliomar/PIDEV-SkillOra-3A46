@@ -118,8 +118,10 @@ public class EventService {
         List<Object> parameters = new ArrayList<>();
 
         if (titleQuery != null && !titleQuery.isBlank()) {
-            sql.append(" AND LOWER(title) LIKE ?");
-            parameters.add("%" + titleQuery.trim().toLowerCase() + "%");
+            sql.append(" AND (LOWER(title) LIKE ? OR LOWER(description) LIKE ?)");
+            String normalizedQuery = "%" + titleQuery.trim().toLowerCase() + "%";
+            parameters.add(normalizedQuery);
+            parameters.add(normalizedQuery);
         }
 
         if (eventType != null && !eventType.isBlank()) {

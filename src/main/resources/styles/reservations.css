@@ -21,6 +21,33 @@
     -fx-border-radius: 22;
 }
 
+.reservation-sms-card {
+    -fx-background-color: #111a2e;
+    -fx-background-radius: 22;
+    -fx-border-color: #23314f;
+    -fx-border-radius: 22;
+}
+
+.sms-status-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 9 12;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+}
+
+.sms-status-success {
+    -fx-text-fill: #bbf7d0;
+    -fx-background-color: rgba(22, 163, 74, 0.18);
+    -fx-border-color: rgba(74, 222, 128, 0.45);
+}
+
+.sms-status-error {
+    -fx-text-fill: #fecaca;
+    -fx-background-color: rgba(220, 38, 38, 0.18);
+    -fx-border-color: rgba(248, 113, 113, 0.45);
+}
+
 .reservation-table-toolbar {
     -fx-padding: 2 2 8 2;
 }
@@ -271,6 +298,23 @@
     -fx-border-color: #d8e2f0;
 }
 
+.theme-light .reservation-sms-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d8e2f0;
+}
+
+.theme-light .sms-status-success {
+    -fx-text-fill: #166534;
+    -fx-background-color: #ecfdf3;
+    -fx-border-color: #86efac;
+}
+
+.theme-light .sms-status-error {
+    -fx-text-fill: #991b1b;
+    -fx-background-color: #fef2f2;
+    -fx-border-color: #fecaca;
+}
+
 .theme-light .reservation-table-shell {
     -fx-background-color: #f6f9ff;
     -fx-border-color: #d8e2f0;
@@ -333,4 +377,3 @@
     -fx-background-color: rgba(148, 163, 184, 0.15);
     -fx-border-color: rgba(148, 163, 184, 0.35);
 }
-
