@@ -105,16 +105,35 @@ public class SkillGraphController implements Initializable {
         double curveWidthLeaf = dark ? 2.4 : 2.0;
         double shadowAlpha = dark ? 0.65 : 0.45;
 
-        double cx = w / 2.0;
-        double cy = h / 2.0 + 30;
+        // Fit-to-pane sizing: leaves room for the header at the top and a
+        // small bottom margin so nothing clips at smaller window heights.
+        double topMargin = 95;
+        double bottomMargin = 24;
+        double sideMargin = 60;
+        double usableW = Math.max(120, w - 2 * sideMargin);
+        double usableH = Math.max(120, h - topMargin - bottomMargin);
 
-        StackPane hub = makeHub(overallAvg(), shadowAlpha);
+        double cx = w / 2.0;
+        double cy = topMargin + usableH / 2.0;
+
+        // Scale node sizes down proportionally on smaller panes
+        double scale = Math.max(0.65, Math.min(1.0, Math.min(usableW, usableH) / 720.0));
+        double hubR   = 70 * scale;
+        double catR   = 56 * scale;
+        double maxSkillR = (38 + 100 * 0.18) * scale; // worst-case skill node radius
+
+        StackPane hub = makeHub(overallAvg(), shadowAlpha, hubR);
         place(hub, cx, cy);
 
         int n = categories.size();
         if (n == 0) return;
-        double catRadius = Math.min(w, h) * 0.22 + 60;
-        double skillRadius = catRadius + 160;
+
+        // Outer reach from the hub: must not exceed half the smaller dimension
+        // minus the largest node radius and a small safety pad.
+        double outerR = Math.min(usableW, usableH) / 2.0 - maxSkillR - 8;
+        outerR = Math.max(140, outerR);
+        double skillRadius = outerR;
+        double catRadius = outerR * 0.52;
 
         List<StackPane> catNodes = new ArrayList<>();
         for (int i = 0; i < n; i++) {
@@ -126,7 +145,7 @@ public class SkillGraphController implements Initializable {
 
             graphPane.getChildren().add(makeCurve(cx, cy, catX, catY, color, curveWidthMain, curveAlpha));
 
-            StackPane catNode = makeCircleNode(cat.name, avg(cat) + "%", color, 56, shadowAlpha);
+            StackPane catNode = makeCircleNode(cat.name, avg(cat) + "%", color, catR, shadowAlpha);
             place(catNode, catX, catY);
             catNodes.add(catNode);
 
@@ -144,7 +163,7 @@ public class SkillGraphController implements Initializable {
                 graphPane.getChildren().add(makeCurve(catX, catY, sx, sy,
                         color.deriveColor(0, 1, 1.15, 1), curveWidthLeaf, curveAlpha));
 
-                StackPane skillNode = makeSkillNode(s, cat, color, shadowAlpha);
+                StackPane skillNode = makeSkillNode(s, cat, color, shadowAlpha, scale);
                 place(skillNode, sx, sy);
                 graphPane.getChildren().add(skillNode);
             }
@@ -168,8 +187,8 @@ public class SkillGraphController implements Initializable {
         return (int) c.skills.stream().mapToInt(s -> s.progress).average().orElse(0);
     }
 
-    private StackPane makeHub(int avg, double shadowAlpha) {
-        return makeCircleNode("My Skills", avg + "%", Color.web("#7c3aed"), 70, shadowAlpha);
+    private StackPane makeHub(int avg, double shadowAlpha, double radius) {
+        return makeCircleNode("My Skills", avg + "%", Color.web("#7c3aed"), radius, shadowAlpha);
     }
 
     private StackPane makeCircleNode(String label, String sub, Color color, double radius, double shadowAlpha) {
@@ -196,8 +215,8 @@ public class SkillGraphController implements Initializable {
         return node;
     }
 
-    private StackPane makeSkillNode(Skill s, Category cat, Color color, double shadowAlpha) {
-        double radius = 38 + s.progress * 0.18;
+    private StackPane makeSkillNode(Skill s, Category cat, Color color, double shadowAlpha, double scale) {
+        double radius = (38 + s.progress * 0.18) * scale;
         Circle c = new Circle(radius);
         c.setFill(new LinearGradient(0, 0, 1, 1, true, null,
                 new Stop(0, color.deriveColor(0, 0.8, 1.25, 1)),

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.PomodoroController"
+      styleClass="pomodoro-root"
+      prefWidth="340" spacing="0">
+
+    <!-- Header (drag handle) -->
+    <HBox fx:id="headerBar" styleClass="pomodoro-header" alignment="CENTER_LEFT" spacing="10">
+        <padding><Insets top="14" right="14" bottom="14" left="18"/></padding>
+        <Label text="🍅" styleClass="pomodoro-header-emoji"/>
+        <VBox spacing="0" HBox.hgrow="ALWAYS">
+            <Label fx:id="titleLabel" text="%pomodoro.title" styleClass="pomodoro-header-title"/>
+            <Label fx:id="phaseLabel" text="%pomodoro.phase.focus" styleClass="pomodoro-header-phase"/>
+        </VBox>
+        <Button fx:id="closeBtn" text="✕" onAction="#handleClose" styleClass="pomodoro-close"/>
+    </HBox>
+
+    <!-- Body: animated tomato + timer -->
+    <VBox styleClass="pomodoro-body" alignment="CENTER" spacing="14">
+        <padding><Insets top="22" right="22" bottom="18" left="22"/></padding>
+
+        <StackPane fx:id="tomatoStack" prefWidth="180" prefHeight="180"/>
+
+        <Label fx:id="timeLabel" text="25:00" styleClass="pomodoro-time"/>
+        <Label fx:id="hintLabel" text="%pomodoro.hint.idle" styleClass="pomodoro-hint" wrapText="true"/>
+
+        <ProgressBar fx:id="progressBar" prefWidth="280" maxWidth="Infinity" progress="0.0"
+                     styleClass="pomodoro-progress"/>
+
+        <HBox spacing="10" alignment="CENTER">
+            <Button fx:id="startBtn" text="%pomodoro.btn.start" onAction="#handleStart" styleClass="pomodoro-btn-primary"/>
+            <Button fx:id="pauseBtn" text="%pomodoro.btn.pause" onAction="#handlePause" styleClass="pomodoro-btn-ghost" visible="false" managed="false"/>
+            <Button fx:id="resetBtn" text="%pomodoro.btn.reset" onAction="#handleReset" styleClass="pomodoro-btn-ghost"/>
+            <Button fx:id="skipBtn" text="%pomodoro.btn.skip" onAction="#handleSkip" styleClass="pomodoro-btn-ghost"/>
+        </HBox>
+    </VBox>
+
+    <!-- Footer: phase chips -->
+    <HBox styleClass="pomodoro-footer" alignment="CENTER" spacing="8">
+        <padding><Insets top="12" right="18" bottom="14" left="18"/></padding>
+        <ToggleButton fx:id="modeFocus"     text="%pomodoro.mode.focus"     onAction="#handleModeFocus"     styleClass="pomodoro-chip"/>
+        <ToggleButton fx:id="modeShortBreak" text="%pomodoro.mode.short"   onAction="#handleModeShort"    styleClass="pomodoro-chip"/>
+        <ToggleButton fx:id="modeLongBreak"  text="%pomodoro.mode.long"    onAction="#handleModeLong"     styleClass="pomodoro-chip"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="cycleLabel" text="🍅 0" styleClass="pomodoro-cycles"/>
+    </HBox>
+</VBox>

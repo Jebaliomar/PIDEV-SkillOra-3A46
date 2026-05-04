@@ -42,9 +42,13 @@
 
             <Region VBox.vgrow="ALWAYS"/>
 
-            <!-- Theme Toggle -->
-            <Button fx:id="themeToggleBtn" onAction="#toggleTheme"
-                    styleClass="nav-item" alignment="CENTER" prefHeight="40" prefWidth="40"/>
+            <!-- Pomodoro + Theme Toggle -->
+            <HBox spacing="6" alignment="CENTER">
+                <Button fx:id="pomodoroBtn" onAction="#togglePomodoro"
+                        styleClass="pomodoro-toggle" alignment="CENTER" prefHeight="40" prefWidth="40"/>
+                <Button fx:id="themeToggleBtn" onAction="#toggleTheme"
+                        styleClass="nav-item" alignment="CENTER" prefHeight="40" prefWidth="40"/>
+            </HBox>
 
             <Region prefHeight="8"/>
 

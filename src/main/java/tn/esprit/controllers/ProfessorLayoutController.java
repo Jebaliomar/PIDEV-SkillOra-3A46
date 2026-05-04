@@ -13,6 +13,8 @@ import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.services.SessionService;
 import tn.esprit.tools.AppIcons;
+import tn.esprit.tools.PomodoroIcon;
+import tn.esprit.tools.PomodoroPopup;
 import tn.esprit.tools.SessionStore;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
@@ -24,6 +26,7 @@ public class ProfessorLayoutController implements Initializable {
 
     @FXML private StackPane contentArea;
     @FXML private Button themeToggleBtn;
+    @FXML private Button pomodoroBtn;
     @FXML private Button navHome;
     @FXML private Button navCourses;
     @FXML private Button navStudents;
@@ -52,7 +55,17 @@ public class ProfessorLayoutController implements Initializable {
         if (menuProfile != null) menuProfile.setGraphic(AppIcons.user());
         if (menuSettings != null) menuSettings.setGraphic(AppIcons.gear());
         updateThemeButton();
+        if (pomodoroBtn != null) {
+            pomodoroBtn.setText("");
+            pomodoroBtn.setGraphic(PomodoroIcon.small());
+            pomodoroBtn.setTooltip(new javafx.scene.control.Tooltip("Pomodoro"));
+        }
         showHome();
+    }
+
+    @FXML
+    public void togglePomodoro() {
+        PomodoroPopup.toggle(themeToggleBtn.getScene().getWindow());
     }
 
     @FXML

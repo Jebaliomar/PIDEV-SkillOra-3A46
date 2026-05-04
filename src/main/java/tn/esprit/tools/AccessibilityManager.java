@@ -278,6 +278,13 @@ public final class AccessibilityManager {
 
         applyZoom(scene);
         applyColorFilter(scene);
+
+        // Re-tint the whole app toward the chosen accent (light + dark variants)
+        if (accentColor != null && !accentColor.isBlank()) {
+            AccentTint.apply(scene, accentColor);
+        } else {
+            AccentTint.clear(scene);
+        }
     }
 
     private static void applyColorFilter(Scene scene) {

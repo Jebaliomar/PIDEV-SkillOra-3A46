@@ -12,6 +12,8 @@ import tn.esprit.entities.User;
 import tn.esprit.services.SessionService;
 import tn.esprit.tools.LanguageManager;
 import tn.esprit.tools.Loaders;
+import tn.esprit.tools.PomodoroIcon;
+import tn.esprit.tools.PomodoroPopup;
 import tn.esprit.tools.SessionStore;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
@@ -28,6 +30,7 @@ public class AdminPanelController implements Initializable {
     @FXML private Button navStats;
     @FXML private Button navAccessibility;
     @FXML private Button themeToggleBtn;
+    @FXML private Button pomodoroBtn;
 
     private static User currentUser;
     private static AdminPanelController instance;
@@ -61,7 +64,17 @@ public class AdminPanelController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         instance = this;
         updateThemeButton();
+        if (pomodoroBtn != null) {
+            pomodoroBtn.setText("");
+            pomodoroBtn.setGraphic(PomodoroIcon.small());
+            pomodoroBtn.setTooltip(new javafx.scene.control.Tooltip("Pomodoro"));
+        }
         showDashboard();
+    }
+
+    @FXML
+    public void togglePomodoro() {
+        PomodoroPopup.toggle(themeToggleBtn.getScene().getWindow());
     }
 
     @FXML

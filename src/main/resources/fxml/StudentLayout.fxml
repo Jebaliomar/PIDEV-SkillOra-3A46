@@ -24,6 +24,7 @@
             <Region styleClass="nav-vrule" prefWidth="1" maxWidth="1" prefHeight="22" maxHeight="22"/>
             <Region prefWidth="14"/>
 
+            <Button fx:id="pomodoroBtn" onAction="#togglePomodoro" styleClass="pomodoro-toggle"/>
             <Button fx:id="themeToggleBtn" onAction="#toggleTheme" styleClass="theme-toggle"/>
             <MenuButton fx:id="userMenu" styleClass="header-username">
                 <items>

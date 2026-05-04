@@ -92,15 +92,39 @@
                 </VBox>
             </HBox>
 
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="%access.color.swatches" styleClass="input-label"/>
-                <Button styleClass="swatch-btn" style="-fx-background-color:#7C3AED;" onAction="#applySwatchPurple" prefWidth="32" prefHeight="32"/>
-                <Button styleClass="swatch-btn" style="-fx-background-color:#0EA5E9;" onAction="#applySwatchBlue" prefWidth="32" prefHeight="32"/>
-                <Button styleClass="swatch-btn" style="-fx-background-color:#22C55E;" onAction="#applySwatchGreen" prefWidth="32" prefHeight="32"/>
-                <Button styleClass="swatch-btn" style="-fx-background-color:#F59E0B;" onAction="#applySwatchOrange" prefWidth="32" prefHeight="32"/>
-                <Button styleClass="swatch-btn" style="-fx-background-color:#EF4444;" onAction="#applySwatchRed" prefWidth="32" prefHeight="32"/>
-                <Button styleClass="swatch-btn" style="-fx-background-color:#EC4899;" onAction="#applySwatchPink" prefWidth="32" prefHeight="32"/>
-            </HBox>
+            <VBox spacing="10">
+                <Label text="%access.themes" styleClass="input-label"/>
+                <HBox spacing="14" alignment="CENTER_LEFT">
+                    <VBox styleClass="theme-chip-wrap" alignment="CENTER" spacing="6">
+                        <Button styleClass="theme-chip" style="-fx-background-color: linear-gradient(to bottom right, #8B5CF6, #6D28D9);" onAction="#applyThemeViolet"/>
+                        <Label text="Violet" styleClass="theme-chip-label"/>
+                    </VBox>
+                    <VBox styleClass="theme-chip-wrap" alignment="CENTER" spacing="6">
+                        <Button styleClass="theme-chip" style="-fx-background-color: linear-gradient(to bottom right, #38BDF8, #0284C7);" onAction="#applyThemeOcean"/>
+                        <Label text="Ocean" styleClass="theme-chip-label"/>
+                    </VBox>
+                    <VBox styleClass="theme-chip-wrap" alignment="CENTER" spacing="6">
+                        <Button styleClass="theme-chip" style="-fx-background-color: linear-gradient(to bottom right, #34D399, #059669);" onAction="#applyThemeMint"/>
+                        <Label text="Mint" styleClass="theme-chip-label"/>
+                    </VBox>
+                    <VBox styleClass="theme-chip-wrap" alignment="CENTER" spacing="6">
+                        <Button styleClass="theme-chip" style="-fx-background-color: linear-gradient(to bottom right, #FB923C, #EA580C);" onAction="#applyThemeSunset"/>
+                        <Label text="Sunset" styleClass="theme-chip-label"/>
+                    </VBox>
+                    <VBox styleClass="theme-chip-wrap" alignment="CENTER" spacing="6">
+                        <Button styleClass="theme-chip" style="-fx-background-color: linear-gradient(to bottom right, #F472B6, #DB2777);" onAction="#applyThemeRose"/>
+                        <Label text="Rose" styleClass="theme-chip-label"/>
+                    </VBox>
+                    <VBox styleClass="theme-chip-wrap" alignment="CENTER" spacing="6">
+                        <Button styleClass="theme-chip" style="-fx-background-color: linear-gradient(to bottom right, #F87171, #B91C1C);" onAction="#applyThemeCherry"/>
+                        <Label text="Cherry" styleClass="theme-chip-label"/>
+                    </VBox>
+                    <VBox styleClass="theme-chip-wrap" alignment="CENTER" spacing="6">
+                        <Button styleClass="theme-chip" style="-fx-background-color: linear-gradient(to bottom right, #94A3B8, #475569);" onAction="#applyThemeGraphite"/>
+                        <Label text="Graphite" styleClass="theme-chip-label"/>
+                    </VBox>
+                </HBox>
+            </VBox>
         </VBox>
 
         <!-- Vision -->

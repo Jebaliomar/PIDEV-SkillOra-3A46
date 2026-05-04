@@ -189,12 +189,13 @@ public class AccessibilityController implements Initializable {
         refresh();
     }
 
-    @FXML public void applySwatchPurple() { setAccent("#7C3AED"); }
-    @FXML public void applySwatchBlue()   { setAccent("#0EA5E9"); }
-    @FXML public void applySwatchGreen()  { setAccent("#22C55E"); }
-    @FXML public void applySwatchOrange() { setAccent("#F59E0B"); }
-    @FXML public void applySwatchRed()    { setAccent("#EF4444"); }
-    @FXML public void applySwatchPink()   { setAccent("#EC4899"); }
+    @FXML public void applyThemeViolet()   { setAccent("#7C3AED"); }
+    @FXML public void applyThemeOcean()    { setAccent("#0EA5E9"); }
+    @FXML public void applyThemeMint()     { setAccent("#10B981"); }
+    @FXML public void applyThemeSunset()   { setAccent("#F97316"); }
+    @FXML public void applyThemeRose()     { setAccent("#EC4899"); }
+    @FXML public void applyThemeCherry()   { setAccent("#EF4444"); }
+    @FXML public void applyThemeGraphite() { setAccent("#64748B"); }
 
     private void setAccent(String hex) {
         accentPicker.setValue(Color.web(hex));
