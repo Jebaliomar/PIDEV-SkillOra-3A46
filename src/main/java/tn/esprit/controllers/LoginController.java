@@ -80,16 +80,21 @@ public class LoginController implements Initializable {
                 String role = userService.getUserRole(user.getId());
                 System.out.println("Login successful! User: " + user.getFirstName() + " " + user.getLastName() + " | Role: " + role);
 
-                // Route by role: students go to student layout, admins/professors to admin panel
+                // Route by role: students -> student layout, professors -> professor layout, admins -> admin panel
                 String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
                 boolean isStudent = normalizedRole.equals("student");
+                boolean isProfessor = normalizedRole.equals("professor");
 
-                String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
-                String title = isStudent ? "SkillORA" : "SkillORA - Admin Panel";
-
+                String fxmlPath;
+                String title;
                 if (isStudent) {
+                    fxmlPath = "/fxml/StudentLayout.fxml"; title = "SkillORA";
                     StudentLayoutController.setCurrentUser(user);
+                } else if (isProfessor) {
+                    fxmlPath = "/fxml/ProfessorLayout.fxml"; title = "SkillORA - Faculty";
+                    ProfessorLayoutController.setCurrentUser(user);
                 } else {
+                    fxmlPath = "/fxml/AdminPanel.fxml"; title = "SkillORA - Admin Panel";
                     AdminPanelController.setCurrentUser(user);
                 }
 
@@ -97,7 +102,7 @@ public class LoginController implements Initializable {
                 Parent dashRoot = dashLoader.load();
                 Scene dashScene = new Scene(dashRoot);
                 dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
-                if (!isStudent) {
+                if (!isStudent && !isProfessor) {
                     dashScene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
                     dashScene.getStylesheets().add(getClass().getResource("/styles/salle.css").toExternalForm());
                 }
@@ -156,16 +161,25 @@ public class LoginController implements Initializable {
             String role = userService.getUserRole(user.getId());
             String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
             boolean isStudent = normalizedRole.equals("student");
-            String fxmlPath = isStudent ? "/fxml/StudentLayout.fxml" : "/fxml/AdminPanel.fxml";
-            String title = isStudent ? "SkillORA" : "SkillORA - Admin Panel";
-            if (isStudent) StudentLayoutController.setCurrentUser(user);
-            else AdminPanelController.setCurrentUser(user);
+            boolean isProfessor = normalizedRole.equals("professor");
+            String fxmlPath;
+            String title;
+            if (isStudent) {
+                fxmlPath = "/fxml/StudentLayout.fxml"; title = "SkillORA";
+                StudentLayoutController.setCurrentUser(user);
+            } else if (isProfessor) {
+                fxmlPath = "/fxml/ProfessorLayout.fxml"; title = "SkillORA - Faculty";
+                ProfessorLayoutController.setCurrentUser(user);
+            } else {
+                fxmlPath = "/fxml/AdminPanel.fxml"; title = "SkillORA - Admin Panel";
+                AdminPanelController.setCurrentUser(user);
+            }
 
             FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent dashRoot = dashLoader.load();
             Scene dashScene = new Scene(dashRoot);
             dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
-            if (!isStudent) {
+            if (!isStudent && !isProfessor) {
                 dashScene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
                 dashScene.getStylesheets().add(getClass().getResource("/styles/salle.css").toExternalForm());
             }

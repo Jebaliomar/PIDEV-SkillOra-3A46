@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.tools.AppIcons;
 import tn.esprit.tools.AppNavigator;
+import tn.esprit.tools.PomodoroIcon;
+import tn.esprit.tools.PomodoroPopup;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
@@ -25,11 +27,13 @@ public class StudentLayoutController implements Initializable {
 
     @FXML private StackPane contentArea;
     @FXML private Button themeToggleBtn;
+    @FXML private Button pomodoroBtn;
     @FXML private Button navHome;
     @FXML private Button navCourses;
     @FXML private Button navEvents;
     @FXML private Button navForum;
     @FXML private Button navAssessment;
+    @FXML private Button navSkills;
     @FXML private MenuButton userMenu;
     @FXML private MenuItem menuProfile;
     @FXML private MenuItem menuSettings;
@@ -61,7 +65,29 @@ public class StudentLayoutController implements Initializable {
         if (menuProfile != null) menuProfile.setGraphic(AppIcons.user());
         if (menuSettings != null) menuSettings.setGraphic(AppIcons.gear());
         updateThemeButton();
+        if (pomodoroBtn != null) {
+            pomodoroBtn.setText("");
+            pomodoroBtn.setGraphic(PomodoroIcon.small());
+            pomodoroBtn.setTooltip(new javafx.scene.control.Tooltip("Pomodoro"));
+        }
         showHome();
+    }
+
+    @FXML
+    public void togglePomodoro() {
+        PomodoroPopup.toggle(themeToggleBtn.getScene().getWindow());
+    }
+
+    @FXML
+    public void showSkills() {
+        try {
+            FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), "/fxml/SkillGraphContent.fxml");
+            Parent content = loader.load();
+            contentArea.getChildren().setAll(content);
+            setActiveNav(navSkills);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

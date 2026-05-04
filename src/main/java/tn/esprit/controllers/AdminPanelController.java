@@ -12,6 +12,9 @@ import javafx.stage.Stage;
 import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.User;
 import tn.esprit.tools.AppNavigator;
+import tn.esprit.tools.Loaders;
+import tn.esprit.tools.PomodoroIcon;
+import tn.esprit.tools.PomodoroPopup;
 import tn.esprit.tools.ThemeIcon;
 import tn.esprit.tools.ThemeManager;
 
@@ -38,11 +41,16 @@ public class AdminPanelController implements Initializable {
     @FXML private Button navCourses;
     @FXML private Button navEvaluations;
     @FXML private Button navStats;
+    @FXML private Button navAccessibility;
     @FXML private Button themeToggleBtn;
+    @FXML private Button pomodoroBtn;
 
     private static User currentUser;
+    private static AdminPanelController instance;
     private static InitialView initialView = InitialView.DASHBOARD;
     private Button activeNav;
+
+    public static AdminPanelController getInstance() { return instance; }
 
     public static void setCurrentUser(User user) {
         currentUser = user;
@@ -58,7 +66,13 @@ public class AdminPanelController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        instance = this;
         updateThemeButton();
+        if (pomodoroBtn != null) {
+            pomodoroBtn.setText("");
+            pomodoroBtn.setGraphic(PomodoroIcon.small());
+            pomodoroBtn.setTooltip(new javafx.scene.control.Tooltip("Pomodoro"));
+        }
         InitialView view = initialView;
         initialView = InitialView.DASHBOARD;
         switch (view) {
@@ -66,6 +80,37 @@ public class AdminPanelController implements Initializable {
             case STATISTICS -> showStatistics();
             default -> showDashboard();
         }
+    }
+
+    @FXML
+    public void togglePomodoro() {
+        PomodoroPopup.toggle(themeToggleBtn.getScene().getWindow());
+    }
+
+    @FXML
+    public void showAccessibility() {
+        try {
+            FXMLLoader loader = Loaders.loader(getClass(), "/fxml/AccessibilityContent.fxml");
+            Parent content = loader.load();
+            contentArea.getChildren().setAll(content);
+            setActiveNav(navAccessibility);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /** Reloads the whole admin shell - used when language changes so the sidebar/header re-render. */
+    public void reloadShell() {
+        try {
+            Scene scene = contentArea.getScene();
+            if (scene == null) return;
+            FXMLLoader loader = Loaders.loader(getClass(), "/fxml/AdminPanel.fxml");
+            Parent root = loader.load();
+            scene.setRoot(root);
+            ThemeManager.applyTheme(scene);
+            AdminPanelController fresh = loader.getController();
+            if (fresh != null) fresh.showAccessibility();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @FXML

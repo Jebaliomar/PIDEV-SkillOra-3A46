@@ -216,11 +216,10 @@ public class UserGalaxy {
         String name = String.valueOf(d.getOrDefault("name", "Unknown"));
         int daysOld = d.get("daysOld") instanceof Integer ? (int) d.get("daysOld") : 0;
         boolean banned = Boolean.TRUE.equals(d.get("banned"));
-        int id = d.get("id") instanceof Integer ? (int) d.get("id") : 0;
 
         String text = name + "\n" +
-                      prof.label + "  -  " + daysOld + " days old\n" +
-                      "ID #" + id + (banned ? "  -  BANNED" : "");
+                      prof.label + "  -  " + daysOld + " days old" +
+                      (banned ? "\nBANNED" : "");
         infoCard.setText(text);
         infoCard.setVisible(true);
         infoCard.setManaged(true);

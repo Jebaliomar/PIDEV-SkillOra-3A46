@@ -43,10 +43,20 @@ public final class ThemeManager {
         root.getStyleClass().remove(THEME_DARK);
         root.getStyleClass().remove(THEME_LIGHT);
         root.getStyleClass().add(darkMode ? THEME_DARK : THEME_LIGHT);
+
+        AccessibilityManager.apply(scene);
+        LanguageManager.applyToScene(scene);
     }
 
     public static void toggleTheme(Scene scene) {
         darkMode = !darkMode;
+        PREFS.put(THEME_KEY, darkMode ? DARK : LIGHT);
+        applyTheme(scene);
+    }
+
+    public static void setDark(Scene scene, boolean dark) {
+        if (darkMode == dark) return;
+        darkMode = dark;
         PREFS.put(THEME_KEY, darkMode ? DARK : LIGHT);
         applyTheme(scene);
     }

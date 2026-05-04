@@ -4,25 +4,22 @@
 <?import javafx.geometry.Insets?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="tn.esprit.controllers.StudentLayoutController"
+            fx:controller="tn.esprit.controllers.ProfessorLayoutController"
             styleClass="admin-root" prefWidth="1280" prefHeight="820">
 
     <top>
         <HBox styleClass="student-header" alignment="CENTER_LEFT" spacing="22">
             <padding><Insets top="22" right="48" bottom="22" left="48"/></padding>
 
-            <Label text="SkillORA" styleClass="logo-text"/>
+            <Label text="%common.brand" styleClass="logo-text"/>
             <Region styleClass="nav-vrule" prefWidth="1" maxWidth="1" prefHeight="24" maxHeight="24"/>
-            <Label text="STUDENT · N° 001" styleClass="pf-eyebrow"/>
+            <Label text="%prof.eyebrow" styleClass="pf-eyebrow"/>
 
             <Region HBox.hgrow="ALWAYS"/>
 
-            <Button text="HOME" onAction="#showHome" fx:id="navHome" styleClass="student-nav-btn"/>
-            <Button text="COURSES" onAction="#showCourses" fx:id="navCourses" styleClass="student-nav-btn"/>
-            <Button text="EVENT" onAction="#showEvents" fx:id="navEvents" styleClass="student-nav-btn"/>
-            <Button text="FORUM" onAction="#showForum" fx:id="navForum" styleClass="student-nav-btn"/>
-            <Button text="ASSESSMENT" onAction="#showAssessment" fx:id="navAssessment" styleClass="student-nav-btn"/>
-            <Button text="SKILLS" onAction="#showSkills" fx:id="navSkills" styleClass="student-nav-btn"/>
+            <Button text="%common.home" onAction="#showHome" fx:id="navHome" styleClass="student-nav-btn"/>
+            <Button text="%prof.nav.courses" onAction="#showCourses" fx:id="navCourses" styleClass="student-nav-btn"/>
+            <Button text="%prof.nav.students" onAction="#showStudents" fx:id="navStudents" styleClass="student-nav-btn"/>
 
             <Region prefWidth="14"/>
             <Region styleClass="nav-vrule" prefWidth="1" maxWidth="1" prefHeight="22" maxHeight="22"/>
@@ -32,11 +29,11 @@
             <Button fx:id="themeToggleBtn" onAction="#toggleTheme" styleClass="theme-toggle"/>
             <MenuButton fx:id="userMenu" styleClass="header-username">
                 <items>
-                    <MenuItem fx:id="menuProfile" text="Profile" onAction="#showProfile"/>
-                    <MenuItem fx:id="menuSettings" text="Settings" onAction="#showSettings"/>
+                    <MenuItem fx:id="menuProfile" text="%common.profile" onAction="#showProfile"/>
+                    <MenuItem fx:id="menuSettings" text="%common.settings" onAction="#showSettings"/>
                 </items>
             </MenuButton>
-            <Button text="SIGN OUT" onAction="#handleLogout" styleClass="nav-signout"/>
+            <Button text="%common.signout" onAction="#handleLogout" styleClass="nav-signout"/>
         </HBox>
     </top>
 

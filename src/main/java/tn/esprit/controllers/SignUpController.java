@@ -165,11 +165,16 @@ public class SignUpController implements Initializable {
                 }
             }
 
-            showSuccess("Account created successfully! You can now sign in.");
+            showSuccess("Account created successfully! Redirecting to sign in…");
             clearForm();
             pendingFaceDescriptor = null;
             faceIdStatus.setText("Not set");
             faceIdStatus.setStyle("-fx-text-fill: #6b7280; -fx-font-size: 12px;");
+
+            javafx.animation.PauseTransition delay =
+                    new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.2));
+            delay.setOnFinished(ev -> goToLogin());
+            delay.play();
 
         } catch (Exception e) {
             showError("Registration failed: " + e.getMessage());

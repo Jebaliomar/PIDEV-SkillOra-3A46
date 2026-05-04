@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<ScrollPane fitToWidth="true" styleClass="scroll-pane"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.ProfessorHomeController">
+    <VBox spacing="36">
+        <padding><Insets top="40" right="60" bottom="60" left="60"/></padding>
+
+        <!-- Hero -->
+        <VBox styleClass="hero-card" spacing="18" alignment="CENTER_LEFT">
+            <padding><Insets top="60" right="60" bottom="60" left="60"/></padding>
+            <Label text="%profhome.welcome" styleClass="hero-eyebrow"/>
+            <Label fx:id="heroTitle" text="%profhome.title" styleClass="hero-title" wrapText="true"/>
+            <Label text="%profhome.subtitle" styleClass="hero-subtitle" wrapText="true"/>
+            <HBox spacing="16">
+                <Button text="%profhome.btn.profile" onAction="#goToProfile" styleClass="btn-primary"/>
+                <Button text="%profhome.btn.settings" onAction="#goToSettings" styleClass="btn-outline"/>
+            </HBox>
+        </VBox>
+
+        <!-- Quick stats -->
+        <HBox spacing="24">
+            <VBox styleClass="stat-card, stat-card-blue" HBox.hgrow="ALWAYS">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="%profhome.metric.courses" styleClass="metric-label"/>
+                <Label text="6" styleClass="metric-value"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-green" HBox.hgrow="ALWAYS">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="%profhome.metric.students" styleClass="metric-label"/>
+                <Label text="248" styleClass="metric-value"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-purple" HBox.hgrow="ALWAYS">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="%profhome.metric.lessons" styleClass="metric-label"/>
+                <Label text="42" styleClass="metric-value"/>
+            </VBox>
+            <VBox styleClass="stat-card, stat-card-orange" HBox.hgrow="ALWAYS">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <Label text="%profhome.metric.rating" styleClass="metric-label"/>
+                <Label text="4.9" styleClass="metric-value"/>
+            </VBox>
+        </HBox>
+
+        <!-- Teaching focus -->
+        <VBox spacing="18">
+            <Label text="%profhome.focus" styleClass="dashboard-title"/>
+            <Label text="%profhome.focus.subtitle" styleClass="dashboard-subtitle"/>
+            <FlowPane hgap="18" vgap="18">
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="%profhome.f.se" styleClass="chart-title"/>
+                    <Label text="%profhome.f.se.count" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="%profhome.f.ds" styleClass="chart-title"/>
+                    <Label text="%profhome.f.ds.count" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="%profhome.f.web" styleClass="chart-title"/>
+                    <Label text="%profhome.f.web.count" styleClass="chart-subtitle"/>
+                </VBox>
+                <VBox styleClass="chart-card" prefWidth="220">
+                    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                    <Label text="%profhome.f.mentoring" styleClass="chart-title"/>
+                    <Label text="%profhome.f.mentoring.count" styleClass="chart-subtitle"/>
+                </VBox>
+            </FlowPane>
+        </VBox>
+
+        <!-- CTA -->
+        <VBox styleClass="cta-card" spacing="12" alignment="CENTER">
+            <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
+            <Label text="%profhome.cta.title" styleClass="hero-title"/>
+            <Label text="%profhome.cta.subtitle" styleClass="hero-subtitle"/>
+            <Button text="%home.cta.btn" onAction="#goToSettings" styleClass="btn-primary"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

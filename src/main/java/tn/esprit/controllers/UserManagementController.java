@@ -209,8 +209,19 @@ public class UserManagementController implements Initializable {
             banBtn = new Button("Ban");
             banBtn.getStyleClass().add("btn-danger");
             banBtn.setOnAction(e -> {
-                try { userService.banUser(user.getId()); loadData(); }
-                catch (Exception ex) { ex.printStackTrace(); }
+                Optional<String> reason = ReasonDialogController.prompt(
+                        ((Button) e.getSource()).getScene().getWindow(),
+                        "Ban this user?",
+                        "Tell us why " + user.getEmail() + " is being banned. The reason is logged for the audit trail.",
+                        "Ban user",
+                        ReasonDialogController.Variant.WARNING);
+                reason.ifPresent(r -> {
+                    try {
+                        userService.banUser(user.getId());
+                        auditLog("BAN", user, r);
+                        loadData();
+                    } catch (Exception ex) { ex.printStackTrace(); }
+                });
             });
         } else {
             banBtn = new Button("Unban");
@@ -225,13 +236,18 @@ public class UserManagementController implements Initializable {
         Button deleteBtn = new Button("Delete");
         deleteBtn.getStyleClass().add("btn-danger-outline");
         deleteBtn.setOnAction(e -> {
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete user " + user.getEmail() + "?", ButtonType.YES, ButtonType.NO);
-            confirm.setHeaderText("Confirm Deletion");
-            confirm.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.YES) {
-                    try { userService.delete(user.getId()); loadData(); }
-                    catch (Exception ex) { ex.printStackTrace(); }
-                }
+            Optional<String> reason = ReasonDialogController.prompt(
+                    ((Button) e.getSource()).getScene().getWindow(),
+                    "Delete this user?",
+                    "Permanently remove " + user.getEmail() + "? Provide a reason for the audit log.",
+                    "Delete user",
+                    ReasonDialogController.Variant.DANGER);
+            reason.ifPresent(r -> {
+                try {
+                    userService.delete(user.getId());
+                    auditLog("DELETE", user, r);
+                    loadData();
+                } catch (Exception ex) { ex.printStackTrace(); }
             });
         });
 
@@ -245,6 +261,22 @@ public class UserManagementController implements Initializable {
         card.setAlignment(Pos.TOP_CENTER);
 
         return card;
+    }
+
+    private void auditLog(String action, User target, String reason) {
+        try {
+            java.nio.file.Path dir = java.nio.file.Paths.get(System.getProperty("user.home"), ".skillora");
+            java.nio.file.Files.createDirectories(dir);
+            java.nio.file.Path file = dir.resolve("admin-actions.log");
+            String ts = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            String adminEmail = AdminPanelController.getCurrentUser() != null
+                    ? AdminPanelController.getCurrentUser().getEmail() : "?";
+            String line = ts + " | " + adminEmail + " | " + action
+                    + " | userId=" + target.getId() + " (" + target.getEmail() + ")"
+                    + " | reason=\"" + reason.replace("\"", "'") + "\"" + System.lineSeparator();
+            java.nio.file.Files.writeString(file, line,
+                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+        } catch (Exception ignored) {}
     }
 
     @FXML

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<ScrollPane fitToWidth="true" styleClass="scroll-pane pf-scroll"
+            xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.ProfessorSettingsController">
+    <VBox styleClass="pf-root" spacing="0">
+        <padding><Insets top="56" right="96" bottom="96" left="96"/></padding>
+
+        <!-- Eyebrow -->
+        <HBox alignment="CENTER_LEFT" spacing="18">
+            <Label text="SETTINGS" styleClass="pf-eyebrow"/>
+            <Region styleClass="pf-eyebrow-rule" prefHeight="1" maxHeight="1" HBox.hgrow="ALWAYS"/>
+            <Label text="FACULTY" styleClass="pf-eyebrow"/>
+            <Region styleClass="pf-eyebrow-rule" prefHeight="1" maxHeight="1" prefWidth="80" maxWidth="80"/>
+            <Label text="SKILLORA — ACCOUNT" styleClass="pf-eyebrow"/>
+        </HBox>
+
+        <Region prefHeight="56"/>
+
+        <Label text="Account" styleClass="pf-name"/>
+        <Region prefHeight="16"/>
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <Region styleClass="pf-accent-mark" prefWidth="32" prefHeight="2"
+                    maxWidth="32" maxHeight="2" minHeight="2"/>
+            <Label text="Import from LinkedIn or fill in your faculty details manually."
+                   styleClass="pf-field" wrapText="true"/>
+        </HBox>
+
+        <Region prefHeight="40"/>
+
+        <!-- Alerts -->
+        <HBox fx:id="successBox" styleClass="set-alert set-alert-success"
+              visible="false" managed="false" alignment="CENTER_LEFT" spacing="14">
+            <Label text="✓" styleClass="set-alert-mark set-alert-mark-success"/>
+            <Label fx:id="successLabel" styleClass="set-alert-text" wrapText="true"/>
+        </HBox>
+        <HBox fx:id="errorBox" styleClass="set-alert set-alert-error"
+              visible="false" managed="false" alignment="CENTER_LEFT" spacing="14">
+            <Label text="!" styleClass="set-alert-mark set-alert-mark-error"/>
+            <Label fx:id="errorLabel" styleClass="set-alert-text" wrapText="true"/>
+        </HBox>
+
+        <Region prefHeight="12"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- 0. LINKEDIN -->
+        <HBox spacing="88" alignment="TOP_LEFT">
+            <VBox prefWidth="280" minWidth="280" spacing="12">
+                <Label text="0. LINKEDIN" styleClass="pf-section-label"/>
+                <Label text="Public profile" styleClass="set-section-title"/>
+                <Label text="Optional — paste your LinkedIn URL so students can find you on LinkedIn from your profile page."
+                       styleClass="set-section-desc" wrapText="true"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="20">
+                <VBox spacing="10">
+                    <Label text="LINKEDIN PROFILE URL" styleClass="set-label"/>
+                    <TextField fx:id="linkedInField" styleClass="set-input"
+                               promptText="https://www.linkedin.com/in/your-handle/"/>
+                    <Label fx:id="linkedInStatus" styleClass="set-hint"/>
+                </VBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="72"/>
+        <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- I. PERSONAL -->
+        <HBox spacing="88" alignment="TOP_LEFT">
+            <VBox prefWidth="280" minWidth="280" spacing="12">
+                <Label text="I. PERSONAL" styleClass="pf-section-label"/>
+                <Label text="Identity" styleClass="set-section-title"/>
+                <Label text="Your name, avatar and biographical details."
+                       styleClass="set-section-desc" wrapText="true"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="26">
+
+                <VBox spacing="10">
+                    <Label text="3D AVATAR" styleClass="set-label"/>
+                    <HBox spacing="16" alignment="CENTER_LEFT">
+                        <Label fx:id="currentAvatarLabel" text="No avatar selected"
+                               styleClass="set-static-val"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="CHANGE AVATAR" onAction="#handleChangeAvatar"
+                                styleClass="set-btn-outline"/>
+                    </HBox>
+                    <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+                </VBox>
+
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="FIRST NAME" styleClass="set-label"/>
+                        <TextField fx:id="firstNameField" styleClass="set-input" promptText="First name"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="LAST NAME" styleClass="set-label"/>
+                        <TextField fx:id="lastNameField" styleClass="set-input" promptText="Last name"/>
+                    </VBox>
+                </HBox>
+
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="GENDER" styleClass="set-label"/>
+                        <ComboBox fx:id="genderCombo" styleClass="set-combo" maxWidth="Infinity"
+                                  promptText="Select gender"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="DATE OF BIRTH" styleClass="set-label"/>
+                        <DatePicker fx:id="dobPicker" styleClass="set-combo" maxWidth="Infinity"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="10">
+                    <Label text="BIO / HEADLINE" styleClass="set-label"/>
+                    <TextArea fx:id="bioArea" styleClass="set-input set-textarea"
+                              prefRowCount="4" wrapText="true"
+                              promptText="A short bio shown on your profile"/>
+                    <Label text="Maximum 500 characters" styleClass="set-hint"/>
+                </VBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="72"/>
+        <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- II. CONTACT -->
+        <HBox spacing="88" alignment="TOP_LEFT">
+            <VBox prefWidth="280" minWidth="280" spacing="12">
+                <Label text="II. CONTACT" styleClass="pf-section-label"/>
+                <Label text="Whereabouts" styleClass="set-section-title"/>
+                <Label text="How students can reach you for office hours."
+                       styleClass="set-section-desc" wrapText="true"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="26">
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="COUNTRY CODE" styleClass="set-label"/>
+                        <ComboBox fx:id="countryCodeCombo" styleClass="set-combo" maxWidth="Infinity"
+                                  promptText="Select"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="PHONE NUMBER" styleClass="set-label"/>
+                        <TextField fx:id="phoneField" styleClass="set-input" promptText="e.g. 12345678"/>
+                    </VBox>
+                </HBox>
+                <VBox spacing="10">
+                    <Label text="COUNTRY" styleClass="set-label"/>
+                    <TextField fx:id="countryField" styleClass="set-input" promptText="Country"/>
+                </VBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="72"/>
+        <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- III. PROFESSIONAL -->
+        <HBox spacing="88" alignment="TOP_LEFT">
+            <VBox prefWidth="280" minWidth="280" spacing="12">
+                <Label text="III. PROFESSIONAL" styleClass="pf-section-label"/>
+                <Label text="Faculty" styleClass="set-section-title"/>
+                <Label text="Your field of expertise and home institution."
+                       styleClass="set-section-desc" wrapText="true"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="26">
+                <VBox spacing="10">
+                    <Label text="FIELD OF EXPERTISE" styleClass="set-label"/>
+                    <TextField fx:id="fieldOfStudyField" styleClass="set-input"
+                               promptText="e.g. Software Engineering"/>
+                </VBox>
+                <VBox spacing="10">
+                    <Label text="INSTITUTION" styleClass="set-label"/>
+                    <TextField fx:id="universityField" styleClass="set-input"
+                               promptText="University or organization"/>
+                </VBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="72"/>
+        <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="56"/>
+
+        <!-- IV. ACCOUNT -->
+        <HBox spacing="88" alignment="TOP_LEFT">
+            <VBox prefWidth="280" minWidth="280" spacing="12">
+                <Label text="IV. ACCOUNT" styleClass="pf-section-label"/>
+                <Label text="Credentials" styleClass="set-section-title"/>
+                <Label text="Login and security. Email cannot be changed once set."
+                       styleClass="set-section-desc" wrapText="true"/>
+            </VBox>
+            <VBox HBox.hgrow="ALWAYS" spacing="26">
+                <VBox spacing="10">
+                    <Label text="EMAIL" styleClass="set-label"/>
+                    <TextField fx:id="emailField" styleClass="set-input set-input-locked" editable="false"/>
+                </VBox>
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="ACCOUNT TYPE" styleClass="set-label"/>
+                        <HBox alignment="CENTER_LEFT">
+                            <Label fx:id="accountTypeBadge" text="Professor" styleClass="pf-role"/>
+                        </HBox>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="MEMBER SINCE" styleClass="set-label"/>
+                        <Label fx:id="memberSinceLabel" styleClass="set-static-val"/>
+                    </VBox>
+                </HBox>
+
+                <Region prefHeight="20"/>
+                <Region styleClass="pf-hairline" prefHeight="1" maxHeight="1"/>
+                <Region prefHeight="8"/>
+
+                <Label text="CHANGE PASSWORD" styleClass="pf-section-label"/>
+                <HBox spacing="24">
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="CURRENT PASSWORD" styleClass="set-label"/>
+                        <PasswordField fx:id="currentPasswordField" styleClass="set-input"
+                                       promptText="Current password"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" spacing="10">
+                        <Label text="NEW PASSWORD" styleClass="set-label"/>
+                        <PasswordField fx:id="newPasswordField" styleClass="set-input"
+                                       promptText="At least 8 characters"/>
+                    </VBox>
+                </HBox>
+                <HBox alignment="CENTER_LEFT">
+                    <Button text="UPDATE PASSWORD" onAction="#handleChangePassword"
+                            styleClass="set-btn-outline"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <Region prefHeight="80"/>
+        <Region styleClass="pf-rule" prefHeight="1" maxHeight="1"/>
+        <Region prefHeight="40"/>
+
+        <HBox spacing="18" alignment="CENTER_LEFT">
+            <Button text="SAVE CHANGES" onAction="#handleSave" styleClass="pf-btn"/>
+            <Button text="CANCEL" onAction="#handleCancel" styleClass="set-btn-outline"/>
+        </HBox>
+    </VBox>
+</ScrollPane>

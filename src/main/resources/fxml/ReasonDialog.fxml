@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.ReasonDialogController"
+      styleClass="reason-dialog"
+      prefWidth="460" spacing="0">
+
+    <!-- Header strip with accent color -->
+    <HBox fx:id="headerBar" styleClass="reason-dialog-header" alignment="CENTER_LEFT" spacing="14">
+        <padding><Insets top="22" right="24" bottom="22" left="24"/></padding>
+        <StackPane fx:id="iconBox" styleClass="reason-dialog-icon">
+            <Label fx:id="iconLabel" text="!" style="-fx-text-fill:white; -fx-font-weight:bold; -fx-font-size:22px;"/>
+        </StackPane>
+        <VBox spacing="2" HBox.hgrow="ALWAYS">
+            <Label fx:id="titleLabel" text="Confirm" styleClass="reason-dialog-title"/>
+            <Label fx:id="subtitleLabel" text="" styleClass="reason-dialog-subtitle" wrapText="true"/>
+        </VBox>
+    </HBox>
+
+    <!-- Body -->
+    <VBox spacing="14" styleClass="reason-dialog-body">
+        <padding><Insets top="22" right="24" bottom="20" left="24"/></padding>
+
+        <VBox spacing="6">
+            <Label text="Reason" styleClass="reason-dialog-label"/>
+            <TextArea fx:id="reasonArea" promptText="Briefly explain why - this is logged for the audit trail."
+                      wrapText="true" prefRowCount="4" styleClass="reason-dialog-textarea"/>
+            <Label fx:id="counterLabel" text="0 / 300" styleClass="reason-dialog-counter"/>
+        </VBox>
+
+        <Label fx:id="errorLabel" styleClass="reason-dialog-error" wrapText="true" managed="false" visible="false"/>
+    </VBox>
+
+    <!-- Footer actions -->
+    <HBox styleClass="reason-dialog-footer" spacing="10" alignment="CENTER_RIGHT">
+        <padding><Insets top="14" right="24" bottom="18" left="24"/></padding>
+        <Button text="Cancel" onAction="#handleCancel" styleClass="reason-dialog-btn-cancel"/>
+        <Button fx:id="confirmBtn" text="Confirm" onAction="#handleConfirm" styleClass="reason-dialog-btn-confirm"/>
+    </HBox>
+</VBox>
