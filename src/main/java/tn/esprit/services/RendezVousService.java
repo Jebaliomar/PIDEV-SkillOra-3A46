@@ -30,6 +30,7 @@ public class RendezVousService {
         StringBuilder placeholders = new StringBuilder();
 
         appendColumn(columns, placeholders, schema.studentIdColumn);
+        appendColumn(columns, placeholders, schema.ownerTokenColumn);
         appendColumn(columns, placeholders, schema.professorIdColumn);
         appendColumn(columns, placeholders, schema.courseIdColumn);
         appendColumn(columns, placeholders, schema.slotIdColumn);
@@ -56,6 +57,9 @@ public class RendezVousService {
 
             if (schema.studentIdColumn != null) {
                 setNullableInteger(preparedStatement, index++, rendezVous.getStudentId());
+            }
+            if (schema.ownerTokenColumn != null) {
+                preparedStatement.setString(index++, rendezVous.getOwnerToken());
             }
             if (schema.professorIdColumn != null) {
                 setNullableInteger(preparedStatement, index++, rendezVous.getProfessorId());
@@ -175,6 +179,7 @@ public class RendezVousService {
 
         List<String> assignments = new ArrayList<>();
         appendAssignment(assignments, schema.studentIdColumn);
+        appendAssignment(assignments, schema.ownerTokenColumn);
         appendAssignment(assignments, schema.professorIdColumn);
         appendAssignment(assignments, schema.courseIdColumn);
         appendAssignment(assignments, schema.slotIdColumn);
@@ -202,6 +207,9 @@ public class RendezVousService {
 
             if (schema.studentIdColumn != null) {
                 setNullableInteger(preparedStatement, index++, rendezVous.getStudentId());
+            }
+            if (schema.ownerTokenColumn != null) {
+                preparedStatement.setString(index++, rendezVous.getOwnerToken());
             }
             if (schema.professorIdColumn != null) {
                 setNullableInteger(preparedStatement, index++, rendezVous.getProfessorId());
@@ -265,7 +273,8 @@ public class RendezVousService {
         RendezVous rendezVous = new RendezVous();
 
         rendezVous.setId(getNullableInteger(resultSet, schema.idColumn, "id", "rdv_id"));
-        rendezVous.setStudentId(getNullableInteger(resultSet, schema.studentIdColumn, "student_id", "etudiant_id", "eleve_id", "user_id"));
+        rendezVous.setStudentId(getNullableInteger(resultSet, schema.studentIdColumn, "student_id", "etudiant_id", "eleve_id", "user_id", "id_user"));
+        rendezVous.setOwnerToken(getNullableString(resultSet, schema.ownerTokenColumn, "owner_token", "token_owner", "ownership_token", "created_by_token", "user_token"));
         rendezVous.setProfessorId(getNullableInteger(resultSet, schema.professorIdColumn, "professor_id", "prof_id", "professeur_id", "teacher_id", "instructor_id"));
         rendezVous.setCourseId(getNullableInteger(resultSet, schema.courseIdColumn, "course_id", "cours_id", "module_id"));
         rendezVous.setSlotId(getNullableInteger(resultSet, schema.slotIdColumn, "slot_id", "availability_slot_id", "availability_id", "creneau_id"));
@@ -420,8 +429,17 @@ public class RendezVousService {
                 "etudiant_id",
                 "eleve_id",
                 "user_id",
+                "id_user",
                 "id_student",
                 "id_etudiant"
+        );
+        String ownerTokenColumn = findExistingColumn(
+                tableName,
+                "owner_token",
+                "token_owner",
+                "ownership_token",
+                "created_by_token",
+                "user_token"
         );
         String professorIdColumn = findExistingColumn(
                 tableName,
@@ -465,6 +483,7 @@ public class RendezVousService {
                 tableName,
                 idColumn,
                 studentIdColumn,
+                ownerTokenColumn,
                 professorIdColumn,
                 courseIdColumn,
                 slotIdColumn,
@@ -532,6 +551,7 @@ public class RendezVousService {
         private final String tableName;
         private final String idColumn;
         private final String studentIdColumn;
+        private final String ownerTokenColumn;
         private final String professorIdColumn;
         private final String courseIdColumn;
         private final String slotIdColumn;
@@ -551,6 +571,7 @@ public class RendezVousService {
                 String tableName,
                 String idColumn,
                 String studentIdColumn,
+                String ownerTokenColumn,
                 String professorIdColumn,
                 String courseIdColumn,
                 String slotIdColumn,
@@ -568,6 +589,7 @@ public class RendezVousService {
             this.tableName = tableName;
             this.idColumn = idColumn;
             this.studentIdColumn = studentIdColumn;
+            this.ownerTokenColumn = ownerTokenColumn;
             this.professorIdColumn = professorIdColumn;
             this.courseIdColumn = courseIdColumn;
             this.slotIdColumn = slotIdColumn;

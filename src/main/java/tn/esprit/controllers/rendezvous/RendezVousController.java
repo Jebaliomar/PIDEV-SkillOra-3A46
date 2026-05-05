@@ -123,7 +123,7 @@ public class RendezVousController {
     private static final int MAX_MEETING_LINK_LENGTH = 255;
     private static final int MAX_REFUSAL_REASON_LENGTH = 500;
     private static final int MAX_FILE_NAME_LENGTH = 255;
-    private static final int RENDEZ_VOUS_PER_PAGE = 8;
+    private static final int DEFAULT_RENDEZ_VOUS_PER_PAGE = 8;
     private static final int VOICE_MAX_RECORD_SECONDS = 5;
     private static final String MIC_IDLE_STYLE = "-fx-background-color: #d0d5dd; -fx-text-fill: #ffffff; -fx-font-size: 18px; -fx-font-weight: 900; -fx-background-radius: 999; -fx-min-width: 46; -fx-min-height: 46; -fx-max-width: 46; -fx-max-height: 46;";
     private static final String MIC_LISTENING_STYLE = "-fx-background-color: #e03131; -fx-text-fill: #ffffff; -fx-font-size: 18px; -fx-font-weight: 900; -fx-background-radius: 999; -fx-min-width: 46; -fx-min-height: 46; -fx-max-width: 46; -fx-max-height: 46;";
@@ -143,6 +143,9 @@ public class RendezVousController {
 
     @FXML
     private Pagination rendezVousPagination;
+
+    @FXML
+    private ComboBox<Integer> pageSizeCombo;
 
     @FXML
     private Button filterAllBtn;
@@ -214,6 +217,7 @@ public class RendezVousController {
     private RendezVous selectedRendezVous;
     private RendezVousFilter currentFilter = RendezVousFilter.ALL;
     private Integer selectedTeacherStatsProfessorId;
+    private int rendezVousPerPage = DEFAULT_RENDEZ_VOUS_PER_PAGE;
 
     private enum RendezVousFilter {
         ALL,
@@ -230,6 +234,16 @@ public class RendezVousController {
         }
         if (rendezVousPagination != null) {
             rendezVousPagination.currentPageIndexProperty().addListener((obs, oldValue, newValue) -> renderCurrentPage());
+        }
+        if (pageSizeCombo != null) {
+            pageSizeCombo.getItems().setAll(5, 8, 12, 20);
+            pageSizeCombo.setValue(DEFAULT_RENDEZ_VOUS_PER_PAGE);
+            pageSizeCombo.valueProperty().addListener((obs, oldValue, newValue) -> {
+                if (newValue != null && newValue > 0) {
+                    rendezVousPerPage = newValue;
+                    applyFiltersAndRender(true);
+                }
+            });
         }
         if (teacherStatsCombo != null) {
             teacherStatsCombo.valueProperty().addListener((obs, oldValue, newValue) -> updateTeacherStatsPieForSelection());
@@ -358,9 +372,10 @@ public class RendezVousController {
         }
 
         int total = filteredRendezVous.size();
-        int pageCount = Math.max(1, (int) Math.ceil(total / (double) RENDEZ_VOUS_PER_PAGE));
+        int pageSize = Math.max(1, rendezVousPerPage);
+        int pageCount = Math.max(1, (int) Math.ceil(total / (double) pageSize));
         rendezVousPagination.setPageCount(pageCount);
-        rendezVousPagination.setDisable(total <= RENDEZ_VOUS_PER_PAGE);
+        rendezVousPagination.setDisable(total <= pageSize);
 
         int targetPage = 0;
         if (!resetToFirstPage) {
@@ -390,13 +405,14 @@ public class RendezVousController {
         }
 
         int currentPage = Math.max(0, rendezVousPagination.getCurrentPageIndex());
-        int fromIndex = currentPage * RENDEZ_VOUS_PER_PAGE;
+        int pageSize = Math.max(1, rendezVousPerPage);
+        int fromIndex = currentPage * pageSize;
         if (fromIndex >= filteredRendezVous.size()) {
             rendezVousPagination.setCurrentPageIndex(0);
             return;
         }
 
-        int toIndex = Math.min(fromIndex + RENDEZ_VOUS_PER_PAGE, filteredRendezVous.size());
+        int toIndex = Math.min(fromIndex + pageSize, filteredRendezVous.size());
         renderCards(filteredRendezVous.subList(fromIndex, toIndex));
         if (cardsScrollPane != null) {
             cardsScrollPane.setVvalue(0);
@@ -1391,6 +1407,17 @@ public class RendezVousController {
             markSlotBookedState(created.getSlotId(), true);
             createProfessorNotification(created);
             refreshRendezVous();
+            if (isStudentMode() && created.getId() != null) {
+                boolean alreadyVisible = allRendezVous.stream()
+                        .anyMatch(existing -> existing != null && sameInteger(existing.getId(), created.getId()));
+                if (!alreadyVisible) {
+                    List<RendezVous> augmented = new ArrayList<>();
+                    augmented.add(created);
+                    augmented.addAll(allRendezVous);
+                    allRendezVous = augmented;
+                    applyFiltersAndRender(true);
+                }
+            }
             statusLabel.setText("Rendez-vous added successfully");
         } catch (SQLException exception) {
             showError("Unable to add rendez-vous", exception);
@@ -1825,9 +1852,10 @@ public class RendezVousController {
 
         List<ProfessorOption> professorOptions = extractProfessorOptions(slotOptions);
         if (professorOptions.isEmpty()) {
-            showWarning("No professor available", "No professor with available slots was found.");
-            return Optional.empty();
+            // Some schemas do not persist slot owner; keep student booking form usable.
+            professorOptions = List.of(new ProfessorOption(null, "Tous les créneaux disponibles"));
         }
+        final List<ProfessorOption> effectiveProfessorOptions = professorOptions;
 
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Nouveau rendez-vous");
@@ -1841,8 +1869,8 @@ public class RendezVousController {
 
         ComboBox<ProfessorOption> professorCombo = new ComboBox<>();
         styleCombo(professorCombo);
-        professorCombo.getItems().setAll(professorOptions);
-        professorCombo.setValue(professorOptions.get(0));
+        professorCombo.getItems().setAll(effectiveProfessorOptions);
+        professorCombo.setValue(effectiveProfessorOptions.get(0));
         professorCombo.setPromptText("Choisir professeur");
 
         ComboBox<SlotOption> slotCombo = new ComboBox<>();
@@ -2023,7 +2051,7 @@ public class RendezVousController {
 
         professorSearchField.textProperty().addListener((obs, oldValue, newValue) -> {
             ProfessorOption previousSelection = professorCombo.getValue();
-            List<ProfessorOption> filtered = filterProfessorOptions(professorOptions, newValue);
+            List<ProfessorOption> filtered = filterProfessorOptions(effectiveProfessorOptions, newValue);
             professorCombo.getItems().setAll(filtered);
             ProfessorOption selected = previousSelection == null ? null : findProfessorOptionById(filtered, previousSelection.id());
             if (selected == null && !filtered.isEmpty()) {
@@ -2087,7 +2115,7 @@ public class RendezVousController {
                     micPulseTimeline,
                     voiceChatLogBox,
                     slotOptions,
-                    professorOptions,
+                    effectiveProfessorOptions,
                     professorCombo,
                     slotCombo,
                     slotsListView,
@@ -2111,6 +2139,7 @@ public class RendezVousController {
                     rdv.setSlotId(validatedSlot.getId());
                     rdv.setProfessorId(validatedSlot.getProfessorId());
                     rdv.setStudentId(getCurrentUserId());
+                    rdv.setOwnerToken(buildCurrentUserOwnerToken());
                     rdv.setCourseId(validatedCourse.id());
                     boolean inPerson = inPersonRadio.isSelected();
                     rdv.setMeetingType(inPerson ? "en_personne" : "en_ligne");
@@ -3049,8 +3078,13 @@ public class RendezVousController {
     }
 
     private List<SlotOption> filterSlotOptionsByProfessor(List<SlotOption> options, Integer professorId) {
-        if (options == null || options.isEmpty() || professorId == null) {
+        if (options == null || options.isEmpty()) {
             return List.of();
+        }
+        if (professorId == null) {
+            return options.stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
         }
         return options.stream()
                 .filter(option -> option != null && sameInteger(option.professorId(), professorId))
@@ -3328,7 +3362,7 @@ public class RendezVousController {
     private void refreshCourseOptionsForSlot(SlotOption selectedSlot, ComboBox<CourseOption> courseCombo, Integer preferredCourseId) {
         courseCombo.getItems().clear();
         courseCombo.setDisable(true);
-        if (selectedSlot == null || selectedSlot.professorId() == null) {
+        if (selectedSlot == null) {
             courseCombo.setPromptText("Choisir un créneau");
             return;
         }
@@ -3349,7 +3383,7 @@ public class RendezVousController {
 
     private List<CourseOption> loadCourseOptionsForProfessor(Integer professorId) throws SQLException {
         String courseTable = findExistingTable("course", "courses");
-        if (courseTable == null || professorId == null) {
+        if (courseTable == null) {
             return List.of();
         }
 
@@ -3366,6 +3400,9 @@ public class RendezVousController {
                 "user_id",
                 "created_by"
         );
+        if (professorId == null) {
+            return queryCourseOptions(courseTable, titleColumn, null, null);
+        }
         if (professorColumn == null) {
             // No professor mapping on course table: return all existing courses.
             return queryCourseOptions(courseTable, titleColumn, null, null);
@@ -3573,9 +3610,6 @@ public class RendezVousController {
         if (persistedSlot == null) {
             throw new IllegalArgumentException("Selected slot no longer exists.");
         }
-        if (persistedSlot.getProfessorId() == null) {
-            throw new IllegalArgumentException("Selected slot has no professor.");
-        }
         if (!isSlotAvailable(persistedSlot, includeSlotId)) {
             throw new IllegalArgumentException("Selected slot is no longer available.");
         }
@@ -3587,22 +3621,23 @@ public class RendezVousController {
     }
 
     private CourseOption validateSelectedCourseForProfessor(CourseOption selectedCourse, Integer professorId) throws SQLException {
-        if (professorId == null) {
-            throw new IllegalArgumentException("Selected slot has no professor.");
-        }
         if (selectedCourse == null || selectedCourse.id() == null) {
             throw new IllegalArgumentException("Please choose an existing course.");
         }
 
         List<CourseOption> allowedCourses = loadCourseOptionsForProfessor(professorId);
         if (allowedCourses.isEmpty()) {
-            throw new IllegalArgumentException("No course available for this professor.");
+            throw new IllegalArgumentException(professorId == null
+                    ? "No course available for booking."
+                    : "No course available for this professor.");
         }
 
         return allowedCourses.stream()
                 .filter(option -> option != null && sameInteger(option.id(), selectedCourse.id()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Selected course is invalid for this professor."));
+                .orElseThrow(() -> new IllegalArgumentException(professorId == null
+                        ? "Selected course is invalid."
+                        : "Selected course is invalid for this professor."));
     }
 
     private String validateMessageInput(String rawMessage) {
@@ -3756,7 +3791,9 @@ public class RendezVousController {
         if (isProfessorMode()) {
             return isVisibleForCurrentProfessorBySlot(rdv);
         }
-        return sameInteger(rdv.getStudentId(), getCurrentUserId());
+        int currentUserId = getCurrentUserId();
+        return sameInteger(rdv.getStudentId(), currentUserId)
+                || matchesOwnerTokenForCurrentUser(rdv.getOwnerToken(), currentUserId);
     }
 
     private boolean isVisibleForCurrentProfessorBySlot(RendezVous rdv) {
@@ -3782,7 +3819,34 @@ public class RendezVousController {
         if (isAdminMode()) {
             return true;
         }
-        return isStudentMode() && sameInteger(rdv.getStudentId(), getCurrentUserId());
+        int currentUserId = getCurrentUserId();
+        return isStudentMode()
+                && (sameInteger(rdv.getStudentId(), currentUserId)
+                || matchesOwnerTokenForCurrentUser(rdv.getOwnerToken(), currentUserId));
+    }
+
+    private String buildCurrentUserOwnerToken() {
+        return "student:" + getCurrentUserId();
+    }
+
+    private boolean matchesOwnerTokenForCurrentUser(String ownerToken, int currentUserId) {
+        String token = toNull(ownerToken);
+        if (token == null) {
+            return false;
+        }
+        String userIdText = String.valueOf(currentUserId);
+        String normalized = token.trim().toLowerCase(Locale.ROOT);
+        if (normalized.equals(userIdText)) {
+            return true;
+        }
+        if (normalized.equals("student:" + userIdText)
+                || normalized.equals("student#" + userIdText)
+                || normalized.equals("user:" + userIdText)
+                || normalized.equals("user#" + userIdText)) {
+            return true;
+        }
+        return normalized.endsWith(":" + userIdText)
+                || normalized.endsWith("#" + userIdText);
     }
 
     private boolean isAdminMode() {

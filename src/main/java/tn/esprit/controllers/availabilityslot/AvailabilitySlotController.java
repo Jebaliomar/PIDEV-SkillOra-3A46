@@ -173,6 +173,7 @@ public class AvailabilitySlotController {
     private List<AvailabilitySlot> filteredSlots = List.of();
     private Set<Integer> reservedSlotIds = Set.of();
     private Set<Integer> lockedSlotIds = Set.of();
+    private boolean professorOwnershipTracked = true;
     private AvailabilitySlot selectedSlot;
     private SlotFilter currentFilter = SlotFilter.ALL;
 
@@ -242,10 +243,17 @@ public class AvailabilitySlotController {
                         .filter(slot -> !isPastSlot(slot))
                         .collect(Collectors.toList());
             }
+            professorOwnershipTracked = loaded.stream()
+                    .anyMatch(slot -> slot != null && slot.getProfessorId() != null);
             if (isProfessorMode()) {
-                allSlots = baseSlots.stream()
-                        .filter(slot -> slot != null && slot.getProfessorId() != null && slot.getProfessorId().equals(getCurrentUserId()))
-                        .collect(Collectors.toList());
+                if (professorOwnershipTracked) {
+                    allSlots = baseSlots.stream()
+                            .filter(slot -> slot != null && slot.getProfessorId() != null && slot.getProfessorId().equals(getCurrentUserId()))
+                            .collect(Collectors.toList());
+                } else {
+                    // Some schemas do not track slot owner; keep module usable for professor accounts.
+                    allSlots = baseSlots;
+                }
             } else {
                 allSlots = baseSlots;
             }
@@ -1489,7 +1497,8 @@ public class AvailabilitySlotController {
         }
 
         boolean professorCancellation = isProfessorMode() && !isAdminMode();
-        if (professorCancellation && (slot.getProfessorId() == null || !sameInteger(slot.getProfessorId(), getCurrentUserId()))) {
+        if (professorCancellation && professorOwnershipTracked
+                && (slot.getProfessorId() == null || !sameInteger(slot.getProfessorId(), getCurrentUserId()))) {
             showWarning("Action not allowed", "You can only cancel reservations for your own slot.");
             return;
         }
@@ -2498,6 +2507,9 @@ public class AvailabilitySlotController {
             return false;
         }
         if (isAdminMode()) {
+            return true;
+        }
+        if (!professorOwnershipTracked) {
             return true;
         }
         return isProfessorMode() && slot.getProfessorId() != null && sameInteger(slot.getProfessorId(), getCurrentUserId());

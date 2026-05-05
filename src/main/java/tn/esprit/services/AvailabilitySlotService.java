@@ -10,8 +10,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class AvailabilitySlotService {
 
@@ -23,9 +25,6 @@ public class AvailabilitySlotService {
 
     public void add(AvailabilitySlot slot) throws SQLException {
         String professorColumn = findProfessorColumn();
-        if (professorColumn == null) {
-            throw new SQLException("No professor/user column found in availability_slots (expected professor_id/prof_id/teacher_id/user_id/id_professor/id_professeur/id_prof).");
-        }
         String startColumn = requireExistingColumn("availability_slots", "start_at");
         String endColumn = requireExistingColumn("availability_slots", "end_at");
         String bookedColumn = findExistingColumn("availability_slots", "is_booked", "booked", "is_reserved", "reserved");
@@ -37,8 +36,12 @@ public class AvailabilitySlotService {
         StringBuilder columns = new StringBuilder();
         StringBuilder placeholders = new StringBuilder();
 
-        columns.append("`").append(professorColumn).append("`, `").append(startColumn).append("`, `").append(endColumn).append("`");
-        placeholders.append("?, ?, ?");
+        if (professorColumn != null) {
+            columns.append("`").append(professorColumn).append("`, ");
+            placeholders.append("?, ");
+        }
+        columns.append("`").append(startColumn).append("`, `").append(endColumn).append("`");
+        placeholders.append("?, ?");
         if (bookedColumn != null) {
             columns.append(", `").append(bookedColumn).append("`");
             placeholders.append(", ?");
@@ -64,7 +67,9 @@ public class AvailabilitySlotService {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int index = 1;
-            setNullableInteger(preparedStatement, index++, slot.getProfessorId());
+            if (professorColumn != null) {
+                setNullableInteger(preparedStatement, index++, slot.getProfessorId());
+            }
             preparedStatement.setTimestamp(index++, Timestamp.valueOf(slot.getStartAt()));
             preparedStatement.setTimestamp(index++, Timestamp.valueOf(slot.getEndAt()));
             if (bookedColumn != null) {
@@ -449,16 +454,96 @@ public class AvailabilitySlotService {
     }
 
     private String findProfessorColumn() throws SQLException {
-        return findExistingColumn(
+        String explicit = findExistingColumn(
                 "availability_slots",
                 "professor_id",
                 "prof_id",
+                "professeur_id",
+                "enseignant_id",
                 "teacher_id",
                 "user_id",
+                "id_user",
+                "created_by",
+                "owner_id",
                 "id_professor",
                 "id_professeur",
-                "id_prof"
+                "id_prof",
+                "professeur",
+                "professor",
+                "teacher",
+                "instructor"
         );
+        if (explicit != null) {
+            return explicit;
+        }
+
+        List<String> columns = listColumns("availability_slots");
+        for (String column : columns) {
+            String normalized = column.toLowerCase(Locale.ROOT);
+            if (normalized.contains("prof")
+                    || normalized.contains("teacher")
+                    || normalized.contains("instructor")
+                    || normalized.contains("owner")
+                    || normalized.equals("user_id")
+                    || normalized.equals("id_user")
+                    || normalized.equals("created_by")) {
+                return column;
+            }
+        }
+        for (String column : columns) {
+            String normalized = column.toLowerCase(Locale.ROOT);
+            if (normalized.contains("user")) {
+                return column;
+            }
+        }
+
+        Set<String> excluded = new HashSet<>();
+        excluded.add("id");
+        excluded.add("start_at");
+        excluded.add("end_at");
+        excluded.add("is_booked");
+        excluded.add("booked");
+        excluded.add("is_reserved");
+        excluded.add("reserved");
+        excluded.add("location_label");
+        excluded.add("location");
+        excluded.add("address");
+        excluded.add("location_lat");
+        excluded.add("lat");
+        excluded.add("latitude");
+        excluded.add("location_lng");
+        excluded.add("lng");
+        excluded.add("lon");
+        excluded.add("longitude");
+        excluded.add("created_at");
+        excluded.add("createdon");
+        for (String column : columns) {
+            String normalized = column.toLowerCase(Locale.ROOT);
+            if (normalized.endsWith("_id") && !excluded.contains(normalized)) {
+                return column;
+            }
+        }
+
+        return null;
+    }
+
+    private List<String> listColumns(String tableName) throws SQLException {
+        List<String> columns = new ArrayList<>();
+        String catalog = connection.getCatalog();
+        try (ResultSet resultSet = connection.getMetaData().getColumns(catalog, null, tableName, null)) {
+            while (resultSet.next()) {
+                columns.add(resultSet.getString("COLUMN_NAME"));
+            }
+        }
+        if (!columns.isEmpty()) {
+            return columns;
+        }
+        try (ResultSet resultSet = connection.getMetaData().getColumns(catalog, null, tableName.toUpperCase(Locale.ROOT), null)) {
+            while (resultSet.next()) {
+                columns.add(resultSet.getString("COLUMN_NAME"));
+            }
+        }
+        return columns;
     }
 
     private String requireExistingColumn(String tableName, String... candidates) throws SQLException {
