@@ -21,6 +21,8 @@ public class PostService {
     private static final int MYSQL_FK_VIOLATION = 1452;
     private static final String SQL_INTEGRITY_VIOLATION = "23000";
     private final ModerationService moderationService = new ModerationService();
+    private final SpamGuardService spamGuardService = new SpamGuardService();
+    private final LinkSecurityService linkSecurityService = new LinkSecurityService();
     private final Connection connection;
 
     public PostService() {
@@ -35,9 +37,15 @@ public class PostService {
         validateForCreate(post);
         normalizePostForWrite(post, true);
 
+        if (!spamGuardService.allowPost(post.getUserId())) {
+            throw new IllegalStateException("You are posting too frequently. Please wait before posting again.");
+        }
+
         if (moderationService.shouldBlock(post.getContent())) {
             throw new IllegalStateException("Your post contains content that violates the moderation policy.");
         }
+
+        linkSecurityService.validateContent(post.getContent());
 
         if (existsDuplicate(post)) {
             throw new IllegalStateException("A post with the same type, title, topic, and content already exists for this user.");

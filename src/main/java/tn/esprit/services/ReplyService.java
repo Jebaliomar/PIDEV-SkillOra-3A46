@@ -22,6 +22,8 @@ public class ReplyService {
     private final Connection connection;
     private final PostService postService;
     private final ModerationService moderationService = new ModerationService();
+    private final SpamGuardService spamGuardService = new SpamGuardService();
+    private final LinkSecurityService linkSecurityService = new LinkSecurityService();
 
     public ReplyService() {
         this.connection = MyConnection.getInstance().getConnection();
@@ -35,12 +37,19 @@ public class ReplyService {
 
     public void add(Reply reply) throws SQLException {
         validateForCreate(reply);
+        validateTargetPostExists(reply);
         normalizeReplyForWrite(reply, true);
         validateParentReply(reply);
+
+        if (!spamGuardService.allowReply(reply.getUserId())) {
+            throw new IllegalStateException("You are replying too frequently. Please wait before replying again.");
+        }
 
         if (moderationService.shouldBlock(reply.getContent())) {
             throw new IllegalStateException("Your reply contains content that violates the moderation policy.");
         }
+
+        linkSecurityService.validateContent(reply.getContent());
 
         if (existsDuplicate(reply)) {
             throw new IllegalStateException("You already posted the same reply on this post.");
@@ -118,6 +127,7 @@ public class ReplyService {
 
     public boolean update(Reply reply) throws SQLException {
         validateForUpdate(reply);
+        validateTargetPostExists(reply);
         normalizeReplyForWrite(reply, false);
         validateParentReply(reply);
 
@@ -356,6 +366,12 @@ public class ReplyService {
         }
         if (!reply.getPostId().equals(parent.getPostId())) {
             throw new IllegalArgumentException("A reply can only reference a parent from the same post.");
+        }
+    }
+
+    private void validateTargetPostExists(Reply reply) throws SQLException {
+        if (postService.getById(reply.getPostId()) == null) {
+            throw new IllegalArgumentException("The selected post does not exist.");
         }
     }
 

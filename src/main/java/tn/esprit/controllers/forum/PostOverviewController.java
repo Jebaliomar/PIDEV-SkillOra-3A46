@@ -50,9 +50,16 @@ public class PostOverviewController {
     @FXML private ComboBox<String> topicFilterComboBox;
     @FXML private Button adminPostsButton;
     @FXML private Button adminPostsSidebarButton;
+    @FXML private HBox paginationBox;
+    @FXML private Button prevPageButton;
+    @FXML private Button nextPageButton;
+    @FXML private Label pageIndicatorLabel;
 
     private ForumCrudLauncher application;
     private ShareService shareService;
+    private static final int PAGE_SIZE = 6;
+    private int currentPage = 1;
+    private int totalPages = 1;
 
     public void setApplication(ForumCrudLauncher application) {
         this.application = application;
@@ -81,9 +88,18 @@ public class PostOverviewController {
             );
             Map<Integer, Integer> replyCountsByPost = application.getPostService().getReplyCountsByPost();
             Map<Integer, Integer> reactionCountsByPost = application.getPostService().getReactionCountsByPost();
-            Map<Integer, String> userReactionsByPost = getUserReactionsByPost(posts);
+            // Pagination calculations
+            if (posts == null) posts = List.of();
+            totalPages = Math.max(1, (int) Math.ceil((double) posts.size() / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+            int start = (currentPage - 1) * PAGE_SIZE;
+            int end = Math.min(start + PAGE_SIZE, posts.size());
+            List<Post> visiblePosts = posts.subList(start, end);
 
-            // Update stats
+            Map<Integer, String> userReactionsByPost = getUserReactionsByPost(visiblePosts);
+
+            // Update stats (total across all pages)
             if (totalPostsStatLabel != null) {
                 totalPostsStatLabel.setText(String.valueOf(posts.size()));
             }
@@ -92,14 +108,20 @@ public class PostOverviewController {
 
             if (posts.isEmpty()) {
                 postsContainer.getChildren().add(emptyStateNode("No posts match your search."));
+                if (paginationBox != null) paginationBox.setVisible(false);
                 return;
             }
-            for (Post post : posts) {
+
+            for (Post post : visiblePosts) {
                 int replyCount = replyCountsByPost.getOrDefault(post.getId(), 0);
                 int reactionCount = reactionCountsByPost.getOrDefault(post.getId(), 0);
                 String userReaction = userReactionsByPost.get(post.getId());
                 postsContainer.getChildren().add(createPostCard(post, replyCount, reactionCount, userReaction));
             }
+
+            // Ensure pagination controls are visible and updated
+            if (paginationBox != null) paginationBox.setVisible(true);
+            updatePaginationControls();
         } catch (SQLException e) {
             postsContainer.getChildren().add(emptyStateNode("Unable to load posts."));
             application.showError("Loading posts failed", e.getMessage());
@@ -109,14 +131,39 @@ public class PostOverviewController {
 
     @FXML private void handleCreatePost()       { application.showCreatePostScene(); }
     @FXML private void handleOpenAdminPosts()   { application.showAdminPostManagementScene(); }
-    @FXML private void handleSearch()           { loadPosts(); }
+    @FXML private void handleSearch()           { currentPage = 1; loadPosts(); }
 
     @FXML
     private void handleResetFilters() {
         searchField.clear();
         typeFilterComboBox.setValue("All types");
         topicFilterComboBox.setValue("All topics");
+        currentPage = 1;
         loadPosts();
+    }
+
+    @FXML
+    private void handleNextPage() {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadPosts();
+        }
+    }
+
+    @FXML
+    private void handlePrevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            loadPosts();
+        }
+    }
+
+    private void updatePaginationControls() {
+        if (pageIndicatorLabel != null) {
+            pageIndicatorLabel.setText("Page " + currentPage + " of " + totalPages);
+        }
+        if (prevPageButton != null) prevPageButton.setDisable(currentPage <= 1);
+        if (nextPageButton != null) nextPageButton.setDisable(currentPage >= totalPages);
     }
 
     // ─── Card builder ────────────────────────────────────────────────────────

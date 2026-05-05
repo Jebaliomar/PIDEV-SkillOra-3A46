@@ -92,6 +92,11 @@
                                     <Insets top="2" right="2" bottom="8" left="2"/>
                                 </padding>
                             </VBox>
+                            <HBox fx:id="paginationBox" spacing="8" alignment="CENTER" maxWidth="Infinity">
+                                <Button fx:id="prevPageButton" text="◀ Prev" onAction="#handlePrevPage"/>
+                                <Label fx:id="pageIndicatorLabel" text="Page 1" style="-fx-font-weight: 800; -fx-text-fill: #475569;"/>
+                                <Button fx:id="nextPageButton" text="Next ▶" onAction="#handleNextPage"/>
+                            </HBox>
                         </VBox>
 
                         <VBox spacing="14" prefWidth="320" minWidth="300" maxWidth="340">

@@ -19,6 +19,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import tn.esprit.entities.Post;
 import tn.esprit.entities.Reply;
 import tn.esprit.entities.Report;
@@ -26,20 +29,28 @@ import tn.esprit.mains.ForumCrudLauncher;
 import tn.esprit.services.ShareService;
 import tn.esprit.services.TranslationService;
 
+import java.awt.Desktop;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.concurrent.Task;
 import tn.esprit.services.SummarizationService;
 
 public class PostDetailsController {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final Pattern CONTENT_URL_PATTERN = Pattern.compile("https?://\\S+");
     private static final List<String> POST_REACTION_TYPES = List.of("like", "love", "haha", "wow", "sad", "angry");
     private static final Map<String, String> POST_REACTION_EMOJIS = new LinkedHashMap<>();
     private static final List<String> REPORT_REASONS = List.of(
@@ -64,7 +75,7 @@ public class PostDetailsController {
     @FXML private Label   idValueLabel;
     @FXML private Label   typeValueLabel;
     @FXML private Label   topicValueLabel;
-    @FXML private Label   contentValueLabel;
+    @FXML private TextFlow contentValueFlow;
     @FXML private Label   postReplyCountLabel;
     @FXML private Label   postReactionCountLabel;
     @FXML private HBox    postReactionsContainer;
@@ -93,6 +104,7 @@ public class PostDetailsController {
     private boolean reportPostButtonInstalled;
     private final TranslationService translationService = new TranslationService();
     private final ShareService shareService = new ShareService();
+    private Reply replyTarget;
 
     public void setApplication(ForumCrudLauncher application) {
         this.application = application;
@@ -126,6 +138,7 @@ public class PostDetailsController {
                 application.showOverviewScene();
                 return false;
             }
+            clearReplyTarget();
             populatePostDetails();
             updatePostActionVisibility();
             loadReplies();
@@ -165,6 +178,7 @@ public class PostDetailsController {
         }
     }
 
+    @FXML
     private void handleReportPost() {
         if (post == null || !canReportContent()) {
             return;
@@ -207,7 +221,7 @@ public class PostDetailsController {
             Reply reply = new Reply();
             LocalDateTime now = LocalDateTime.now();
             reply.setPostId(post.getId());
-            reply.setParentId(null);
+            reply.setParentId(replyTarget == null ? null : replyTarget.getId());
             reply.setAuthorName(application.getCurrentUser().getUsername());
             reply.setContent(replyContentArea.getText().trim());
             reply.setUpvotes(0);
@@ -217,6 +231,7 @@ public class PostDetailsController {
 
             application.getReplyService().add(reply);
             replyContentArea.clear();
+            clearReplyTarget();
             loadReplies();
             application.showInfo("Reply added", "Your reply was added successfully.");
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -231,15 +246,24 @@ public class PostDetailsController {
         idValueLabel.setText(String.valueOf(post.getId()));
         typeValueLabel.setText(valueOrFallback(post.getType(), "–"));
         topicValueLabel.setText(valueOrFallback(post.getTopic(), "–"));
-        contentValueLabel.setText(valueOrFallback(post.getContent(), "–"));
+        renderPostContent(post.getContent());
         updateImagePreview(post.getImageUrl());
 
         String author = post.getUserId() == null
                 ? "Unknown user"
                 : application.resolveUsername(post.getUserId()) + " (ID: " + post.getUserId() + ")";
         userValueLabel.setText(author);
-        createdAtValueLabel.setText(formatDate(post.getCreatedAt()));
-        updatedAtValueLabel.setText(formatDate(post.getUpdatedAt()));
+        createdAtValueLabel.setText("Posted " + formatRelativeTime(post.getCreatedAt()));
+        
+        // Show updated timestamp only if different from created
+        if (post.getUpdatedAt() != null && !post.getUpdatedAt().equals(post.getCreatedAt())) {
+            updatedAtValueLabel.setText("• Updated " + formatRelativeTime(post.getUpdatedAt()));
+            updatedAtValueLabel.setManaged(true);
+            updatedAtValueLabel.setVisible(true);
+        } else {
+            updatedAtValueLabel.setManaged(false);
+            updatedAtValueLabel.setVisible(false);
+        }
         updateSummaryVisibility();
     }
 
@@ -279,8 +303,23 @@ public class PostDetailsController {
                 repliesContainer.getChildren().add(emptyStateLabel("No replies yet for this post."));
                 return;
             }
-            for (Reply r : replies) {
-                repliesContainer.getChildren().add(createReplyCard(r));
+
+            replies.sort(Comparator.comparing(Reply::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(Reply::getId, Comparator.nullsLast(Comparator.naturalOrder())));
+
+            Map<Integer, List<Reply>> repliesByParent = new HashMap<>();
+            List<Reply> rootReplies = new ArrayList<>();
+
+            for (Reply reply : replies) {
+                if (reply.getParentId() == null) {
+                    rootReplies.add(reply);
+                } else {
+                    repliesByParent.computeIfAbsent(reply.getParentId(), key -> new ArrayList<>()).add(reply);
+                }
+            }
+
+            for (Reply rootReply : rootReplies) {
+                repliesContainer.getChildren().add(createReplyThread(rootReply, repliesByParent, 0));
             }
         } catch (SQLException e) {
             repliesContainer.getChildren().add(emptyStateLabel("Could not load replies."));
@@ -359,7 +398,24 @@ public class PostDetailsController {
         return btn;
     }
 
-    private VBox createReplyCard(Reply reply) {
+    private VBox createReplyThread(Reply reply, Map<Integer, List<Reply>> repliesByParent, int depth) {
+        VBox thread = new VBox(8);
+        thread.setPadding(new Insets(0, 0, 0, depth * 28));
+        thread.getChildren().add(createReplyCard(reply, depth));
+
+        List<Reply> children = repliesByParent.get(reply.getId());
+        if (children != null && !children.isEmpty()) {
+            children.sort(Comparator.comparing(Reply::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing(Reply::getId, Comparator.nullsLast(Comparator.naturalOrder())));
+            for (Reply child : children) {
+                thread.getChildren().add(createReplyThread(child, repliesByParent, depth + 1));
+            }
+        }
+
+        return thread;
+    }
+
+    private VBox createReplyCard(Reply reply, int depth) {
         VBox card = new VBox(0);
         card.setStyle(
             "-fx-background-color: rgba(255,255,255,0.64);" +
@@ -410,6 +466,10 @@ public class PostDetailsController {
         HBox replyActions = new HBox(6);
         replyActions.setAlignment(Pos.CENTER_RIGHT);
 
+    replyActions.getChildren().add(
+        replyActionButton("Reply", "rgba(37,99,235,0.10)", "#2563EB", e -> handleReplyToReply(reply))
+    );
+
         if (canReportContent()) {
             replyActions.getChildren().add(
                     replyActionButton("⚑ Report", "rgba(245,158,11,0.10)", "#D97706", e -> handleReportReply(reply))
@@ -435,7 +495,15 @@ public class PostDetailsController {
         Label contentLabel = new Label(valueOrFallback(reply.getContent(), "–"));
         contentLabel.setWrapText(true);
         contentLabel.setStyle("-fx-text-fill: #3C3C43; -fx-font-size: 13px; -fx-line-spacing: 2;");
-        VBox contentBox = new VBox(contentLabel);
+
+        VBox contentBox;
+        if (depth > 0) {
+            Label nestedLabel = new Label("Nested reply");
+            nestedLabel.setStyle("-fx-text-fill: #2563EB; -fx-font-size: 11px; -fx-font-weight: 800;");
+            contentBox = new VBox(6, nestedLabel, contentLabel);
+        } else {
+            contentBox = new VBox(contentLabel);
+        }
         contentBox.setPadding(new Insets(12, 16, 14, 14));
 
         card.getChildren().addAll(header, divider, contentBox);
@@ -525,6 +593,33 @@ public class PostDetailsController {
             application.showInfo("Reply deleted", "The reply was deleted successfully.");
         } catch (SQLException e) {
             application.showError("Deleting reply failed", e.getMessage());
+        }
+    }
+
+    private void handleReplyToReply(Reply reply) {
+        if (reply == null) {
+            return;
+        }
+
+        replyTarget = reply;
+
+        if (replyContentArea != null) {
+            String targetAuthor = valueOrFallback(reply.getAuthorName(), "Anonymous");
+            replyContentArea.setPromptText("Replying to " + targetAuthor + "...");
+            replyContentArea.requestFocus();
+        }
+
+        if (replyErrorLabel != null) {
+            replyErrorLabel.setText("Replying to " + valueOrFallback(reply.getAuthorName(), "this reply") + ".");
+            replyErrorLabel.setManaged(true);
+            replyErrorLabel.setVisible(true);
+        }
+    }
+
+    private void clearReplyTarget() {
+        replyTarget = null;
+        if (replyContentArea != null) {
+            replyContentArea.setPromptText("Write your reply here...");
         }
     }
 
@@ -674,8 +769,88 @@ public class PostDetailsController {
 
     private String formatDate(LocalDateTime dt) { return dt == null ? "–" : DATE_FMT.format(dt); }
 
+    private String formatRelativeTime(LocalDateTime dt) {
+        if (dt == null) return "–";
+        
+        long seconds = ChronoUnit.SECONDS.between(dt, LocalDateTime.now());
+        
+        if (seconds < 60) return "now";
+        if (seconds < 3600) return (seconds / 60) + "m ago";
+        if (seconds < 86400) return (seconds / 3600) + "h ago";
+        if (seconds < 604800) return (seconds / 86400) + "d ago";
+        if (seconds < 2592000) return (seconds / 604800) + "w ago";
+        if (seconds < 31536000) return (seconds / 2592000) + "mo ago";
+        return (seconds / 31536000) + "y ago";
+    }
+
     private String valueOrFallback(String value, String fallback) {
         return (value == null || value.isBlank()) ? fallback : value.trim();
+    }
+
+    private void renderPostContent(String content) {
+        if (contentValueFlow == null) {
+            return;
+        }
+
+        contentValueFlow.getChildren().clear();
+        String text = valueOrFallback(content, "–");
+
+        Matcher matcher = CONTENT_URL_PATTERN.matcher(text);
+        int lastIndex = 0;
+
+        while (matcher.find()) {
+            appendPlainText(contentValueFlow, text.substring(lastIndex, matcher.start()));
+
+            String rawUrl = matcher.group();
+            String cleanedUrl = stripTrailingPunctuation(rawUrl);
+
+            Hyperlink link = new Hyperlink(cleanedUrl);
+            link.setStyle("-fx-text-fill: #2563eb; -fx-font-size: 14px; -fx-font-weight: 700; -fx-padding: 0; -fx-background-color: transparent;");
+            link.setOnAction(event -> openUrl(cleanedUrl));
+            contentValueFlow.getChildren().add(link);
+
+            if (!cleanedUrl.equals(rawUrl)) {
+                appendPlainText(contentValueFlow, rawUrl.substring(cleanedUrl.length()));
+            }
+
+            lastIndex = matcher.end();
+        }
+
+        appendPlainText(contentValueFlow, text.substring(lastIndex));
+    }
+
+    private void appendPlainText(TextFlow flow, String text) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+
+        Text plain = new Text(text);
+        plain.setStyle("-fx-fill: #334155; -fx-font-size: 14px;");
+        flow.getChildren().add(plain);
+    }
+
+    private String stripTrailingPunctuation(String url) {
+        if (url == null) {
+            return "";
+        }
+
+        String trimmed = url.trim();
+        while (!trimmed.isEmpty() && ".,;:!?)]}".indexOf(trimmed.charAt(trimmed.length() - 1)) >= 0) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+        }
+        return trimmed;
+    }
+
+    private void openUrl(String url) {
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(java.net.URI.create(url));
+            } else {
+                application.showError("Open link failed", "Your system does not support opening browser links.");
+            }
+        } catch (Exception e) {
+            application.showError("Open link failed", e.getMessage());
+        }
     }
 
     private String truncate(String value, int max) {

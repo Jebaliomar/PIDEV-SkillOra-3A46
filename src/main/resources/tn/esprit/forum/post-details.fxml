@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.TextFlow?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -64,34 +65,37 @@
                         <VBox spacing="18"
                               style="-fx-background-color: white; -fx-background-radius: 18; -fx-border-color: #e2e8f0; -fx-border-radius: 18; -fx-border-width: 1; -fx-padding: 22; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.05), 20, 0.08, 0, 6);">
 
-                            <HBox alignment="TOP_LEFT" spacing="14">
-                                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                            <VBox spacing="12">
+                                <VBox spacing="8">
                                     <Label fx:id="titleValueLabel" wrapText="true"
                                            style="-fx-text-fill: #0f172a; -fx-font-weight: 900; -fx-font-size: 24px;"/>
-                                    <Label text="Post meta and actions are shown in the header for easier access."
-                                           style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                                    <HBox spacing="8" alignment="CENTER_LEFT">
+                                        <Label fx:id="createdAtValueLabel"
+                                               style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                                        <Label fx:id="updatedAtValueLabel" managed="false" visible="false"
+                                               style="-fx-text-fill: #94a3b8; -fx-font-size: 11px;"/>
+                                    </HBox>
                                 </VBox>
 
-                                <HBox fx:id="postActionsContainer" spacing="8" managed="false" visible="false"
-                                      alignment="CENTER_RIGHT">
-                                    <Button fx:id="editPostButton" text="Edit" onAction="#handleEditPost"
+                                <HBox fx:id="postActionsContainer" spacing="10" managed="false" visible="false"
+                                      alignment="CENTER_LEFT">
+                                    <Button fx:id="editPostButton" text="✎ Edit" onAction="#handleEditPost"
                                             managed="false" visible="false"
-                                            style="-fx-background-color: rgba(29,78,216,0.10); -fx-text-fill: #1d4ed8; -fx-font-weight: 800; -fx-font-size: 12px; -fx-background-radius: 12; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 10 14 10 14;"/>
-                                    <Button fx:id="deletePostButton" text="Delete" onAction="#handleDeletePost"
+                                            style="-fx-background-color: #1d4ed8; -fx-text-fill: white; -fx-font-weight: 700; -fx-font-size: 11px; -fx-background-radius: 8; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 8 12 8 12;"/>
+                                    <Button fx:id="deletePostButton" text="🗑 Delete" onAction="#handleDeletePost"
                                             managed="false" visible="false"
-                                            style="-fx-background-color: rgba(220,38,38,0.10); -fx-text-fill: #dc2626; -fx-font-weight: 800; -fx-font-size: 12px; -fx-background-radius: 12; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 10 14 10 14;"/>
-                                    <Button text="Translate"
-                                            onAction="#handleTranslatePost"
-                                            style="-fx-background-color: rgba(16,185,129,0.10); -fx-text-fill: #059669;
-                                                -fx-font-weight: 800; -fx-font-size: 12px; -fx-background-radius: 12;
-                                                -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 10 14 10 14;"/>
-                                    <Button fx:id="summarizePostButton" text="Summarize"
-                                            onAction="#handleSummarizePost"
-                                            style="-fx-background-color: rgba(99,102,241,0.10); -fx-text-fill: #4338ca;
-                                                -fx-font-weight: 800; -fx-font-size: 12px; -fx-background-radius: 12;
-                                                -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 10 14 10 14;"/>
+                                            style="-fx-background-color: #dc2626; -fx-text-fill: white; -fx-font-weight: 700; -fx-font-size: 11px; -fx-background-radius: 8; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 8 12 8 12;"/>
+                                    <Button text="📤 Share" onAction="#handleSharePost"
+                                            style="-fx-background-color: #16a34a; -fx-text-fill: white; -fx-font-weight: 700; -fx-font-size: 11px; -fx-background-radius: 8; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 8 12 8 12;"/>
+                                    <Button text="🚩 Report" onAction="#handleReportPost"
+                                            style="-fx-background-color: rgba(249,115,22,0.15); -fx-text-fill: #ea580c; -fx-font-weight: 700; -fx-font-size: 11px; -fx-background-radius: 8; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 8 12 8 12;"/>
+                                    <Button text="🌐 Translate" onAction="#handleTranslatePost"
+                                            style="-fx-background-color: rgba(16,185,129,0.15); -fx-text-fill: #059669; -fx-font-weight: 700; -fx-font-size: 11px; -fx-background-radius: 8; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 8 12 8 12;"/>
+                                    <Button fx:id="summarizePostButton" text="✨ Summarize" onAction="#handleSummarizePost"
+                                            managed="false" visible="false"
+                                            style="-fx-background-color: rgba(99,102,241,0.15); -fx-text-fill: #4338ca; -fx-font-weight: 700; -fx-font-size: 11px; -fx-background-radius: 8; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 8 12 8 12;"/>
                                 </HBox>
-                            </HBox>
+                            </VBox>
 
                             <Region prefHeight="1" maxHeight="1"
                                     style="-fx-background-color: #e2e8f0;"/>
@@ -132,8 +136,8 @@
 
                             <VBox spacing="6">
                                 <Label text="CONTENT" style="-fx-text-fill: #94a3b8; -fx-font-size: 10px; -fx-font-weight: 800;"/>
-                                <Label fx:id="contentValueLabel" wrapText="true"
-                                       style="-fx-text-fill: #334155; -fx-font-size: 14px; -fx-line-spacing: 4;"/>
+                                <TextFlow fx:id="contentValueFlow"
+                                          style="-fx-background-color: transparent; -fx-padding: 0;"/>
                             </VBox>
 
                             <VBox fx:id="summarySection" managed="false" visible="false" spacing="10"
@@ -147,43 +151,32 @@
                                           style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-background-radius: 12; -fx-border-width: 1.2; -fx-font-size: 13px; -fx-text-fill: #334155; -fx-padding: 12;"/>
                             </VBox>
 
-                            <VBox spacing="8"
-                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-border-color: #e2e8f0; -fx-border-radius: 14; -fx-border-width: 1; -fx-padding: 12 14 12 14;">
-                                <Label text="React to this post"
-                                    style="-fx-text-fill: #0f172a; -fx-font-size: 12px; -fx-font-weight: 800;"/>
-                                <HBox fx:id="postReactionsContainer" spacing="8" alignment="CENTER_LEFT"/>
+                            <VBox fx:id="imageSection" spacing="10"
+                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 16; -fx-border-color: #e2e8f0; -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 14;">
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="IMAGE" style="-fx-text-fill: #94a3b8; -fx-font-size: 10px; -fx-font-weight: 800;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="imageStatusLabel" text="No image attached"
+                                           style="-fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                                </HBox>
+                                <ImageView fx:id="postImageView" fitWidth="720" preserveRatio="true" smooth="true"
+                                           style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #dbe3ef; -fx-border-radius: 12; -fx-border-width: 1;"/>
                             </VBox>
 
-                                                        <VBox fx:id="imageSection" spacing="8"
-                                                                    style="-fx-background-color: #f8fafc; -fx-background-radius: 16; -fx-border-color: #e2e8f0; -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 14;">
-                                                                <HBox alignment="CENTER_LEFT">
-                                                                        <Label text="IMAGE" style="-fx-text-fill: #94a3b8; -fx-font-size: 10px; -fx-font-weight: 800;"/>
-                                                                        <Region HBox.hgrow="ALWAYS"/>
-                                                                        <Label fx:id="imageStatusLabel" text="No image attached"
-                                                                                     style="-fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: 700;"/>
-                                                                </HBox>
-                                                                <ImageView fx:id="postImageView" fitWidth="720" preserveRatio="true" smooth="true"
-                                                                                     style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #dbe3ef; -fx-border-radius: 12; -fx-border-width: 1;"/>
-                                                        </VBox>
+                            <VBox spacing="8"
+                                  style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 12;">
+                                <Label text="React to this post" style="-fx-text-fill: #0f172a; -fx-font-size: 12px; -fx-font-weight: 800;"/>
+                                <HBox fx:id="postReactionsContainer" spacing="8" alignment="CENTER_LEFT"/>
+                            </VBox>
 
                             <Region prefHeight="1" maxHeight="1"
                                     style="-fx-background-color: #e2e8f0;"/>
 
-                            <HBox spacing="26" alignment="CENTER_LEFT">
+                            <HBox spacing="14" alignment="CENTER_LEFT">
                                 <VBox spacing="3">
                                     <Label text="AUTHOR" style="-fx-text-fill: #94a3b8; -fx-font-size: 10px; -fx-font-weight: 800;"/>
                                     <Label fx:id="userValueLabel"
                                            style="-fx-text-fill: #0f172a; -fx-font-size: 13px; -fx-font-weight: 800;"/>
-                                </VBox>
-                                <VBox spacing="3">
-                                    <Label text="CREATED" style="-fx-text-fill: #94a3b8; -fx-font-size: 10px; -fx-font-weight: 800;"/>
-                                    <Label fx:id="createdAtValueLabel"
-                                           style="-fx-text-fill: #334155; -fx-font-size: 13px;"/>
-                                </VBox>
-                                <VBox spacing="3">
-                                    <Label text="UPDATED" style="-fx-text-fill: #94a3b8; -fx-font-size: 10px; -fx-font-weight: 800;"/>
-                                    <Label fx:id="updatedAtValueLabel"
-                                           style="-fx-text-fill: #334155; -fx-font-size: 13px;"/>
                                 </VBox>
                             </HBox>
                         </VBox>

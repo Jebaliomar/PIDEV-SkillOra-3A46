@@ -25,6 +25,7 @@ public class ReportService {
     private final Connection connection;
     private final PostService postService;
     private final ReplyService replyService;
+    private final SpamGuardService spamGuardService = new SpamGuardService();
 
     public ReportService() {
         this.connection = MyConnection.getInstance().getConnection();
@@ -41,6 +42,11 @@ public class ReportService {
     public void add(Report report) throws SQLException {
         validateForCreate(report);
         normalizeForCreate(report);
+
+        if (!spamGuardService.allowReport(report.getUserId())) {
+            throw new IllegalStateException("You are reporting too frequently. Please wait before reporting again.");
+        }
+
         validateTargetExists(report);
 
         String sql = """
