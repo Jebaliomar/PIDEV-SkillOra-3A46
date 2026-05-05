@@ -1312,7 +1312,7 @@ public class AvailabilitySlotController {
     @FXML
     private void handleCreate() {
         if (!canManageSlots()) {
-            showWarning("Action not allowed", "Only professor/admin can create slots.");
+            showWarning("Action not allowed", "Only admin can create slots.");
             return;
         }
         Optional<AvailabilitySlot> input = showSlotDialog(null);
@@ -1336,7 +1336,7 @@ public class AvailabilitySlotController {
 
     private void editSlot(AvailabilitySlot slot) {
         if (!canManageSlots()) {
-            showWarning("Action not allowed", "Only professor/admin can edit slots.");
+            showWarning("Action not allowed", "Only admin can edit slots.");
             return;
         }
         if (slot == null || slot.getId() == null) {
@@ -1390,7 +1390,7 @@ public class AvailabilitySlotController {
     @FXML
     private void handleDelete() {
         if (!canManageSlots()) {
-            showWarning("Action not allowed", "Only professor/admin can delete slots.");
+            showWarning("Action not allowed", "Only admin can delete slots.");
             return;
         }
         if (selectedSlot == null) {
@@ -1402,7 +1402,7 @@ public class AvailabilitySlotController {
 
     private void deleteSlot(AvailabilitySlot slot) {
         if (!canManageSlots()) {
-            showWarning("Action not allowed", "Only professor/admin can delete slots.");
+            showWarning("Action not allowed", "Only admin can delete slots.");
             return;
         }
         if (slot == null || slot.getId() == null) {
@@ -1729,7 +1729,7 @@ public class AvailabilitySlotController {
 
     private Optional<AvailabilitySlot> showSlotDialog(AvailabilitySlot source) {
         if (!canManageSlots()) {
-            showWarning("Action not allowed", "Only professor/admin can manage slot form.");
+            showWarning("Action not allowed", "Only admin can manage slot form.");
             return Optional.empty();
         }
         if (source != null) {
@@ -2499,7 +2499,7 @@ public class AvailabilitySlotController {
     }
 
     private boolean canManageSlots() {
-        return isAdminMode() || isProfessorMode();
+        return isAdminMode();
     }
 
     private boolean canManageSpecificSlot(AvailabilitySlot slot) {

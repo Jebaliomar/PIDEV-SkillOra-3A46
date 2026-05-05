@@ -90,14 +90,6 @@
 
     <bottom>
         <HBox spacing="10.0" style="-fx-padding: 10 12 12 12;">
-            <Button mnemonicParsing="false" onAction="#refreshSlots" text="Refresh"
-                    style="-fx-background-color: #edf2fc; -fx-text-fill: #264fb2; -fx-font-weight: 700; -fx-background-radius: 10;" />
-            <Button fx:id="addSlotBtn" mnemonicParsing="false" onAction="#handleCreate" text="Ajouter"
-                    style="-fx-background-color: #264fb2; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10;" />
-            <Button fx:id="editSlotBtn" mnemonicParsing="false" onAction="#handleEdit" text="Modifier"
-                    style="-fx-background-color: #2f5fc8; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10;" />
-            <Button fx:id="deleteSlotBtn" mnemonicParsing="false" onAction="#handleDelete" text="Supprimer"
-                    style="-fx-background-color: #cc4054; -fx-text-fill: white; -fx-font-weight: 700; -fx-background-radius: 10;" />
             <Region HBox.hgrow="ALWAYS" />
             <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: #4e6491; -fx-font-size: 13px;" />
         </HBox>
