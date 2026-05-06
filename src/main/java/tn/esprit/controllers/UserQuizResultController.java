@@ -4,14 +4,20 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import tn.esprit.entities.Answer;
 import tn.esprit.entities.Evaluation;
 import tn.esprit.entities.Question;
 import tn.esprit.entities.UserEvaluation;
 import tn.esprit.services.AnswerService;
+import tn.esprit.services.QuestionAudioAttemptService;
 import tn.esprit.services.QuestionService;
+import tn.esprit.services.QuizAudioService;
 import tn.esprit.services.UserEvaluationService;
 
 import java.io.IOException;
@@ -22,17 +28,10 @@ import java.util.Map;
 
 public class UserQuizResultController {
 
-    @FXML
-    private Label titleLabel;
-
-    @FXML
-    private Label subtitleLabel;
-
-    @FXML
-    private Label scoreLabel;
-
-    @FXML
-    private VBox questionContainer;
+    @FXML private Label titleLabel;
+    @FXML private Label subtitleLabel;
+    @FXML private Label scoreLabel;
+    @FXML private VBox questionContainer;
 
     private Evaluation evaluation;
     private int userId;
@@ -40,6 +39,10 @@ public class UserQuizResultController {
     private final QuestionService questionService = new QuestionService();
     private final AnswerService answerService = new AnswerService();
     private final UserEvaluationService userEvaluationService = new UserEvaluationService();
+    private final QuizAudioService quizAudioService = new QuizAudioService();
+    private final QuestionAudioAttemptService questionAudioAttemptService = new QuestionAudioAttemptService();
+
+    private boolean audioUnavailableMessageShown = false;
 
     public void setUserId(int userId) {
         this.userId = userId;
@@ -47,11 +50,15 @@ public class UserQuizResultController {
 
     public void setEvaluation(Evaluation evaluation) {
         this.evaluation = evaluation;
+        quizAudioService.testAvailability();
         loadResult();
     }
 
     private void loadResult() {
         if (evaluation == null) {
+            return;
+        }
+        if (!resolveConnectedUser()) {
             return;
         }
 
@@ -80,9 +87,18 @@ public class UserQuizResultController {
                 card.getStyleClass().add("question-card");
                 card.setPadding(new Insets(16));
 
+                HBox header = new HBox(10);
                 Label questionLabel = new Label("Q" + i + ". " + safe(q.getContent()));
                 questionLabel.getStyleClass().add("question-label");
                 questionLabel.setWrapText(true);
+                questionLabel.setMaxWidth(Double.MAX_VALUE);
+                HBox.setHgrow(questionLabel, Priority.ALWAYS);
+
+                Button questionAudioButton = buildAudioButton("🔊 Question", () -> {
+                    playAudio(q.getId(), q.getContent());
+                });
+
+                header.getChildren().addAll(questionLabel, questionAudioButton);
 
                 List<Answer> answers = answerService.recupererOptionsQuizParQuestion(q.getId());
 
@@ -119,14 +135,85 @@ public class UserQuizResultController {
                 explanationLabel.setWrapText(true);
                 explanationLabel.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 13px;");
 
-                card.getChildren().addAll(questionLabel, yourAnswerLabel, correctAnswerLabel, explanationLabel);
+                VBox optionsAudioBox = new VBox(8);
+                for (Answer a : answers) {
+                    HBox optionRow = new HBox(10);
+
+                    Label optionLabel = new Label("- " + safe(a.getContent()));
+                    optionLabel.setWrapText(true);
+                    optionLabel.setMaxWidth(Double.MAX_VALUE);
+                    HBox.setHgrow(optionLabel, Priority.ALWAYS);
+
+                    Button optionAudioButton = buildAudioButton("🔊", () -> {
+                        playAudio(q.getId(), a.getContent());
+                    });
+
+                    optionRow.getChildren().addAll(optionLabel, optionAudioButton);
+                    optionsAudioBox.getChildren().add(optionRow);
+                }
+
+                card.getChildren().addAll(header, optionsAudioBox, yourAnswerLabel, correctAnswerLabel, explanationLabel);
                 questionContainer.getChildren().add(card);
                 i++;
             }
 
         } catch (SQLException e) {
-            showError("Erreur chargement résultat quiz : " + e.getMessage());
+            showError(userEvaluationService.isUserNotFound(e) ? UserEvaluationService.USER_NOT_FOUND_MESSAGE : "Erreur chargement résultat quiz : " + e.getMessage());
         }
+    }
+
+    private boolean resolveConnectedUser() {
+        try {
+            userId = userEvaluationService.resolveAuthenticatedUserId();
+            return true;
+        } catch (SQLException e) {
+            if (userId > 0) {
+                try {
+                    userEvaluationService.requireExistingUser(userId);
+                    System.out.println("Connected user ID = " + userId);
+                    return true;
+                } catch (SQLException ignored) {
+                    // Fall through to the reconnect message.
+                }
+            }
+            showError(UserEvaluationService.USER_NOT_FOUND_MESSAGE);
+            return false;
+        }
+    }
+
+    private Button buildAudioButton(String text, Runnable action) {
+        Button button = new Button(text);
+        button.getStyleClass().add("audio-button");
+        button.setOnAction(e -> action.run());
+
+        if (!quizAudioService.isAudioAvailable()) {
+            button.setDisable(true);
+            button.setText("Audio indisponible");
+        }
+
+        return button;
+    }
+
+    private void playAudio(int questionId, String text) {
+        if (!quizAudioService.isAudioAvailable()) {
+            if (!audioUnavailableMessageShown) {
+                audioUnavailableMessageShown = true;
+                showWarning("Audio indisponible sur cette machine. Aucun moteur TTS local n'a été trouvé.");
+            }
+            return;
+        }
+
+        boolean started = quizAudioService.speakAsync(text);
+
+        if (!started) {
+            if (!audioUnavailableMessageShown) {
+                audioUnavailableMessageShown = true;
+                showWarning(quizAudioService.getLastErrorMessage());
+            }
+            return;
+        }
+
+        questionAudioAttemptService.incrementPlayCount(userId, questionId);
     }
 
     private Map<Integer, Integer> parseSelectedAnswers(String raw) {
@@ -165,6 +252,8 @@ public class UserQuizResultController {
 
     @FXML
     private void handleBack() {
+        quizAudioService.stop();
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserAssessmentView.fxml"));
             Parent root = loader.load();
@@ -175,8 +264,16 @@ public class UserQuizResultController {
     }
 
     private void showError(String msg) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Erreur");
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
+
+    private void showWarning(String msg) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Attention");
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();

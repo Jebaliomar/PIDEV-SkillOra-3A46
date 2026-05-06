@@ -10,9 +10,13 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.User;
 import tn.esprit.services.SessionService;
 import tn.esprit.tools.AppIcons;
+import tn.esprit.tools.AppNavigator;
+import tn.esprit.tools.AppWindow;
+import tn.esprit.tools.AuthSession;
 import tn.esprit.tools.PomodoroIcon;
 import tn.esprit.tools.PomodoroPopup;
 import tn.esprit.tools.SessionStore;
@@ -75,9 +79,22 @@ public class ProfessorLayoutController implements Initializable {
     }
 
     @FXML
+    public void showAppHome() {
+        AppNavigator.showFrontHome(contentArea);
+    }
+
+    @FXML
     public void showCourses() {
-        loadContent("/fxml/ProfessorHomeContent.fxml");
-        setActiveNav(navCourses);
+        try {
+            AuthSession.setCurrentUser(currentUser, "professor");
+            ensureCourseStylesheets();
+            AdminShellController shell = new AdminShellController();
+            shell.bindContentContainer(contentArea);
+            shell.showCoursesIndex();
+            setActiveNav(navCourses);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -117,6 +134,23 @@ public class ProfessorLayoutController implements Initializable {
         }
     }
 
+    private void ensureCourseStylesheets() {
+        Scene scene = contentArea.getScene();
+        if (scene == null) return;
+        addStylesheet(scene, "/atlantafx/base/theme/primer-light.css");
+        addStylesheet(scene, "/styles/macos-theme.css");
+        addStylesheet(scene, "/styles/skillora-unified.css");
+        ThemeManager.applyTheme(scene);
+    }
+
+    private void addStylesheet(Scene scene, String path) {
+        try {
+            String url = getClass().getResource(path).toExternalForm();
+            if (!scene.getStylesheets().contains(url)) scene.getStylesheets().add(url);
+        } catch (Exception ignored) {
+        }
+    }
+
     @FXML
     public void toggleTheme() {
         ThemeManager.toggle(themeToggleBtn.getScene());
@@ -138,12 +172,11 @@ public class ProfessorLayoutController implements Initializable {
             currentUser = null;
             FXMLLoader loader = tn.esprit.tools.Loaders.loader(getClass(), "/fxml/Login.fxml");
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             ThemeManager.applyTheme(scene);
             Stage stage = (Stage) contentArea.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("SkillORA - Sign In");
+            AppWindow.show(stage, scene, "SkillORA - Sign In", true);
         } catch (Exception e) {
             e.printStackTrace();
         }

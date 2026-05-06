@@ -12,74 +12,204 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.forum.PostOverviewController"
             stylesheets="@forum.css"
             styleClass="root-alt">
 
     <top>
-        <VBox spacing="0">
+       <VBox spacing="14" style="-fx-background-color: linear-gradient(to right, rgba(15,23,42,0.92), rgba(29,78,216,0.88), rgba(3,105,161,0.84)); -fx-border-color: rgba(255,255,255,0.28); -fx-border-width: 0 0 1 0;">
+            <padding>
+                <Insets top="22" right="28" bottom="22" left="28"/>
+            </padding>
 
-            <!-- Top gradient accent bar -->
-            <Region style="-fx-background-color: linear-gradient(to right, #6366f1, #3b82f6, #0ea5e9);
-                           -fx-pref-height: 4; -fx-min-height: 4;"/>
-
-            <!-- Header row -->
-            <HBox alignment="CENTER_LEFT" spacing="20"
-                  styleClass="header-alt">
-                <padding>
-                    <Insets top="20" right="32" bottom="20" left="32"/>
-                </padding>
-
-                <VBox spacing="3">
-                    <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Label text="●" styleClass="label-user-alt2"/>
-                        <Label text="Community Forum" styleClass="label-title-large"/>
-                    </HBox>
-                    <Label text="Browse discussions and share your thoughts with the community." styleClass="label-subtitle"/>
-                    <Label fx:id="currentUserLabel" styleClass="label-user-alt2"/>
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="SkillOra Forum"
+                           style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: 800;"/>
                 </VBox>
 
-                <Region HBox.hgrow="ALWAYS"/>
-
-                <Button fx:id="adminPostsButton" text="Admin Posts" onAction="#handleOpenAdminPosts" managed="false" visible="false" styleClass="btn-admin"/>
-
-                <Button text="+ New Post" onAction="#handleCreatePost" styleClass="btn-primary-alt"/>
+                <Button fx:id="adminPostsButton"
+                        text="Admin Posts"
+                        onAction="#handleOpenAdminPosts"
+                        managed="false"
+                        visible="false"
+                        style="-fx-background-color: rgba(255,255,255,0.14); -fx-text-fill: white;
+                               -fx-font-weight: 700; -fx-font-size: 12px; -fx-background-radius: 12;
+                               -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 10 14 10 14;"/>
             </HBox>
 
-            <!-- Search and Filter bar -->
-            <HBox spacing="10" alignment="CENTER_LEFT"
-                  style="-fx-background-color: #f8faff;
-                         -fx-border-color: transparent transparent #e8edf5 transparent;
-                         -fx-border-width: 0 0 1 0;">
-                <padding>
-                    <Insets top="14" right="32" bottom="14" left="32"/>
-                </padding>
+            <VBox spacing="10" maxWidth="980">
+                <Label text="Connect, ask, and share knowledge"
+                       style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: 900;"/>
 
-                <TextField fx:id="searchField" promptText="Search by title, topic, or content..." onAction="#handleSearch" styleClass="search-field" HBox.hgrow="ALWAYS"/>
+                  <Label fx:id="searchSourceLabel"
+                      text="Search source: database fallback"
+                      style="-fx-text-fill: rgba(255,255,255,0.78); -fx-font-size: 12px; -fx-font-weight: 700;"/>
 
-                <ComboBox fx:id="typeFilterComboBox" onAction="#handleSearch" styleClass="combo-box" prefWidth="150"/>
+                <HBox spacing="10" maxWidth="860">
+                       <HBox spacing="8" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: rgba(255,255,255,0.72); -fx-background-radius: 18; -fx-border-color: rgba(255,255,255,0.48); -fx-border-radius: 18; -fx-border-width: 1;
+                                      -fx-padding: 0 14 0 16; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.12), 20, 0.16, 0, 8);">
+                        <Label text="🔎" style="-fx-font-size: 13px;"/>
+                        <TextField fx:id="searchField"
+                                   promptText="Search posts, topics, or content"
+                                   onAction="#handleSearch"
+                                   HBox.hgrow="ALWAYS"
+                                   style="-fx-background-color: transparent; -fx-border-color: transparent;
+                                          -fx-text-fill: #0f172a; -fx-prompt-text-fill: #94a3b8;
+                                          -fx-font-size: 13px; -fx-padding: 12 0 12 0;"/>
+                    </HBox>
 
-                <ComboBox fx:id="topicFilterComboBox" onAction="#handleSearch" styleClass="combo-box" prefWidth="150"/>
+                    <Button text="Search"
+                            onAction="#handleSearch"
+                         style="-fx-background-color: linear-gradient(to right, #16a34a, #22c55e); -fx-text-fill: white; -fx-font-weight: 800;
+                                   -fx-font-size: 13px; -fx-background-radius: 16; -fx-cursor: hand;
+                                   -fx-border-color: transparent; -fx-padding: 12 22 12 22;"/>
 
-                <Button text="Search" onAction="#handleSearch" styleClass="btn-search"/>
-
-                <Button text="Reset" onAction="#handleResetFilters" styleClass="btn-reset"/>
-            </HBox>
-
+                  <Button text="New Post"
+                            onAction="#handleCreatePost"
+                      style="-fx-background-color: rgba(255,255,255,0.78); -fx-text-fill: #1d4ed8; -fx-font-weight: 900;
+                               -fx-font-size: 13px; -fx-background-radius: 16; -fx-border-color: rgba(255,255,255,0.52); -fx-border-width: 1; -fx-border-radius: 16;
+                                   -fx-cursor: hand; -fx-padding: 12 22 12 22;"/>
+                </HBox>
+            </VBox>
         </VBox>
     </top>
 
     <center>
-        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+        <ScrollPane fitToWidth="true" pannable="true"
+                    style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
             <content>
-                <VBox fx:id="postsContainer" spacing="16" alignment="TOP_CENTER">
+                <VBox spacing="14">
                     <padding>
-                        <Insets top="28" right="48" bottom="48" left="48"/>
+                        <Insets top="20" right="22" bottom="24" left="22"/>
                     </padding>
+                    <HBox spacing="16" alignment="TOP_LEFT">
+                        <VBox spacing="14" HBox.hgrow="ALWAYS" fillWidth="true">
+                            <VBox fx:id="postsContainer" spacing="14" alignment="TOP_LEFT">
+                                <padding>
+                                    <Insets top="2" right="2" bottom="8" left="2"/>
+                                </padding>
+                            </VBox>
+                            <HBox fx:id="paginationBox" spacing="8" alignment="CENTER" maxWidth="Infinity">
+                                <Button fx:id="prevPageButton" text="◀ Prev" onAction="#handlePrevPage"/>
+                                <Label fx:id="pageIndicatorLabel" text="Page 1" style="-fx-font-weight: 800; -fx-text-fill: #475569;"/>
+                                <Button fx:id="nextPageButton" text="Next ▶" onAction="#handleNextPage"/>
+                            </HBox>
+                        </VBox>
+
+                        <VBox spacing="14" prefWidth="320" minWidth="300" maxWidth="340">
+                            <VBox spacing="12"
+                                  style="-fx-background-color: rgba(255,255,255,0.60); -fx-background-radius: 18;
+                                          -fx-border-color: rgba(255,255,255,0.78); -fx-border-radius: 18;
+                                          -fx-border-width: 1; -fx-padding: 16;
+                                          -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.09), 22, 0.14, 0, 8);">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label text="Filters"
+                                           style="-fx-text-fill: #0f172a; -fx-font-size: 15px; -fx-font-weight: 900;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Button text="Reset"
+                                            onAction="#handleResetFilters"
+                                            style="-fx-background-color: rgba(255,255,255,0.72); -fx-text-fill: #334155; -fx-font-weight: 800;
+                                                   -fx-font-size: 11px; -fx-background-radius: 10; -fx-border-color: rgba(226,232,240,0.95);
+                                                   -fx-border-radius: 10; -fx-cursor: hand; -fx-padding: 7 12 7 12;"/>
+                                </HBox>
+
+                                <ComboBox fx:id="typeFilterComboBox"
+                                          onAction="#handleSearch"
+                                        maxWidth="Infinity"
+                                          promptText="Type"
+                                          style="-fx-background-color: rgba(255,255,255,0.80); -fx-border-color: rgba(226,232,240,0.95);
+                                                 -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 13px;"/>
+
+                                <ComboBox fx:id="topicFilterComboBox"
+                                          onAction="#handleSearch"
+                                        maxWidth="Infinity"
+                                          promptText="Topic"
+                                          style="-fx-background-color: rgba(255,255,255,0.80); -fx-border-color: rgba(226,232,240,0.95);
+                                                 -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 13px;"/>
+                            </VBox>
+
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <VBox spacing="4" HBox.hgrow="ALWAYS"
+                                      style="-fx-background-color: rgba(255,255,255,0.60); -fx-background-radius: 16; -fx-border-color: rgba(255,255,255,0.74); -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 12 14 12 14; -fx-effect: dropshadow(gaussian, rgba(51,65,85,0.08), 14, 0.12, 0, 4);">
+                                    <Label text="Posts shown"
+                                           style="-fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: 800;"/>
+                                    <Label fx:id="totalPostsStatLabel" text="0"
+                                           style="-fx-text-fill: #0f172a; -fx-font-size: 24px; -fx-font-weight: 900;"/>
+                                </VBox>
+
+                                <VBox spacing="4" HBox.hgrow="ALWAYS"
+                                      style="-fx-background-color: rgba(255,255,255,0.60); -fx-background-radius: 16; -fx-border-color: rgba(255,255,255,0.74); -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 12 14 12 14; -fx-effect: dropshadow(gaussian, rgba(51,65,85,0.08), 14, 0.12, 0, 4);">
+                                    <Label text="Active topics"
+                                           style="-fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: 800;"/>
+                                    <Label fx:id="totalTopicsStatLabel" text="0"
+                                           style="-fx-text-fill: #0f172a; -fx-font-size: 24px; -fx-font-weight: 900;"/>
+                                </VBox>
+                            </HBox>
+
+                            <VBox spacing="8" fx:id="popularTopicsBox"
+                                  style="-fx-background-color: rgba(255,255,255,0.60); -fx-background-radius: 16; -fx-border-color: rgba(255,255,255,0.74); -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 12 14 12 14; -fx-effect: dropshadow(gaussian, rgba(51,65,85,0.08), 14, 0.12, 0, 4);">
+                                <Label text="Popular topics"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: 800;"/>
+                            </VBox>
+
+                                <VBox spacing="10"
+                                       style="-fx-background-color: rgba(255,255,255,0.60); -fx-background-radius: 18;
+                                               -fx-border-color: rgba(255,255,255,0.78); -fx-border-radius: 18;
+                                         -fx-border-width: 1; -fx-padding: 18;
+                                               -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.09), 22, 0.14, 0, 8);">
+                                <Label text="Start a discussion"
+                                       style="-fx-text-fill: #0f172a; -fx-font-size: 16px; -fx-font-weight: 900;"/>
+                                <Label text="Share a question, a guide, or a quick update with the community."
+                                       wrapText="true"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                            <Button text="+ Create Post"
+                                        onAction="#handleCreatePost"
+                                        maxWidth="Infinity"
+                                   style="-fx-background-color: linear-gradient(to right, rgba(29,78,216,0.86), rgba(14,165,233,0.86));
+                                               -fx-text-fill: white;
+                                               -fx-font-weight: 800;
+                                               -fx-font-size: 13px;
+                                               -fx-background-radius: 14;
+                                               -fx-cursor: hand;
+                                          -fx-border-color: rgba(255,255,255,0.28);
+                                          -fx-border-width: 1;
+                                          -fx-border-radius: 14;
+                                               -fx-padding: 12 16 12 16;"/>
+                            </VBox>
+
+                                <VBox spacing="10"
+                                       style="-fx-background-color: rgba(255,255,255,0.60); -fx-background-radius: 18;
+                                               -fx-border-color: rgba(255,255,255,0.78); -fx-border-radius: 18;
+                                         -fx-border-width: 1; -fx-padding: 18;
+                                               -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.09), 22, 0.14, 0, 8);">
+                                <Label text="Moderation"
+                                       style="-fx-text-fill: #0f172a; -fx-font-size: 15px; -fx-font-weight: 900;"/>
+                                <Label text="Administrator tools are available when your account has moderation rights."
+                                       wrapText="true"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                                <Button fx:id="adminPostsSidebarButton"
+                                        text="Open admin posts"
+                                        onAction="#handleOpenAdminPosts"
+                                        managed="false"
+                                        visible="false"
+                                        maxWidth="Infinity"
+                                        style="-fx-background-color: rgba(29,78,216,0.10);
+                                               -fx-text-fill: #1d4ed8;
+                                               -fx-font-weight: 800;
+                                               -fx-font-size: 12px;
+                                               -fx-background-radius: 14;
+                                               -fx-border-color: transparent;
+                                               -fx-cursor: hand;
+                                               -fx-padding: 10 14 10 14;"/>
+                            </VBox>
+                        </VBox>
+                    </HBox>
                 </VBox>
             </content>
         </ScrollPane>
     </center>
-
 </BorderPane>

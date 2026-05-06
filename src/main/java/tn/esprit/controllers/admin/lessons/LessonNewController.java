@@ -5,8 +5,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import tn.esprit.controllers.admin.AdminShellAware;
@@ -15,6 +15,7 @@ import tn.esprit.entities.Course;
 import tn.esprit.entities.CourseSection;
 import tn.esprit.entities.Lesson;
 import tn.esprit.services.LessonService;
+import tn.esprit.tools.RichTextLessonEditor;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class LessonNewController implements AdminShellAware {
     private VBox contentBox;
 
     @FXML
-    private TextArea contentArea;
+    private StackPane editorHost;
 
     @FXML
     private VBox fileBox;
@@ -68,9 +69,12 @@ public class LessonNewController implements AdminShellAware {
     private Course course;
     private CourseSection section;
     private File selectedFile;
+    private RichTextLessonEditor richTextEditor;
 
     @FXML
     public void initialize() {
+        richTextEditor = new RichTextLessonEditor();
+        editorHost.getChildren().setAll(richTextEditor);
         typeComboBox.setItems(FXCollections.observableArrayList("TEXT", "PDF", "VIDEO"));
         typeComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> updateTypeUI(newValue));
         typeComboBox.getSelectionModel().select("TEXT");
@@ -154,7 +158,7 @@ public class LessonNewController implements AdminShellAware {
     private void applyTypeSpecificData(Lesson lesson) throws IOException {
         String type = lesson.getType();
         if ("TEXT".equals(type)) {
-            lesson.setContent(contentArea.getText().trim());
+            lesson.setContent(richTextEditor.getHtml());
             lesson.setFilePath(null);
             return;
         }
@@ -220,7 +224,7 @@ public class LessonNewController implements AdminShellAware {
         }
 
         if ("TEXT".equals(type)) {
-            if (contentArea.getText() == null || contentArea.getText().trim().isEmpty()) {
+            if (richTextEditor == null || !richTextEditor.hasMeaningfulContent()) {
                 setError(contentErrorLabel, "Content is required for text lessons.");
                 valid = false;
             }

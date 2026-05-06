@@ -4,36 +4,36 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefWidth="1400.0" prefHeight="820.0"
-            stylesheets="@style.css"
-            xmlns="http://javafx.com/javafx/17"
+<BorderPane prefWidth="1400.0" prefHeight="820.0"
+            stylesheets="@styles/style.css,@style.css"
+            xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="tn.esprit.controllers.QuizQuestionController">
+            fx:controller="tn.esprit.controllers.QuizQuestionController"
+            styleClass="root-bg">
 
-    <children>
+    <left>
+        <fx:include fx:id="adminSidebar" source="viewsadmin/common/AdminSidebar.fxml"/>
+    </left>
 
+    <center>
         <ScrollPane fitToWidth="true"
-                    prefWidth="1400.0"
-                    prefHeight="820.0"
                     hbarPolicy="NEVER"
                     vbarPolicy="AS_NEEDED"
-                    style="-fx-background: transparent; -fx-background-color: transparent;">
+                    styleClass="page-scroll">
 
             <content>
-                <VBox prefWidth="1400.0"
-                      spacing="24.0"
+                <VBox spacing="24.0"
                       alignment="TOP_LEFT">
 
                     <padding>
-                        <Insets top="18.0" right="24.0" bottom="24.0" left="24.0"/>
+                        <Insets top="24.0" right="28.0" bottom="28.0" left="28.0"/>
                     </padding>
 
                     <Label fx:id="pageTitleLabel"
                            text="Ajouter Question Quiz"
-                           styleClass="page-big-title"/>
+                           styleClass="page-title"/>
 
-                    <AnchorPane prefWidth="1320.0"
-                                prefHeight="900.0"
+                    <AnchorPane prefHeight="980.0"
                                 styleClass="create-card">
 
                         <children>
@@ -42,7 +42,7 @@
 
                             <VBox layoutX="28.0"
                                   layoutY="26.0"
-                                  prefWidth="1260.0"
+                                  prefWidth="1030.0"
                                   spacing="18.0">
 
                                 <children>
@@ -50,6 +50,32 @@
                                     <Label fx:id="evaluationInfoLabel"
                                            text="Quiz"
                                            styleClass="label-subtitle"/>
+
+                                    <HBox spacing="16.0">
+                                        <children>
+                                            <VBox spacing="8.0" prefWidth="920.0">
+                                                <children>
+                                                    <Label text="Sujet / Langage pour génération IA" styleClass="form-label"/>
+                                                    <TextField fx:id="aiTopicField"
+                                                               prefHeight="46.0"
+                                                               promptText="Ex: Java, Python, Symfony, Spring Boot..."
+                                                               styleClass="form-input"/>
+                                                </children>
+                                            </VBox>
+
+                                            <VBox spacing="8.0" prefWidth="220.0">
+                                                <children>
+                                                    <Label text=" " styleClass="form-label"/>
+                                                    <Button fx:id="btnGenerateAI"
+                                                            text="Générer IA"
+                                                            prefWidth="220.0"
+                                                            prefHeight="46.0"
+                                                            onAction="#genererParIA"
+                                                            styleClass="button-primary"/>
+                                                </children>
+                                            </VBox>
+                                        </children>
+                                    </HBox>
 
                                     <VBox spacing="8.0">
                                         <children>
@@ -82,7 +108,6 @@
                                                 <children>
                                                     <Label text="Type" styleClass="form-label"/>
                                                     <ComboBox fx:id="typeComboBox"
-                                                              prefWidth="608.0"
                                                               prefHeight="46.0"
                                                               promptText="Choisir type"
                                                               styleClass="form-combo"/>
@@ -94,7 +119,6 @@
                                                 <children>
                                                     <Label text="Score" styleClass="form-label"/>
                                                     <TextField fx:id="scoreField"
-                                                               prefWidth="608.0"
                                                                prefHeight="46.0"
                                                                styleClass="form-input"/>
                                                     <Label fx:id="scoreErrorLabel" styleClass="error-label"/>
@@ -110,7 +134,6 @@
                                                 <children>
                                                     <Label text="Option A" styleClass="form-label"/>
                                                     <TextField fx:id="optionAField"
-                                                               prefWidth="608.0"
                                                                prefHeight="46.0"
                                                                styleClass="form-input"/>
                                                 </children>
@@ -120,7 +143,6 @@
                                                 <children>
                                                     <Label text="Option B" styleClass="form-label"/>
                                                     <TextField fx:id="optionBField"
-                                                               prefWidth="608.0"
                                                                prefHeight="46.0"
                                                                styleClass="form-input"/>
                                                 </children>
@@ -134,7 +156,6 @@
                                                 <children>
                                                     <Label text="Option C" styleClass="form-label"/>
                                                     <TextField fx:id="optionCField"
-                                                               prefWidth="608.0"
                                                                prefHeight="46.0"
                                                                styleClass="form-input"/>
                                                 </children>
@@ -144,7 +165,6 @@
                                                 <children>
                                                     <Label text="Option D" styleClass="form-label"/>
                                                     <TextField fx:id="optionDField"
-                                                               prefWidth="608.0"
                                                                prefHeight="46.0"
                                                                styleClass="form-input"/>
                                                 </children>
@@ -209,5 +229,5 @@
             </content>
         </ScrollPane>
 
-    </children>
-</AnchorPane>
+    </center>
+</BorderPane>

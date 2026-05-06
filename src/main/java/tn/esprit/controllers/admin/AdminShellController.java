@@ -48,6 +48,9 @@ public class AdminShellController {
     private StackPane contentContainer;
 
     @FXML
+    private AdminSidebarController adminSidebarController;
+
+    @FXML
     private Button frontHomeButton;
 
     @FXML
@@ -56,6 +59,9 @@ public class AdminShellController {
     @FXML
     public void initialize() {
         System.out.println("AdminShellController.initialize() called");
+        if (adminSidebarController != null) {
+            adminSidebarController.setActive(AdminSidebarController.ActiveItem.COURSES);
+        }
         showCoursesIndex();
     }
 

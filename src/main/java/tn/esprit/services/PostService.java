@@ -4,48 +4,156 @@ import tn.esprit.entities.Post;
 import tn.esprit.tools.MyConnection;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class PostService {
 
+    private static final int MYSQL_FK_VIOLATION = 1452;
+    private static final String SQL_INTEGRITY_VIOLATION = "23000";
+    private final ModerationService moderationService = new ModerationService();
+    private final SpamGuardService spamGuardService = new SpamGuardService();
+    private final LinkSecurityService linkSecurityService = new LinkSecurityService();
     private final Connection connection;
+    private final boolean imageUrlColumnAvailable;
 
     public PostService() {
         this.connection = MyConnection.getInstance().getConnection();
+        this.imageUrlColumnAvailable = ensurePostImageColumn();
+    }
+
+    public PostService(Connection connection) {
+        this.connection = connection;
+        this.imageUrlColumnAvailable = ensurePostImageColumn();
     }
 
     public void add(Post post) throws SQLException {
         validateForCreate(post);
+        normalizePostForWrite(post, true);
+
+        if (!spamGuardService.allowPost(post.getUserId())) {
+            throw new IllegalStateException("You are posting too frequently. Please wait before posting again.");
+        }
+
+        if (moderationService.shouldBlock(post.getContent())) {
+            throw new IllegalStateException("Your post contains content that violates the moderation policy.");
+        }
+
+        linkSecurityService.validateContent(post.getContent());
+
         if (existsDuplicate(post)) {
             throw new IllegalStateException("A post with the same type, title, topic, and content already exists for this user.");
         }
 
-        String sql = "INSERT INTO post (type, title, topic, content, created_at, updated_at, user_id) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = imageUrlColumnAvailable
+                ? "INSERT INTO post (type, title, topic, content, image_url, created_at, updated_at, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                : "INSERT INTO post (type, title, topic, content, created_at, updated_at, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            preparedStatement.setString(1, post.getType());
-            preparedStatement.setString(2, post.getTitle());
-            preparedStatement.setString(3, post.getTopic());
-            preparedStatement.setString(4, post.getContent());
-            setTimestamp(preparedStatement, 5, post.getCreatedAt());
-            setTimestamp(preparedStatement, 6, post.getUpdatedAt());
-            setNullableInteger(preparedStatement, 7, post.getUserId());
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, post.getType());
+            ps.setString(2, post.getTitle());
+            ps.setString(3, post.getTopic());
+            ps.setString(4, post.getContent());
+            int parameterIndex = 5;
+            if (imageUrlColumnAvailable) {
+                setNullableString(ps, parameterIndex++, post.getImageUrl());
+            }
+            setTimestamp(ps, parameterIndex++, post.getCreatedAt());
+            setTimestamp(ps, parameterIndex++, post.getUpdatedAt());
+            setNullableInteger(ps, parameterIndex, post.getUserId());
 
-            preparedStatement.executeUpdate();
+            try {
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                if (SQL_INTEGRITY_VIOLATION.equals(e.getSQLState()) || e.getErrorCode() == MYSQL_FK_VIOLATION) {
+                    throw new SQLException(
+                            "Your user account was not found in the database. "
+                                    + "Please make sure a matching user record exists (user_id = " + post.getUserId() + ").",
+                            e.getSQLState(), e.getErrorCode(), e);
+                }
+                throw e;
+            }
 
-            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    post.setId(generatedKeys.getInt(1));
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) {
+                    post.setId(keys.getInt(1));
                 }
             }
+        }
+    }
+
+    public boolean update(Post post) throws SQLException {
+        validateForUpdate(post);
+        normalizePostForWrite(post, false);
+
+        if (existsDuplicateExcludingId(post)) {
+            throw new IllegalStateException("A similar post already exists for this user.");
+        }
+
+        String sql = imageUrlColumnAvailable
+                ? "UPDATE post SET type = ?, title = ?, topic = ?, content = ?, image_url = ?, created_at = ?, updated_at = ?, user_id = ? WHERE id = ?"
+                : "UPDATE post SET type = ?, title = ?, topic = ?, content = ?, created_at = ?, updated_at = ?, user_id = ? WHERE id = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, post.getType());
+            ps.setString(2, post.getTitle());
+            ps.setString(3, post.getTopic());
+            ps.setString(4, post.getContent());
+            int parameterIndex = 5;
+            if (imageUrlColumnAvailable) {
+                setNullableString(ps, parameterIndex++, post.getImageUrl());
+            }
+            setTimestamp(ps, parameterIndex++, post.getCreatedAt());
+            setTimestamp(ps, parameterIndex++, post.getUpdatedAt());
+            setNullableInteger(ps, parameterIndex++, post.getUserId());
+            ps.setInt(parameterIndex, post.getId());
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean delete(int id) throws SQLException {
+        if (id <= 0) {
+            throw new IllegalArgumentException("A valid post ID is required.");
+        }
+
+        if (!existsById(id)) {
+            return false;
+        }
+
+        boolean initialAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+
+        try {
+            deleteRelatedRows("reaction", "post_id", id);
+            deleteRelatedRows("vote", "post_id", id);
+            deleteRelatedRows("report", "post_id", id);
+            deleteRelatedRows("post_tag", "post_id", id);
+            deleteRepliesForPost(id);
+
+            boolean deleted;
+            try (PreparedStatement ps = connection.prepareStatement("DELETE FROM post WHERE id = ?")) {
+                ps.setInt(1, id);
+                deleted = ps.executeUpdate() > 0;
+            }
+
+            connection.commit();
+            return deleted;
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(initialAutoCommit);
         }
     }
 
@@ -53,14 +161,86 @@ public class PostService {
         String sql = "SELECT * FROM post ORDER BY created_at DESC, id DESC";
         List<Post> posts = new ArrayList<>();
 
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-            while (resultSet.next()) {
-                posts.add(mapResultSetToPost(resultSet));
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                posts.add(mapResultSetToPost(rs));
             }
         }
-
         return posts;
+    }
+
+    public Post getById(int id) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM post WHERE id = ?")) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToPost(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<Post> getByUserId(int userId) throws SQLException {
+        List<Post> posts = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT * FROM post WHERE user_id = ? ORDER BY created_at DESC, id DESC")) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    posts.add(mapResultSetToPost(rs));
+                }
+            }
+        }
+        return posts;
+    }
+
+    public List<Post> searchAndFilter(String searchTerm, String type, String topic) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT * FROM post WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        String search = normalizeFilterValue(searchTerm);
+        String typeVal = normalizeFilterValue(type);
+        String topicVal = normalizeFilterValue(topic);
+
+        if (search != null) {
+            sql.append(" AND (LOWER(title) LIKE ? OR LOWER(topic) LIKE ? OR LOWER(content) LIKE ?)");
+            String pattern = "%" + search.toLowerCase(Locale.ROOT) + "%";
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+        }
+
+        if (typeVal != null) {
+            sql.append(" AND LOWER(TRIM(type)) = ?");
+            params.add(typeVal.toLowerCase(Locale.ROOT));
+        }
+        if (topicVal != null) {
+            sql.append(" AND LOWER(TRIM(topic)) = ?");
+            params.add(topicVal.toLowerCase(Locale.ROOT));
+        }
+
+        sql.append(" ORDER BY created_at DESC, id DESC");
+
+        List<Post> posts = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            bindParameters(ps, params);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    posts.add(mapResultSetToPost(rs));
+                }
+            }
+        }
+        return posts;
+    }
+
+    public List<String> getDistinctTypes() throws SQLException {
+        return getDistinctValues("type");
+    }
+
+    public List<String> getDistinctTopics() throws SQLException {
+        return getDistinctValues("topic");
     }
 
     public void validateForCreate(Post post) {
@@ -82,167 +262,8 @@ public class PostService {
         if (post.getUserId() == null || post.getUserId() <= 0) {
             throw new IllegalArgumentException("A valid user ID is required.");
         }
-        if (post.getCreatedAt() == null || post.getUpdatedAt() == null) {
-            throw new IllegalArgumentException("Post dates are invalid.");
-        }
-    }
-
-    public boolean existsDuplicate(Post post) throws SQLException {
-        String sql = """
-                SELECT COUNT(*)
-                FROM post
-                WHERE LOWER(TRIM(COALESCE(type, ''))) = ?
-                  AND LOWER(TRIM(COALESCE(title, ''))) = ?
-                  AND LOWER(TRIM(COALESCE(topic, ''))) = ?
-                  AND LOWER(TRIM(COALESCE(content, ''))) = ?
-                  AND COALESCE(user_id, -1) = ?
-                """;
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, normalizeComparableValue(post.getType()));
-            preparedStatement.setString(2, normalizeComparableValue(post.getTitle()));
-            preparedStatement.setString(3, normalizeComparableValue(post.getTopic()));
-            preparedStatement.setString(4, normalizeComparableValue(post.getContent()));
-            preparedStatement.setInt(5, post.getUserId() == null ? -1 : post.getUserId());
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.next() && resultSet.getInt(1) > 0;
-            }
-        }
-    }
-
-    public Post getById(int id) throws SQLException {
-        String sql = "SELECT * FROM post WHERE id = ?";
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, id);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return mapResultSetToPost(resultSet);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public List<Post> getByUserId(int userId) throws SQLException {
-        String sql = "SELECT * FROM post WHERE user_id = ? ORDER BY created_at DESC, id DESC";
-        List<Post> posts = new ArrayList<>();
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, userId);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    posts.add(mapResultSetToPost(resultSet));
-                }
-            }
-        }
-
-        return posts;
-    }
-
-    public List<Post> searchAndFilter(String searchTerm, String type, String topic) throws SQLException {
-        StringBuilder sql = new StringBuilder("SELECT * FROM post WHERE 1=1");
-        List<Object> parameters = new ArrayList<>();
-
-        String normalizedSearch = normalizeFilterValue(searchTerm);
-        String normalizedType = normalizeFilterValue(type);
-        String normalizedTopic = normalizeFilterValue(topic);
-
-        if (normalizedSearch != null) {
-            sql.append(" AND (LOWER(title) LIKE ? OR LOWER(topic) LIKE ? OR LOWER(content) LIKE ?)");
-            String pattern = "%" + normalizedSearch.toLowerCase(Locale.ROOT) + "%";
-            parameters.add(pattern);
-            parameters.add(pattern);
-            parameters.add(pattern);
-        }
-
-        if (normalizedType != null) {
-            sql.append(" AND type = ?");
-            parameters.add(normalizedType);
-        }
-
-        if (normalizedTopic != null) {
-            sql.append(" AND topic = ?");
-            parameters.add(normalizedTopic);
-        }
-
-        sql.append(" ORDER BY created_at DESC, id DESC");
-
-        List<Post> posts = new ArrayList<>();
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql.toString())) {
-            bindParameters(preparedStatement, parameters);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    posts.add(mapResultSetToPost(resultSet));
-                }
-            }
-        }
-
-        return posts;
-    }
-
-    public List<String> getDistinctTypes() throws SQLException {
-        return getDistinctValues("type");
-    }
-
-    public List<String> getDistinctTopics() throws SQLException {
-        return getDistinctValues("topic");
-    }
-
-    public boolean update(Post post) throws SQLException {
-        validateForUpdate(post);
-        if (existsDuplicateExcludingId(post)) {
-            throw new IllegalStateException("A similar post already exists for this user.");
-        }
-
-        String sql = "UPDATE post SET type = ?, title = ?, topic = ?, content = ?, created_at = ?, updated_at = ?, user_id = ? "
-                + "WHERE id = ?";
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, post.getType());
-            preparedStatement.setString(2, post.getTitle());
-            preparedStatement.setString(3, post.getTopic());
-            preparedStatement.setString(4, post.getContent());
-            setTimestamp(preparedStatement, 5, post.getCreatedAt());
-            setTimestamp(preparedStatement, 6, post.getUpdatedAt());
-            setNullableInteger(preparedStatement, 7, post.getUserId());
-            preparedStatement.setInt(8, post.getId());
-
-            return preparedStatement.executeUpdate() > 0;
-        }
-    }
-
-    public boolean delete(int id) throws SQLException {
-        boolean initialAutoCommit = connection.getAutoCommit();
-        connection.setAutoCommit(false);
-
-        try {
-            deleteRelatedRows("reaction", "post_id", id);
-            deleteRelatedRows("vote", "post_id", id);
-            deleteRelatedRows("report", "post_id", id);
-            deleteRelatedRows("post_tag", "post_id", id);
-            deleteRepliesForPost(id);
-
-            String sql = "DELETE FROM post WHERE id = ?";
-            boolean deleted;
-
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setInt(1, id);
-                deleted = preparedStatement.executeUpdate() > 0;
-            }
-
-            connection.commit();
-            return deleted;
-        } catch (SQLException exception) {
-            connection.rollback();
-            throw exception;
-        } finally {
-            connection.setAutoCommit(initialAutoCommit);
+        if (post.getCreatedAt() == null) {
+            throw new IllegalArgumentException("Post creation date is required.");
         }
     }
 
@@ -253,111 +274,97 @@ public class PostService {
         }
     }
 
+    public boolean existsDuplicate(Post post) throws SQLException {
+        String sql = """
+                SELECT COUNT(*) FROM post
+                WHERE LOWER(TRIM(COALESCE(type,''))) = ?
+                  AND LOWER(TRIM(COALESCE(title,''))) = ?
+                  AND LOWER(TRIM(COALESCE(topic,''))) = ?
+                  AND LOWER(TRIM(COALESCE(content,''))) = ?
+                  AND COALESCE(user_id,-1) = ?
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, normalizeComparableValue(post.getType()));
+            ps.setString(2, normalizeComparableValue(post.getTitle()));
+            ps.setString(3, normalizeComparableValue(post.getTopic()));
+            ps.setString(4, normalizeComparableValue(post.getContent()));
+            ps.setInt(5, post.getUserId() == null ? -1 : post.getUserId());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
+    }
+
     public boolean existsDuplicateExcludingId(Post post) throws SQLException {
         String sql = """
-                SELECT COUNT(*)
-                FROM post
+                SELECT COUNT(*) FROM post
                 WHERE id <> ?
-                  AND LOWER(TRIM(COALESCE(type, ''))) = ?
-                  AND LOWER(TRIM(COALESCE(title, ''))) = ?
-                  AND LOWER(TRIM(COALESCE(topic, ''))) = ?
-                  AND LOWER(TRIM(COALESCE(content, ''))) = ?
-                  AND COALESCE(user_id, -1) = ?
+                  AND LOWER(TRIM(COALESCE(type,''))) = ?
+                  AND LOWER(TRIM(COALESCE(title,''))) = ?
+                  AND LOWER(TRIM(COALESCE(topic,''))) = ?
+                  AND LOWER(TRIM(COALESCE(content,''))) = ?
+                  AND COALESCE(user_id,-1) = ?
                 """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, post.getId());
+            ps.setString(2, normalizeComparableValue(post.getType()));
+            ps.setString(3, normalizeComparableValue(post.getTitle()));
+            ps.setString(4, normalizeComparableValue(post.getTopic()));
+            ps.setString(5, normalizeComparableValue(post.getContent()));
+            ps.setInt(6, post.getUserId() == null ? -1 : post.getUserId());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
+    }
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, post.getId());
-            preparedStatement.setString(2, normalizeComparableValue(post.getType()));
-            preparedStatement.setString(3, normalizeComparableValue(post.getTitle()));
-            preparedStatement.setString(4, normalizeComparableValue(post.getTopic()));
-            preparedStatement.setString(5, normalizeComparableValue(post.getContent()));
-            preparedStatement.setInt(6, post.getUserId() == null ? -1 : post.getUserId());
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.next() && resultSet.getInt(1) > 0;
+    public boolean existsById(int id) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT 1 FROM post WHERE id = ?")) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
             }
         }
     }
 
     private List<String> getDistinctValues(String columnName) throws SQLException {
-        String sql = "SELECT DISTINCT " + columnName + " FROM post WHERE " + columnName
-                + " IS NOT NULL AND TRIM(" + columnName + ") <> '' ORDER BY " + columnName + " ASC";
+        String sql = "SELECT DISTINCT TRIM(" + columnName + ") AS value FROM post WHERE "
+                + columnName + " IS NOT NULL AND TRIM(" + columnName + ") <> '' ORDER BY LOWER(TRIM(" + columnName + ")) ASC";
         List<String> values = new ArrayList<>();
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-            while (resultSet.next()) {
-                values.add(resultSet.getString(1));
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                values.add(rs.getString("value"));
             }
         }
-
         return values;
     }
 
-    private Post mapResultSetToPost(ResultSet resultSet) throws SQLException {
+    private Post mapResultSetToPost(ResultSet rs) throws SQLException {
         Post post = new Post();
-        post.setId(resultSet.getInt("id"));
-        post.setType(resultSet.getString("type"));
-        post.setTitle(resultSet.getString("title"));
-        post.setTopic(resultSet.getString("topic"));
-        post.setContent(resultSet.getString("content"));
-        post.setCreatedAt(toLocalDateTime(resultSet.getTimestamp("created_at")));
-        post.setUpdatedAt(toLocalDateTime(resultSet.getTimestamp("updated_at")));
-
-        int userId = resultSet.getInt("user_id");
-        if (resultSet.wasNull()) {
-            post.setUserId(null);
-        } else {
-            post.setUserId(userId);
+        post.setId(rs.getInt("id"));
+        post.setType(rs.getString("type"));
+        post.setTitle(rs.getString("title"));
+        post.setTopic(rs.getString("topic"));
+        post.setContent(rs.getString("content"));
+        if (imageUrlColumnAvailable) {
+            post.setImageUrl(rs.getString("image_url"));
         }
+        post.setCreatedAt(toLocalDateTime(rs.getTimestamp("created_at")));
+        post.setUpdatedAt(toLocalDateTime(rs.getTimestamp("updated_at")));
 
+        int userId = rs.getInt("user_id");
+        post.setUserId(rs.wasNull() ? null : userId);
         return post;
-    }
-
-    private void setNullableInteger(PreparedStatement preparedStatement, int index, Integer value) throws SQLException {
-        if (value == null) {
-            preparedStatement.setNull(index, java.sql.Types.INTEGER);
-        } else {
-            preparedStatement.setInt(index, value);
-        }
-    }
-
-    private void bindParameters(PreparedStatement preparedStatement, List<Object> parameters) throws SQLException {
-        for (int index = 0; index < parameters.size(); index++) {
-            Object parameter = parameters.get(index);
-            if (parameter instanceof String stringValue) {
-                preparedStatement.setString(index + 1, stringValue);
-            } else if (parameter instanceof Integer integerValue) {
-                preparedStatement.setInt(index + 1, integerValue);
-            } else {
-                preparedStatement.setObject(index + 1, parameter);
-            }
-        }
-    }
-
-    private String normalizeFilterValue(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        String trimmedValue = value.trim();
-        return trimmedValue.isEmpty() ? null : trimmedValue;
-    }
-
-    private String normalizeComparableValue(String value) {
-        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
     private void deleteRepliesForPost(int postId) throws SQLException {
         List<Integer> replyIds = new ArrayList<>();
-        String selectSql = "SELECT id FROM reply WHERE post_id = ?";
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(selectSql)) {
-            preparedStatement.setInt(1, postId);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    replyIds.add(resultSet.getInt("id"));
+        try (PreparedStatement ps = connection.prepareStatement("SELECT id FROM reply WHERE post_id = ?")) {
+            ps.setInt(1, postId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    replyIds.add(rs.getInt("id"));
                 }
             }
         }
@@ -367,18 +374,123 @@ public class PostService {
             deleteRelatedRows("vote", "reply_id", replyId);
         }
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM reply WHERE post_id = ?")) {
-            preparedStatement.setInt(1, postId);
-            preparedStatement.executeUpdate();
+        try (PreparedStatement ps = connection.prepareStatement("DELETE FROM reply WHERE post_id = ?")) {
+            ps.setInt(1, postId);
+            ps.executeUpdate();
         }
     }
 
-    private void deleteRelatedRows(String tableName, String columnName, int foreignKeyValue) throws SQLException {
-        String sql = "DELETE FROM " + tableName + " WHERE " + columnName + " = ?";
+    private void deleteRelatedRows(String table, String column, int fk) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "DELETE FROM " + table + " WHERE " + column + " = ?")) {
+            ps.setInt(1, fk);
+            ps.executeUpdate();
+        }
+    }
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, foreignKeyValue);
-            preparedStatement.executeUpdate();
+    private void setNullableInteger(PreparedStatement ps, int idx, Integer value) throws SQLException {
+        if (value == null) {
+            ps.setNull(idx, java.sql.Types.INTEGER);
+        } else {
+            ps.setInt(idx, value);
+        }
+    }
+
+    private void setNullableString(PreparedStatement ps, int idx, String value) throws SQLException {
+        if (value == null || value.isBlank()) {
+            ps.setNull(idx, java.sql.Types.VARCHAR);
+        } else {
+            ps.setString(idx, value.trim());
+        }
+    }
+
+    private void setTimestamp(PreparedStatement ps, int idx, LocalDateTime value) throws SQLException {
+        if (value == null) {
+            ps.setNull(idx, java.sql.Types.TIMESTAMP);
+        } else {
+            ps.setTimestamp(idx, Timestamp.valueOf(value));
+        }
+    }
+
+    private LocalDateTime toLocalDateTime(Timestamp ts) {
+        return ts == null ? null : ts.toLocalDateTime();
+    }
+
+    private void bindParameters(PreparedStatement ps, List<Object> params) throws SQLException {
+        for (int i = 0; i < params.size(); i++) {
+            Object p = params.get(i);
+            if (p instanceof String s) {
+                ps.setString(i + 1, s);
+            } else if (p instanceof Integer iv) {
+                ps.setInt(i + 1, iv);
+            } else {
+                ps.setObject(i + 1, p);
+            }
+        }
+    }
+
+    private String normalizeFilterValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String normalizeComparableValue(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private void normalizePostForWrite(Post post, boolean isCreate) {
+        post.setType(trimToNull(post.getType()));
+        post.setTitle(trimToNull(post.getTitle()));
+        post.setTopic(trimToNull(post.getTopic()));
+        post.setContent(trimToNull(post.getContent()));
+
+        if (isCreate) {
+            if (post.getCreatedAt() == null) {
+                post.setCreatedAt(LocalDateTime.now());
+            }
+            if (post.getUpdatedAt() == null) {
+                post.setUpdatedAt(post.getCreatedAt());
+            }
+        } else if (post.getUpdatedAt() == null) {
+            post.setUpdatedAt(LocalDateTime.now());
+        }
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private boolean ensurePostImageColumn() {
+        try {
+            if (columnExists("post", "image_url")) {
+                return true;
+            }
+
+            try (Statement statement = connection.createStatement()) {
+                statement.executeUpdate("ALTER TABLE post ADD COLUMN image_url VARCHAR(1024) NULL");
+            }
+            return columnExists("post", "image_url");
+        } catch (SQLException exception) {
+            return false;
+        }
+    }
+
+    private boolean columnExists(String tableName, String columnName) throws SQLException {
+        DatabaseMetaData metadata = connection.getMetaData();
+        try (ResultSet columns = metadata.getColumns(connection.getCatalog(), null, tableName, columnName)) {
+            if (columns.next()) {
+                return true;
+            }
+        }
+        try (ResultSet columns = metadata.getColumns(connection.getCatalog(), null, tableName.toUpperCase(Locale.ROOT), columnName.toUpperCase(Locale.ROOT))) {
+            return columns.next();
         }
     }
 
@@ -386,15 +498,45 @@ public class PostService {
         return value == null || value.trim().isEmpty();
     }
 
-    private void setTimestamp(PreparedStatement preparedStatement, int index, java.time.LocalDateTime value) throws SQLException {
-        if (value == null) {
-            preparedStatement.setNull(index, java.sql.Types.TIMESTAMP);
-        } else {
-            preparedStatement.setTimestamp(index, Timestamp.valueOf(value));
+    public int countPostsWithReplies() throws SQLException {
+        String sql = """
+            SELECT COUNT(DISTINCT p.id)
+            FROM post p
+            INNER JOIN reply r ON r.post_id = p.id
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
         }
+        return 0;
     }
 
-    private java.time.LocalDateTime toLocalDateTime(Timestamp timestamp) {
-        return timestamp == null ? null : timestamp.toLocalDateTime();
+    public Map<Integer, Integer> getReplyCountsByPost() throws SQLException {
+        Map<Integer, Integer> counts = new HashMap<>();
+        String sql = "SELECT post_id, COUNT(*) AS cnt FROM reply GROUP BY post_id";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                counts.put(rs.getInt("post_id"), rs.getInt("cnt"));
+            }
+        }
+        return counts;
+    }
+
+    public Map<Integer, Integer> getReactionCountsByPost() throws SQLException {
+        Map<Integer, Integer> counts = new HashMap<>();
+        String sql = "SELECT post_id, COUNT(*) AS cnt FROM reaction WHERE post_id IS NOT NULL GROUP BY post_id";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                counts.put(rs.getInt("post_id"), rs.getInt("cnt"));
+            }
+        }
+        return counts;
     }
 }

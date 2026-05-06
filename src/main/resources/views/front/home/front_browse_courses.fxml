@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ComboBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
@@ -10,42 +12,51 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane styleClass="module-page"
+<BorderPane styleClass="module-page front-browse-page"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.front.home.FrontBrowseCoursesController">
-    <top>
-        <VBox maxWidth="1240.0" spacing="20.0">
-            <VBox spacing="6.0">
-                <Label styleClass="page-title" text="Browse Courses"/>
-                <Label styleClass="page-subtitle" text="Search, filter, and sort the full course catalog."/>
-            </VBox>
-            <HBox spacing="16.0" styleClass="front-toolbar-card">
-                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
-                    <Label styleClass="field-label" text="Search"/>
-                    <TextField fx:id="searchField" promptText="Search by course title" styleClass="list-search-field"/>
-                </VBox>
-                <VBox spacing="6.0" prefWidth="220.0">
-                    <Label styleClass="field-label" text="Sort"/>
-                    <ComboBox fx:id="sortComboBox"/>
-                </VBox>
-            </HBox>
-        </VBox>
-    </top>
     <center>
-        <HBox maxWidth="1240.0" spacing="24.0">
-            <VBox prefWidth="250.0" spacing="14.0" styleClass="front-filter-card">
-                <Label styleClass="section-title" text="Categories"/>
-                <Label styleClass="front-section-subtitle" text="Refine the course list by topic." wrapText="true"/>
+        <HBox maxWidth="1180.0" spacing="22.0" styleClass="front-browse-shell">
+            <VBox fx:id="filterPane" prefWidth="260.0" minWidth="240.0" maxWidth="280.0" spacing="18.0" styleClass="front-filter-card front-browse-filter-pane">
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <Label styleClass="section-title" text="Filters"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="clearFiltersButton" disable="true" mnemonicParsing="false" onAction="#handleClearFilters" styleClass="secondary-button front-clear-button" text="Clear"/>
+                </HBox>
+                <Label fx:id="activeFiltersLabel" styleClass="results-label" text="No active filters" wrapText="true"/>
+                <VBox spacing="8.0" styleClass="front-filter-group">
+                    <Label styleClass="front-filter-heading" text="Categories"/>
+                    <Label styleClass="front-section-subtitle" text="Refine by topic without losing the course grid." wrapText="true"/>
+                </VBox>
                 <VBox fx:id="categoryFilterBox" spacing="10.0"/>
             </VBox>
-            <VBox spacing="14.0" HBox.hgrow="ALWAYS">
-                <HBox alignment="CENTER_LEFT">
-                    <Label fx:id="resultsLabel" styleClass="results-label" text="0 courses"/>
-                    <Region HBox.hgrow="ALWAYS"/>
+
+            <VBox spacing="18.0" HBox.hgrow="ALWAYS" styleClass="front-section-card front-browse-results-panel">
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                        <Label styleClass="section-title" text="Course Catalog"/>
+                        <Label fx:id="resultsLabel" styleClass="front-section-subtitle" text="0 courses" wrapText="true"/>
+                    </VBox>
+                    <Label styleClass="front-results-pill-text" text="Sorted catalog"/>
                 </HBox>
-                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="front-scroll-pane" VBox.vgrow="ALWAYS">
+
+                <HBox alignment="BOTTOM_LEFT" spacing="14.0" styleClass="front-catalog-controls">
+                    <VBox spacing="7.0" HBox.hgrow="ALWAYS">
+                        <Label styleClass="field-label" text="Search Courses"/>
+                        <TextField fx:id="searchField" promptText="Try: JavaFX, Design, Marketing..." styleClass="list-search-field front-search-field"/>
+                    </VBox>
+                    <VBox spacing="7.0" prefWidth="190.0">
+                        <Label styleClass="field-label" text="Sort Results"/>
+                        <ChoiceBox fx:id="sortChoiceBox" maxWidth="Infinity" styleClass="front-sort-box"/>
+                    </VBox>
+                </HBox>
+
+                <ScrollPane fx:id="coursesScrollPane" fitToWidth="true" hbarPolicy="NEVER" styleClass="front-scroll-pane" VBox.vgrow="ALWAYS">
+                    <padding>
+                        <Insets top="16.0" right="2.0" bottom="14.0" left="2.0"/>
+                    </padding>
                     <content>
-                        <FlowPane fx:id="coursesGrid" prefWrapLength="930.0"/>
+                        <FlowPane fx:id="coursesGrid" prefWrapLength="860.0"/>
                     </content>
                 </ScrollPane>
             </VBox>

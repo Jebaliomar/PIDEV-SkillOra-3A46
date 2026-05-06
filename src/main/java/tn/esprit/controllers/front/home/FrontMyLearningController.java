@@ -1,51 +1,62 @@
 package tn.esprit.controllers.front.home;
 
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import tn.esprit.controllers.StudentLayoutController;
 import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
+import tn.esprit.entities.Certificate;
 import tn.esprit.entities.Course;
 import tn.esprit.entities.Enrollment;
+import tn.esprit.entities.Lesson;
 import tn.esprit.entities.User;
+import tn.esprit.services.CertificateService;
+import tn.esprit.services.CourseProgressService;
 import tn.esprit.services.CourseService;
 import tn.esprit.services.EnrollmentService;
+import tn.esprit.tools.AuthSession;
 
-import java.io.File;
+import java.awt.Desktop;
+import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 public class FrontMyLearningController implements FrontShellAware {
 
-    @FXML
-    private Label subtitleLabel;
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy");
 
     @FXML
-    private Label resultsLabel;
+    private Label enrolledCountLabel;
 
     @FXML
-    private FlowPane coursesPane;
+    private Label completedCountLabel;
+
+    @FXML
+    private Label averageProgressLabel;
+
+    @FXML
+    private Label summaryLabel;
+
+    @FXML
+    private javafx.scene.layout.FlowPane enrolledCoursesPane;
 
     private FrontShellController shellController;
     private EnrollmentService enrollmentService;
     private CourseService courseService;
+    private CourseProgressService courseProgressService;
+    private CertificateService certificateService;
 
     @FXML
     public void initialize() {
-        coursesPane.setHgap(18);
-        coursesPane.setVgap(18);
-        coursesPane.setPadding(new Insets(6, 0, 0, 0));
-        loadLearningCourses();
+        loadLearning();
     }
 
     @Override
@@ -53,102 +64,111 @@ public class FrontMyLearningController implements FrontShellAware {
         this.shellController = shellController;
     }
 
-    private void loadLearningCourses() {
-        User currentUser = StudentLayoutController.getCurrentUser();
-        coursesPane.getChildren().clear();
+    @FXML
+    private void handleBrowseCourses() {
+        if (shellController != null) {
+            shellController.showBrowseCourses();
+        }
+    }
 
-        if (currentUser == null || currentUser.getId() == null) {
-            subtitleLabel.setText("Sign in as a student to view your enrolled courses.");
-            resultsLabel.setText("0 courses");
-            coursesPane.getChildren().add(buildStateCard("No active student session", "My Learning is available when a student is logged in."));
+    private void loadLearning() {
+        enrolledCoursesPane.getChildren().clear();
+        User user = AuthSession.getCurrentUser();
+        if (user == null || user.getId() == null) {
+            enrolledCountLabel.setText("0");
+            completedCountLabel.setText("0");
+            averageProgressLabel.setText("0%");
+            summaryLabel.setText("Sign in to track your course progress.");
+            enrolledCoursesPane.getChildren().add(buildStateCard("No active session", "Please sign in to see your enrolled courses."));
             return;
         }
 
-        subtitleLabel.setText("Courses connected to " + safeValue(currentUser.getFirstName(), "your") + "'s learning path.");
-
         try {
-            List<Enrollment> enrollments = getEnrollmentService().getByUserId(currentUser.getId()).stream()
-                    .filter(enrollment -> enrollment.getCourseId() != null)
-                    .toList();
-
+            List<Enrollment> enrollments = getEnrollmentService().findByUser(user.getId());
             if (enrollments.isEmpty()) {
-                resultsLabel.setText("0 courses");
-                coursesPane.getChildren().add(buildStateCard("No courses yet", "Start a course from Browse Courses and it will appear here."));
+                enrolledCountLabel.setText("0");
+                completedCountLabel.setText("0");
+                averageProgressLabel.setText("0%");
+                summaryLabel.setText("You have not started a course yet.");
+                enrolledCoursesPane.getChildren().add(buildStateCard("No courses yet", "Start a course from Browse Courses and it will appear here."));
                 return;
             }
 
-            Map<Integer, Enrollment> enrollmentByCourseId = new LinkedHashMap<>();
+            int completedCount = 0;
+            int progressTotal = 0;
             for (Enrollment enrollment : enrollments) {
-                enrollmentByCourseId.putIfAbsent(enrollment.getCourseId(), enrollment);
+                Course course = enrollment.getCourseId() == null ? null : getCourseService().getById(enrollment.getCourseId());
+                if (course == null) {
+                    continue;
+                }
+                getCourseProgressService().recalculateEnrollmentProgress(enrollment, course);
+                Certificate certificate = getCertificateService().findOneByEnrollment(enrollment.getId());
+                int totalLessons = getCourseProgressService().getTotalLessons(course);
+                int completedLessons = getCourseProgressService().getCompletedLessons(enrollment);
+                int progress = enrollment.getProgressPercent() == null ? 0 : enrollment.getProgressPercent();
+                if (progress >= 100 && certificate == null) {
+                    certificate = getCertificateService().issueIfEligible(enrollment, user, course, totalLessons);
+                }
+                if (progress >= 100) {
+                    completedCount++;
+                }
+                progressTotal += progress;
+                enrolledCoursesPane.getChildren().add(buildCourseCard(course, enrollment, certificate, completedLessons, totalLessons, progress));
             }
 
-            List<Course> courses = getCourseService().getByIds(enrollmentByCourseId.keySet().stream().toList());
-            if (courses.isEmpty()) {
-                resultsLabel.setText("0 courses");
-                coursesPane.getChildren().add(buildStateCard("No available courses", "The enrolled courses could not be loaded from the catalog."));
-                return;
-            }
-
-            resultsLabel.setText(courses.size() + (courses.size() == 1 ? " course" : " courses"));
-            courses.forEach(course -> coursesPane.getChildren().add(buildCourseCard(course, enrollmentByCourseId.get(course.getId()))));
-        } catch (SQLException | IllegalStateException e) {
-            resultsLabel.setText("0 courses");
-            coursesPane.getChildren().add(buildStateCard("Unable to load My Learning", e.getMessage()));
+            enrolledCountLabel.setText(String.valueOf(enrollments.size()));
+            completedCountLabel.setText(String.valueOf(completedCount));
+            averageProgressLabel.setText(Math.round(progressTotal / (double) enrollments.size()) + "%");
+            summaryLabel.setText(enrollments.size() + (enrollments.size() == 1 ? " course in progress" : " courses in progress"));
+        } catch (Exception e) {
+            enrolledCoursesPane.getChildren().setAll(buildStateCard("Unable to load learning", e.getMessage()));
         }
     }
 
-    private VBox buildCourseCard(Course course, Enrollment enrollment) {
-        StackPane thumbnailPane = buildThumbnailPane(course);
-
-        Label progressLabel = new Label(buildProgressText(enrollment));
-        progressLabel.getStyleClass().add("front-course-progress-pill");
-
-        Label categoryLabel = new Label(safeValue(course.getCategory(), "Uncategorized"));
+    private VBox buildCourseCard(Course course, Enrollment enrollment, Certificate certificate, int completedLessons, int totalLessons, int progress) {
+        Label categoryLabel = new Label(safeValue(course.getCategory(), "General"));
         categoryLabel.getStyleClass().add("front-course-category");
 
         Label titleLabel = new Label(safeValue(course.getTitle(), "Untitled Course"));
-        titleLabel.getStyleClass().add("front-course-title");
+        titleLabel.getStyleClass().add("learning-card-title");
         titleLabel.setWrapText(true);
 
-        Label descriptionLabel = new Label(truncate(safeValue(course.getDescription(), "No description yet."), 120));
-        descriptionLabel.getStyleClass().add("front-course-description");
-        descriptionLabel.setWrapText(true);
+        Label enrolledLabel = new Label("Enrolled " + (enrollment.getEnrolledAt() == null ? "" : enrollment.getEnrolledAt().format(DATE_FORMAT)));
+        enrolledLabel.getStyleClass().add("learning-card-meta");
+
+        Label progressLabel = new Label(progress + "%");
+        progressLabel.getStyleClass().add("learning-progress-value");
+        Label lessonCountLabel = new Label(completedLessons + " / " + totalLessons + " lessons");
+        lessonCountLabel.getStyleClass().add("learning-card-meta");
+
+        ProgressBar progressBar = new ProgressBar(progress / 100.0);
+        progressBar.setMaxWidth(Double.MAX_VALUE);
+        progressBar.getStyleClass().add("learning-progress-bar");
+
+        Button continueButton = new Button(progress >= 100 ? "Review Course" : "Continue");
+        continueButton.getStyleClass().add("primary-button");
+        continueButton.setOnAction(event -> openCourse(course, enrollment));
+
+        Button certificateButton = new Button("Certificate");
+        certificateButton.getStyleClass().add("secondary-button");
+        certificateButton.setDisable(certificate == null);
+        Certificate finalCertificate = certificate;
+        certificateButton.setOnAction(event -> openCertificate(finalCertificate));
 
         Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox progressRow = new HBox(10, progressLabel, spacer, lessonCountLabel);
+        progressRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox card = new VBox(14, thumbnailPane, progressLabel, categoryLabel, titleLabel, descriptionLabel, spacer);
-        card.getStyleClass().add("front-course-card");
-        card.getStyleClass().add("front-course-card-clickable");
-        card.setPrefWidth(290);
-        card.setMinWidth(270);
-        card.setPrefHeight(300);
-        card.setOnMouseClicked(event -> openCourse(course));
+        HBox actions = new HBox(10, continueButton, certificateButton);
+        actions.setAlignment(Pos.CENTER_LEFT);
+
+        VBox card = new VBox(13, categoryLabel, titleLabel, enrolledLabel, progressRow, progressBar, actions);
+        card.getStyleClass().add("learning-course-card");
+        card.setPrefWidth(354);
+        card.setMinWidth(354);
+        card.setMaxWidth(354);
         return card;
-    }
-
-    private StackPane buildThumbnailPane(Course course) {
-        StackPane thumbnailPane = new StackPane();
-        thumbnailPane.getStyleClass().add("front-course-thumbnail");
-        thumbnailPane.setPrefHeight(130);
-        thumbnailPane.setMinHeight(130);
-        thumbnailPane.setMaxWidth(Double.MAX_VALUE);
-
-        Image image = loadThumbnail(course.getThumbnail());
-        if (image != null) {
-            ImageView imageView = new ImageView(image);
-            imageView.setFitHeight(130);
-            imageView.setFitWidth(254);
-            imageView.setPreserveRatio(false);
-            imageView.setSmooth(true);
-            imageView.setCache(true);
-            thumbnailPane.getChildren().add(imageView);
-        } else {
-            Label placeholderLabel = new Label("No Thumbnail");
-            placeholderLabel.getStyleClass().add("front-course-thumbnail-placeholder");
-            thumbnailPane.getChildren().add(placeholderLabel);
-        }
-        return thumbnailPane;
     }
 
     private VBox buildStateCard(String titleText, String bodyText) {
@@ -159,45 +179,46 @@ public class FrontMyLearningController implements FrontShellAware {
         body.setWrapText(true);
         VBox card = new VBox(8, title, body);
         card.getStyleClass().add("placeholder-panel");
-        card.setPrefWidth(380);
+        card.setPrefWidth(420);
         return card;
     }
 
-    private String buildProgressText(Enrollment enrollment) {
-        if (enrollment == null || enrollment.getProgressPercent() == null) {
-            return "In progress";
+    private void openCourse(Course course, Enrollment enrollment) {
+        try {
+            Lesson nextLesson = getCourseProgressService().getNextUncompletedLesson(enrollment, course);
+            if (shellController != null) {
+                if (nextLesson != null) {
+                    shellController.showCourseConsume(course, nextLesson);
+                } else {
+                    shellController.showCourseShow(course);
+                }
+            }
+        } catch (SQLException e) {
+            showError("Unable to open this course.", e);
         }
-        return "Progress " + enrollment.getProgressPercent() + "%";
+    }
+
+    private void openCertificate(Certificate certificate) {
+        if (certificate == null) {
+            return;
+        }
+        try {
+            Path pdfPath = getCertificateService().ensurePdfGenerated(certificate);
+            Desktop.getDesktop().open(pdfPath.toFile());
+        } catch (Exception e) {
+            showError("Unable to open the certificate.", e);
+        }
     }
 
     private String safeValue(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
     }
 
-    private String truncate(String value, int maxLength) {
-        return value.length() <= maxLength ? value : value.substring(0, maxLength - 3) + "...";
-    }
-
-    private Image loadThumbnail(String thumbnail) {
-        if (thumbnail == null || thumbnail.isBlank()) {
-            return null;
-        }
-        try {
-            if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
-                return new Image(thumbnail, true);
-            }
-            File file = new File(thumbnail);
-            String imageUrl = file.exists() ? file.toURI().toString() : new File(thumbnail.replace("/", File.separator)).toURI().toString();
-            return new Image(imageUrl, true);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private void openCourse(Course course) {
-        if (shellController != null && course != null) {
-            shellController.showCourseShow(course);
-        }
+    private void showError(String title, Exception e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(title);
+        alert.setContentText(e == null || e.getMessage() == null ? "Unexpected error." : e.getMessage());
+        alert.showAndWait();
     }
 
     private EnrollmentService getEnrollmentService() {
@@ -212,5 +233,19 @@ public class FrontMyLearningController implements FrontShellAware {
             courseService = new CourseService();
         }
         return courseService;
+    }
+
+    private CourseProgressService getCourseProgressService() {
+        if (courseProgressService == null) {
+            courseProgressService = new CourseProgressService();
+        }
+        return courseProgressService;
+    }
+
+    private CertificateService getCertificateService() {
+        if (certificateService == null) {
+            certificateService = new CertificateService();
+        }
+        return certificateService;
     }
 }

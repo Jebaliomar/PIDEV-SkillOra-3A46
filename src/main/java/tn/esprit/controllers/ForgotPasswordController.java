@@ -11,6 +11,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.services.PasswordResetService;
+import tn.esprit.tools.AppWindow;
 import tn.esprit.tools.RightPanelAnimator;
 import tn.esprit.tools.ThemeManager;
 
@@ -79,13 +80,12 @@ public class ForgotPasswordController {
             Parent root = loader.load();
             ResetPasswordController controller = loader.getController();
             controller.setEmail(email);
-            Scene scene = new Scene(root);
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             ThemeManager.applyTheme(scene);
 
             Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Reset password - SkillORA");
+            AppWindow.show(stage, scene, "Reset password - SkillORA", false);
         } catch (IOException e) {
             e.printStackTrace();
             showError("Could not open reset screen.");
@@ -96,12 +96,11 @@ public class ForgotPasswordController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             ThemeManager.applyTheme(scene);
             Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle(title);
+            AppWindow.show(stage, scene, title, false);
         } catch (IOException e) {
             e.printStackTrace();
         }

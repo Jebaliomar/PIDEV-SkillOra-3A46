@@ -11,10 +11,15 @@ import tn.esprit.controllers.forum.AdminPostManagementController;
 import tn.esprit.controllers.forum.CreatePostController;
 import tn.esprit.controllers.forum.PostDetailsController;
 import tn.esprit.controllers.forum.PostOverviewController;
+import tn.esprit.controllers.forum.ReportManagementController;
 import tn.esprit.entities.User;
 import tn.esprit.services.PostService;
+import tn.esprit.services.ReactionService;
 import tn.esprit.services.ReplyService;
+import tn.esprit.services.ReportService;
+import tn.esprit.services.ShareService;
 import tn.esprit.services.UserService;
+import tn.esprit.tools.AppWindow;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -23,8 +28,8 @@ import java.util.Map;
 
 public class ForumCrudLauncher extends Application {
 
-    private static final double WINDOW_WIDTH = 980;
-    private static final double WINDOW_HEIGHT = 720;
+    private static final double WINDOW_WIDTH = AppWindow.DEFAULT_WIDTH;
+    private static final double WINDOW_HEIGHT = AppWindow.DEFAULT_HEIGHT;
     private static final int STATIC_USER_ID = 1;
     private static final String STATIC_USERNAME = "Forum User";
 
@@ -32,7 +37,10 @@ public class ForumCrudLauncher extends Application {
 
     private Stage primaryStage;
     private PostService postService;
+    private ReactionService reactionService;
     private ReplyService replyService;
+    private ReportService reportService;
+    private final ShareService shareService = new ShareService();
     private UserService userService;
     private User currentUser;
 
@@ -59,7 +67,9 @@ public class ForumCrudLauncher extends Application {
     private void initializeServicesAndUser() {
         try {
             this.postService = new PostService();
+            this.reactionService = new ReactionService();
             this.replyService = new ReplyService();
+            this.reportService = new ReportService();
             this.userService = new UserService();
 
             // Try to load a real user from the database (preferred). Fall back to a static user if DB is empty or an error occurs.
@@ -146,12 +156,21 @@ public class ForumCrudLauncher extends Application {
     }
 
     public void showPostDetailsScene(int postId) {
+        showPostDetailsScene(postId, false);
+    }
+
+    public void showAdminPostDetailsScene(int postId) {
+        showPostDetailsScene(postId, true);
+    }
+
+    private void showPostDetailsScene(int postId, boolean adminMode) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/post-details.fxml"));
             Parent root = loader.load();
 
             PostDetailsController controller = loader.getController();
             controller.setApplication(this);
+            controller.setAdminMode(adminMode);
             if (!controller.loadPost(postId)) {
                 return;
             }
@@ -177,9 +196,29 @@ public class ForumCrudLauncher extends Application {
         }
     }
 
+    public void showReportManagementScene() {
+        if (!canModeratePosts()) {
+            showError("Access denied", "You do not have permission to open the moderation reports screen.");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/tn/esprit/forum/report-management.fxml"));
+            Parent root = loader.load();
+
+            ReportManagementController controller = loader.getController();
+            controller.setApplication(this);
+            controller.loadReports();
+
+            setScene(root, "Reports");
+        } catch (IOException exception) {
+            showError("View loading failed", exception.getMessage());
+        }
+    }
+
     protected void setScene(Parent root, String title) {
         primaryStage.setTitle("SkillOra Forum - " + title);
-        primaryStage.setScene(new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT));
+        AppWindow.show(primaryStage, new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT), "SkillOra Forum - " + title, false);
     }
 
     public PostService getPostService() {
@@ -190,12 +229,24 @@ public class ForumCrudLauncher extends Application {
         return replyService;
     }
 
+    public ReactionService getReactionService() {
+        return reactionService;
+    }
+
+    public ReportService getReportService() {
+        return reportService;
+    }
+
+    public ShareService getShareService() {
+        return shareService;
+    }
+
     public User getCurrentUser() {
         return currentUser;
     }
 
     public String getCurrentUserDisplay() {
-        return currentUser.getUsername() + " (ID: " + currentUser.getId() + ")";
+        return currentUser == null ? "No active user" : currentUser.getUsername() + " (ID: " + currentUser.getId() + ")";
     }
 
     public boolean canModeratePosts() {

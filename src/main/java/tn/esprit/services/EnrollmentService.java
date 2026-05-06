@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class EnrollmentService {
@@ -72,27 +71,8 @@ public class EnrollmentService {
         return null;
     }
 
-    public List<Enrollment> getByUserId(int userId) throws SQLException {
-        String sql = "SELECT * FROM `enrollment` WHERE `user_id` = ?";
-        List<Enrollment> enrollments = new ArrayList<>();
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, userId);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    enrollments.add(mapResultSetToEnrollment(resultSet));
-                }
-            }
-        }
-
-        enrollments.sort(Comparator.comparing(Enrollment::getEnrolledAt, Comparator.nullsLast(java.time.LocalDateTime::compareTo)).reversed()
-                .thenComparing(Enrollment::getId, Comparator.nullsLast(Integer::compareTo)));
-        return enrollments;
-    }
-
-    public Enrollment getByUserAndCourse(int userId, int courseId) throws SQLException {
-        String sql = "SELECT * FROM `enrollment` WHERE `user_id` = ? AND `course_id` = ? ORDER BY `id` DESC LIMIT 1";
+    public Enrollment findOneByUserAndCourse(int userId, int courseId) throws SQLException {
+        String sql = "SELECT * FROM `enrollment` WHERE `user_id` = ? AND `course_id` = ? LIMIT 1";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, userId);
@@ -106,6 +86,65 @@ public class EnrollmentService {
         }
 
         return null;
+    }
+
+    public List<Enrollment> findByUser(int userId) throws SQLException {
+        String sql = "SELECT * FROM `enrollment` WHERE `user_id` = ? ORDER BY `enrolled_at` DESC, `id` DESC";
+        List<Enrollment> enrollments = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    enrollments.add(mapResultSetToEnrollment(resultSet));
+                }
+            }
+        }
+
+        return enrollments;
+    }
+
+    public int countByCourse(int courseId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM `enrollment` WHERE `course_id` = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, courseId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() ? resultSet.getInt(1) : 0;
+            }
+        }
+    }
+
+    public int countCompletedByCourse(int courseId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM `enrollment` "
+                + "WHERE `course_id` = ? AND (`status` = ? OR `progress_percent` >= 100)";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, courseId);
+            preparedStatement.setString(2, "completed");
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() ? resultSet.getInt(1) : 0;
+            }
+        }
+    }
+
+    public Enrollment enrollIfMissing(int userId, int courseId) throws SQLException {
+        Enrollment existing = findOneByUserAndCourse(userId, courseId);
+        if (existing != null) {
+            return existing;
+        }
+
+        Enrollment enrollment = new Enrollment();
+        enrollment.setUserId(userId);
+        enrollment.setCourseId(courseId);
+        enrollment.setEnrolledAt(java.time.LocalDateTime.now());
+        enrollment.setProgressPercent((short) 0);
+        enrollment.setStatus("active");
+        add(enrollment);
+        return enrollment;
     }
 
     public boolean update(Enrollment enrollment) throws SQLException {

@@ -68,12 +68,20 @@ public class SiteSalleDetailService {
             return null;
         }
 
-        File file = resolveFile(modelPath.trim());
+        File file = resolveModelFile(modelPath);
         if (file == null || !file.exists()) {
             return null;
         }
 
         return LocalModelServer.registerModel(file.toPath());
+    }
+
+    public File resolveModelFile(String modelPath) {
+        if (modelPath == null || modelPath.isBlank()) {
+            return null;
+        }
+
+        return resolveFile(modelPath.trim());
     }
 
     private Set<Integer> extractReservedSeatNumbers(Reservation reservation, int capacity) {

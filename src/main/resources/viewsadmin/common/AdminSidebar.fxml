@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="sidebarRoot"
+      xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.admin.AdminSidebarController"
+      prefWidth="270" styleClass="admin-sidebar-root" spacing="0">
+    <padding>
+        <Insets top="20" bottom="20" left="16" right="16"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="admin-sidebar-brand-box">
+        <StackPane styleClass="admin-sidebar-brand-icon-wrap" prefWidth="42" prefHeight="42">
+            <Label text="S" styleClass="admin-sidebar-brand-icon"/>
+        </StackPane>
+        <VBox spacing="0">
+            <Label text="SkillORA" styleClass="admin-sidebar-brand-title"/>
+            <Label text="Admin Panel" styleClass="admin-sidebar-brand-subtitle"/>
+        </VBox>
+    </HBox>
+
+    <Region prefHeight="30"/>
+
+    <VBox spacing="8" fx:id="navContainer" styleClass="admin-sidebar-nav-group">
+        <Button fx:id="navDashboard" text="Dashboard" onAction="#showDashboard"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navUsers" text="User Management" onAction="#showUserManagement"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navEvents" text="Events" onAction="#showEventsDashboard"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navSalles" text="Salles" onAction="#showSallesDashboard"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navReservations" text="Reservations" onAction="#showReservationsDashboard"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navRendezVous" text="Rendez-vous" onAction="#showRendezVousAdmin"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navForum" text="Forum" onAction="#showAdminForum"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navCourses" text="Courses Admin" onAction="#showCoursesAdmin"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navEvaluations" text="Evaluations" onAction="#showEvaluationsAdmin"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navStats" text="Statistics" onAction="#showStatistics"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+        <Button fx:id="navAccessibility" text="Accessibility" onAction="#showAccessibility"
+                styleClass="admin-sidebar-nav-item" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="44"/>
+    </VBox>
+
+    <Region VBox.vgrow="ALWAYS"/>
+
+    <HBox spacing="6" alignment="CENTER">
+        <Button fx:id="pomodoroBtn" onAction="#togglePomodoro"
+                styleClass="pomodoro-toggle admin-sidebar-icon-button" alignment="CENTER" prefHeight="40" prefWidth="40"/>
+        <Button fx:id="themeToggleBtn" onAction="#toggleTheme"
+                styleClass="admin-sidebar-icon-button" alignment="CENTER" prefHeight="40" prefWidth="40"/>
+    </HBox>
+
+    <Region prefHeight="8"/>
+
+    <Button fx:id="signOutButton" text="   Sign Out" onAction="#handleLogout"
+            styleClass="admin-sidebar-signout-button" maxWidth="Infinity" alignment="CENTER_LEFT" prefHeight="40"/>
+</VBox>

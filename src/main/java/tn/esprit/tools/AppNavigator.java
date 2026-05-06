@@ -1,15 +1,17 @@
 package tn.esprit.tools;
 
-import tn.esprit.controllers.AdminPanelController;
-import tn.esprit.controllers.front.FrontShellController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import tn.esprit.controllers.AdminPanelController;
+import tn.esprit.controllers.ProfessorLayoutController;
+import tn.esprit.controllers.StudentLayoutController;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public final class AppNavigator {
 
@@ -17,55 +19,63 @@ public final class AppNavigator {
     }
 
     public static void showAdminDashboard(Node sourceNode) {
-        switchScene(sourceNode, "/views/admin/admin_shell.fxml");
+        if (sourceNode != null && "coursesNavButton".equals(sourceNode.getId())) {
+            showCoursesAdmin(sourceNode);
+            return;
+        }
+        switchLegacyScene(sourceNode, "/fxml/AdminPanel.fxml", "/styles/style.css");
     }
 
     public static void showFrontHome(Node sourceNode) {
-        switchScene(sourceNode, "/views/front/front_shell.fxml");
+        showStudentLayout(sourceNode, StudentLayoutController::showHome, "SkillORA");
     }
 
     public static void showFrontBrowseCourses(Node sourceNode) {
-        if (sourceNode == null || sourceNode.getScene() == null || sourceNode.getScene().getWindow() == null) {
-            throw new IllegalStateException("No active window is available for navigation.");
-        }
+        showStudentLayout(sourceNode, StudentLayoutController::showCourses, "SkillORA Courses");
+    }
 
-        Stage stage = (Stage) sourceNode.getScene().getWindow();
-        try {
-            FXMLLoader loader = new FXMLLoader(AppNavigator.class.getResource("/views/front/front_shell.fxml"));
-            Parent root = loader.load();
-            Object controller = loader.getController();
-            if (controller instanceof FrontShellController frontShellController) {
-                frontShellController.showBrowseCourses();
-            }
-            Scene scene = new Scene(root, Math.max(stage.getWidth(), 1240), Math.max(stage.getHeight(), 760));
-            scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/atlantafx/base/theme/primer-light.css")).toExternalForm());
-            scene.getStylesheets().add(AppNavigator.class.getResource("/styles/macos-theme.css").toExternalForm());
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to load browse courses view.", e);
-        }
+    public static void showFrontMyLearning(Node sourceNode) {
+        showStudentLayout(sourceNode, StudentLayoutController::showMyLearning, "SkillORA My Learning");
     }
 
     public static void showFrontEvents(Node sourceNode) {
-        if (sourceNode == null || sourceNode.getScene() == null || sourceNode.getScene().getWindow() == null) {
-            throw new IllegalStateException("No active window is available for navigation.");
-        }
+        showStudentLayout(sourceNode, StudentLayoutController::showEvents, "SkillORA Events");
+    }
 
-        Stage stage = (Stage) sourceNode.getScene().getWindow();
-        try {
-            FXMLLoader loader = new FXMLLoader(AppNavigator.class.getResource("/views/event/SiteEventsView.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root, Math.max(stage.getWidth(), 1440), Math.max(stage.getHeight(), 900));
-            scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/styles/site-events.css")).toExternalForm());
-            scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/styles/macos-theme.css")).toExternalForm());
-            ThemeManager.applyTheme(scene);
-            stage.setTitle("SkillHarbor Events");
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to load events view.", e);
-        }
+    public static void showFrontRendezVous(Node sourceNode) {
+        showStudentLayout(sourceNode, StudentLayoutController::showRendezVous, "SkillORA Rendez-vous");
+    }
+
+    public static void showFrontSlots(Node sourceNode) {
+        showStudentLayout(sourceNode, StudentLayoutController::showSlots, "SkillORA Slots");
+    }
+
+    public static void showFrontForum(Node sourceNode) {
+        showStudentLayout(sourceNode, StudentLayoutController::showForum, "SkillORA Forum");
+    }
+
+    public static void showFrontAssessment(Node sourceNode) {
+        showStudentLayout(sourceNode, StudentLayoutController::showAssessment, "SkillORA Assessment");
+    }
+
+    public static void showFrontMyAssessments(Node sourceNode) {
+        showStudentLayout(sourceNode, StudentLayoutController::showMyAssessments, "SkillORA My Assessments");
+    }
+
+    public static void showFrontProfile(Node sourceNode) {
+        showStudentLayout(sourceNode, StudentLayoutController::showProfile, "SkillORA Profile");
+    }
+
+    public static void showFrontSettings(Node sourceNode) {
+        showStudentLayout(sourceNode, StudentLayoutController::showSettings, "SkillORA Settings");
+    }
+
+    public static void showLogin(Node sourceNode) {
+        AuthSession.clear();
+        StudentLayoutController.setCurrentUser(null);
+        ProfessorLayoutController.setCurrentUser(null);
+        AdminPanelController.setCurrentUser(null);
+        switchLegacyScene(sourceNode, "/fxml/Login.fxml", "/styles/style.css", "SkillORA - Sign In");
     }
 
     public static void showUserAdmin(Node sourceNode) {
@@ -83,8 +93,40 @@ public final class AppNavigator {
         switchLegacyScene(sourceNode, "/fxml/AdminPanel.fxml", "/styles/style.css");
     }
 
+    public static void showCoursesAdmin(Node sourceNode) {
+        AdminPanelController.setInitialView(AdminPanelController.InitialView.COURSES);
+        switchLegacyScene(sourceNode, "/fxml/AdminPanel.fxml", "/styles/style.css");
+    }
+
     public static void showUserFront(Node sourceNode) {
-        switchLegacyScene(sourceNode, "/fxml/StudentLayout.fxml", "/styles/style.css");
+        showStudentLayout(sourceNode, StudentLayoutController::showHome, "SkillORA");
+    }
+
+    private static void showStudentLayout(Node sourceNode,
+                                          Consumer<StudentLayoutController> afterLoad,
+                                          String title) {
+        if (sourceNode == null || sourceNode.getScene() == null || sourceNode.getScene().getWindow() == null) {
+            throw new IllegalStateException("No active window is available for navigation.");
+        }
+
+        Stage stage = (Stage) sourceNode.getScene().getWindow();
+        try {
+            FXMLLoader loader = new FXMLLoader(AppNavigator.class.getResource("/fxml/StudentLayout.fxml"));
+            Parent root = loader.load();
+            Object controller = loader.getController();
+            if (!(controller instanceof StudentLayoutController studentLayoutController)) {
+                throw new IllegalStateException("Student layout controller is unavailable.");
+            }
+
+            Scene scene = AppWindow.createScene(root);
+            scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/styles/style.css")).toExternalForm());
+            ThemeManager.applyTheme(scene);
+            afterLoad.accept(studentLayoutController);
+            ThemeManager.applyTheme(scene);
+            AppWindow.show(stage, scene, title, false);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to load student workspace.", e);
+        }
     }
 
     private static void switchScene(Node sourceNode, String resourcePath) {
@@ -96,17 +138,20 @@ public final class AppNavigator {
         try {
             FXMLLoader loader = new FXMLLoader(AppNavigator.class.getResource(resourcePath));
             Parent root = loader.load();
-            Scene scene = new Scene(root, Math.max(stage.getWidth(), 1240), Math.max(stage.getHeight(), 760));
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/atlantafx/base/theme/primer-light.css")).toExternalForm());
             scene.getStylesheets().add(AppNavigator.class.getResource("/styles/macos-theme.css").toExternalForm());
-            stage.setScene(scene);
-            stage.show();
+            AppWindow.show(stage, scene, null, false);
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load view: " + resourcePath, e);
         }
     }
 
     private static void switchLegacyScene(Node sourceNode, String resourcePath, String stylesheetPath) {
+        switchLegacyScene(sourceNode, resourcePath, stylesheetPath, null);
+    }
+
+    private static void switchLegacyScene(Node sourceNode, String resourcePath, String stylesheetPath, String title) {
         if (sourceNode == null || sourceNode.getScene() == null || sourceNode.getScene().getWindow() == null) {
             throw new IllegalStateException("No active window is available for navigation.");
         }
@@ -115,15 +160,14 @@ public final class AppNavigator {
         try {
             FXMLLoader loader = new FXMLLoader(AppNavigator.class.getResource(resourcePath));
             Parent root = loader.load();
-            Scene scene = new Scene(root, Math.max(stage.getWidth(), 1240), Math.max(stage.getHeight(), 760));
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource(stylesheetPath)).toExternalForm());
             if ("/fxml/AdminPanel.fxml".equals(resourcePath)) {
                 scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/styles/event.css")).toExternalForm());
                 scene.getStylesheets().add(Objects.requireNonNull(AppNavigator.class.getResource("/styles/salle.css")).toExternalForm());
             }
             ThemeManager.applyTheme(scene);
-            stage.setScene(scene);
-            stage.show();
+            AppWindow.show(stage, scene, title, false);
         } catch (IOException e) {
             throw new IllegalStateException("Unable to load view: " + resourcePath, e);
         }

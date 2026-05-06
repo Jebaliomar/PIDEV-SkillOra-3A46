@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -17,65 +18,50 @@
 <?import javafx.scene.web.WebView?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="tn.esprit.controlles.SiteSalleDetailController"
+            fx:controller="tn.esprit.controllers.SiteSalleDetailController"
             prefWidth="1440" prefHeight="900" styleClass="site-root">
 
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="18" styleClass="site-header">
-            <padding>
-                <Insets top="12" right="24" bottom="12" left="24"/>
-            </padding>
-
-            <StackPane prefWidth="40" prefHeight="40" styleClass="site-logo-wrap">
-                <Label text="⚓" styleClass="site-logo-text"/>
-            </StackPane>
-            <Label text="SkillHarbor" styleClass="site-brand"/>
-
-            <Button text="Browse" styleClass="site-nav-button"/>
-            <Button text="My Learning" styleClass="site-nav-button"/>
-            <Button text="Community" styleClass="site-nav-button"/>
-            <Button text="Events" styleClass="site-nav-button site-nav-button-active" onAction="#onBackToEvents"/>
-            <Button text="Rendez-vous" styleClass="site-nav-button"/>
-            <Button text="Teach" styleClass="site-nav-button"/>
-
-            <Region HBox.hgrow="ALWAYS"/>
-
-            <Button fx:id="themeToggleButton" text="☀" onAction="#onToggleTheme" styleClass="site-icon-button"/>
-            <Button text="🔔" styleClass="site-icon-button"/>
-            <StackPane prefWidth="52" prefHeight="44" styleClass="site-avatar">
-                <Label text="AS" styleClass="site-avatar-text"/>
-            </StackPane>
-        </HBox>
+        <fx:include fx:id="navbar" source="../../views/front/common/SkilloraNavbar.fxml"/>
     </top>
 
     <center>
         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="site-scroll">
             <content>
-                <VBox spacing="28" styleClass="site-content">
+                <VBox spacing="30" styleClass="site-content site-salle-page">
                     <padding>
-                        <Insets top="26" right="28" bottom="36" left="28"/>
+                        <Insets top="30" right="42" bottom="42" left="42"/>
                     </padding>
 
-                    <HBox spacing="24" styleClass="site-detail-hero-card">
+                    <HBox alignment="CENTER_LEFT" spacing="28" styleClass="site-detail-hero-card site-detail-hero-card-refined">
                         <padding>
-                            <Insets top="24" right="24" bottom="24" left="24"/>
+                            <Insets top="28" right="28" bottom="28" left="28"/>
                         </padding>
 
-                        <StackPane prefWidth="340" prefHeight="240" styleClass="site-cover-shell">
-                            <ImageView fx:id="coverImageView" fitWidth="340" fitHeight="240" preserveRatio="false" smooth="true" visible="false" managed="false"/>
+                        <StackPane prefWidth="380" prefHeight="270" styleClass="site-cover-shell">
+                            <ImageView fx:id="coverImageView" fitWidth="380" fitHeight="270" preserveRatio="false" smooth="true" visible="false" managed="false"/>
                             <StackPane fx:id="coverFallbackPane" styleClass="site-cover-fallback">
                                 <VBox alignment="CENTER" spacing="10">
                                     <Label text="Salle" styleClass="site-cover-title"/>
                                     <Label text="Public detail view" styleClass="site-cover-copy"/>
                                 </VBox>
                             </StackPane>
+                            <VBox alignment="BOTTOM_LEFT" spacing="4" styleClass="site-cover-overlay" StackPane.alignment="BOTTOM_LEFT">
+                                <Label text="SkillORA Space" styleClass="site-cover-overlay-title"/>
+                                <Label text="Room detail and seat map" styleClass="site-cover-overlay-copy"/>
+                            </VBox>
                         </StackPane>
 
                         <VBox spacing="18" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label text="SALLE DETAIL" styleClass="site-detail-eyebrow"/>
+                                <Label text="Live seat selection" styleClass="site-detail-status-chip"/>
+                            </HBox>
                             <Label fx:id="heroTitleLabel" text="Salle" styleClass="site-salle-detail-title"/>
-                            <Label text="User-oriented salle page with live capacity matrix and 3D preview." styleClass="site-salle-hero-subtitle"/>
+                            <Label text="Review the room, complete the Snake challenge, then choose available seats before creating your reservation."
+                                   wrapText="true" styleClass="site-salle-hero-subtitle"/>
 
-                            <HBox spacing="16">
+                            <HBox spacing="14" styleClass="site-hero-summary-row">
                                 <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="site-summary-box">
                                     <Label text="Linked Event" styleClass="site-detail-key"/>
                                     <Button fx:id="eventLinkButton" text="-" onAction="#onBackToEvents" styleClass="site-event-link"/>
@@ -86,7 +72,7 @@
                                 </VBox>
                             </HBox>
 
-                            <HBox spacing="16">
+                            <HBox spacing="14" styleClass="site-hero-stats-row">
                                 <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="site-stat-box">
                                     <Label text="Duration" styleClass="site-detail-key"/>
                                     <HBox alignment="CENTER_LEFT" spacing="6">
@@ -109,57 +95,106 @@
                         </VBox>
                     </HBox>
 
-                    <HBox spacing="24">
-                        <VBox spacing="22" HBox.hgrow="ALWAYS" styleClass="site-salle-card">
+                    <HBox spacing="24" styleClass="site-detail-body">
+                        <VBox spacing="22" prefWidth="790" HBox.hgrow="ALWAYS" styleClass="site-salle-card site-model-card">
                             <padding>
                                 <Insets top="24" right="24" bottom="24" left="24"/>
                             </padding>
 
-                            <HBox alignment="CENTER_LEFT">
-                                <Label text="Salle Details" styleClass="site-salle-card-title"/>
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <VBox spacing="4">
+                                    <Label text="Salle Details" styleClass="site-salle-card-title"/>
+                                    <Label text="Equipment and playable room challenge." styleClass="site-card-subtitle"/>
+                                </VBox>
                                 <Region HBox.hgrow="ALWAYS"/>
-                                <Button fx:id="fullscreenButton" text="Open 3D viewer" onAction="#onOpenFullscreen3d" styleClass="site-outline-chip"/>
+                                <Button fx:id="open3dViewerButton" text="Open 3D viewer" onAction="#onShow3dViewer" styleClass="site-outline-chip"/>
+                                <Button fx:id="playSnakeButton" text="Play Snake Game" onAction="#onShowSnakeGame" visible="false" managed="false" styleClass="site-outline-chip"/>
+                                <Button fx:id="snakeStartButton" text="Start Game" onAction="#onStartSnakeGame" styleClass="site-outline-chip"/>
+                                <Button fx:id="snakeRestartButton" text="Restart" onAction="#onRestartSnakeGame" styleClass="site-outline-chip"/>
                             </HBox>
 
                             <Region prefHeight="1" styleClass="site-detail-divider"/>
 
-                            <VBox spacing="10">
-                                <Label text="Equipment" styleClass="site-detail-key"/>
-                                <FlowPane fx:id="equipmentFlow" hgap="8" vgap="8"/>
+                            <VBox spacing="12" styleClass="site-equipment-panel">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label text="Equipment" styleClass="site-detail-key"/>
+                                    <Label text="Included in this room" styleClass="site-muted-pill"/>
+                                </HBox>
+                                <FlowPane fx:id="equipmentFlow" hgap="8" vgap="8" prefWrapLength="700"/>
                             </VBox>
 
                             <VBox spacing="16">
-                                <HBox alignment="CENTER_LEFT">
-                                    <Label text="3D Model Viewer" styleClass="site-salle-card-title"/>
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <VBox spacing="4">
+                                        <Label fx:id="viewerTitleLabel" text="Snake Challenge" styleClass="site-salle-card-title"/>
+                                        <Label fx:id="viewerSubtitleLabel" text="Complete 30 levels without losing to unlock the gift QR code." styleClass="site-card-subtitle"/>
+                                    </VBox>
                                     <Region HBox.hgrow="ALWAYS"/>
-                                    <Label text="Embedded WebView" styleClass="site-viewer-chip"/>
+                                    <Label fx:id="snakeLevelLabel" text="Level: 1 / 30" styleClass="site-viewer-chip"/>
+                                    <Label fx:id="snakeScoreLabel" text="Score: 0 | Food: 0 / 3" styleClass="site-snake-score-chip"/>
+                                    <Button fx:id="modelCloseButton" text="X" onAction="#onShowSnakeGame" visible="false" managed="false" styleClass="site-model-close-button"/>
                                 </HBox>
 
-                                <StackPane fx:id="modelFrame" prefHeight="440" styleClass="site-model-frame">
-                                    <WebView fx:id="modelWebView" prefHeight="440" prefWidth="760" visible="false" managed="false"/>
-                                    <VBox fx:id="modelPlaceholderBox" alignment="CENTER" spacing="14" styleClass="site-model-placeholder">
-                                        <StackPane prefWidth="84" prefHeight="84" styleClass="site-model-badge">
-                                            <Label text="3D" styleClass="site-model-badge-text"/>
-                                        </StackPane>
-                                        <Label fx:id="modelStatusTitle" text="No 3D model available" styleClass="site-model-status-title"/>
-                                        <Label fx:id="modelStatusSubtitle" text="This salle does not have a valid .glb or .gltf model yet." styleClass="site-model-status-subtitle" wrapText="true"/>
+                                <StackPane fx:id="viewerFrame" prefHeight="440" styleClass="site-snake-frame">
+                                    <StackPane fx:id="snakeFrame" alignment="CENTER" styleClass="site-snake-playfield">
+                                        <Canvas fx:id="snakeCanvas" width="720" height="400" focusTraversable="true" StackPane.alignment="CENTER"/>
+                                        <VBox fx:id="snakeOverlay" alignment="CENTER" spacing="14" styleClass="site-snake-overlay" StackPane.alignment="CENTER">
+                                            <Label fx:id="snakeOverlayTitle" text="Snake Challenge" styleClass="site-snake-overlay-title"/>
+                                            <Label fx:id="snakeOverlayMessage" text="Use arrows or ZQSD to move. Clear all 30 levels without losing." wrapText="true" styleClass="site-snake-overlay-copy"/>
+                                            <HBox alignment="CENTER" spacing="10">
+                                                <Button fx:id="snakeOverlayStartButton" text="Start Game" onAction="#onStartSnakeGame" styleClass="site-snake-primary-button"/>
+                                                <Button fx:id="snakeOverlayRestartButton" text="Restart" onAction="#onRestartSnakeGame" styleClass="site-snake-secondary-button"/>
+                                            </HBox>
                                     </VBox>
+                                    <VBox fx:id="snakeRewardPane" managed="false" visible="false" alignment="CENTER" spacing="12" styleClass="site-snake-reward-pane" StackPane.alignment="CENTER">
+                                        <Label text="🎁 Reward Unlocked!" styleClass="site-snake-reward-title"/>
+                                        <Label text="Scan this QR code to claim your gift." wrapText="true" styleClass="site-snake-reward-copy"/>
+                                        <ImageView fx:id="rewardQrImageView" fitWidth="172" fitHeight="172" preserveRatio="true" smooth="false" styleClass="site-snake-reward-qr"/>
+                                        <Button text="Continue Game" onAction="#onContinueSnakeReward" styleClass="site-snake-primary-button"/>
+                                    </VBox>
+                                    </StackPane>
+                                    <StackPane fx:id="modelFrame" managed="false" visible="false" styleClass="site-embedded-model-pane">
+                                        <WebView fx:id="modelWebView" prefHeight="416" prefWidth="720" visible="false" managed="false"/>
+                                        <VBox fx:id="modelPlaceholderBox" alignment="CENTER" spacing="14" styleClass="site-model-placeholder">
+                                            <StackPane prefWidth="84" prefHeight="84" styleClass="site-model-badge">
+                                                <Label text="3D" styleClass="site-model-badge-text"/>
+                                            </StackPane>
+                                            <Label fx:id="modelStatusTitle" text="No 3D model available" styleClass="site-model-status-title"/>
+                                            <Label fx:id="modelStatusSubtitle" text="This salle does not have a valid .glb or .gltf model yet." styleClass="site-model-status-subtitle" wrapText="true"/>
+                                        </VBox>
+                                    </StackPane>
                                 </StackPane>
+                            </VBox>
+
+                            <VBox spacing="12" styleClass="site-roulette-card">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <VBox spacing="4">
+                                        <Label text="Roulette Reward" styleClass="site-salle-card-title"/>
+                                        <Label text="Choose a number, then spin for a chance to unlock a SkillORA gift." styleClass="site-card-subtitle"/>
+                                    </VBox>
+                                </HBox>
+                                <WebView fx:id="rouletteWebView" prefHeight="500" minHeight="480" prefWidth="720"/>
                             </VBox>
                         </VBox>
 
-                        <VBox spacing="22" HBox.hgrow="ALWAYS" styleClass="site-salle-card">
+                        <VBox spacing="22" prefWidth="510" minWidth="470" styleClass="site-salle-card site-seat-card">
                             <padding>
                                 <Insets top="24" right="24" bottom="24" left="24"/>
                             </padding>
 
                             <HBox alignment="CENTER_LEFT">
-                                <Label text="Capacity Matrix" styleClass="site-salle-card-title"/>
+                                <VBox spacing="4">
+                                    <Label text="Capacity Matrix" styleClass="site-salle-card-title"/>
+                                    <Label text="Pick one or more available seats." styleClass="site-card-subtitle"/>
+                                </VBox>
                                 <Region HBox.hgrow="ALWAYS"/>
                                 <Label fx:id="seatsSummaryLabel" text="Capacity matrix 0 seats" styleClass="site-matrix-caption"/>
                             </HBox>
 
-                            <HBox alignment="CENTER_RIGHT">
+                            <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="site-seat-action-row">
+                                <Label text="Selection required" styleClass="site-seat-helper-pill"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button text="Test Vision" onAction="#onOpenVisionTest" styleClass="site-vision-test-button"/>
                                 <Button fx:id="reservationButton" text="Reservation" onAction="#onOpenReservationForm" styleClass="site-submit-button"/>
                             </HBox>
 

@@ -2,9 +2,12 @@ package tn.esprit.services;
 
 import org.junit.jupiter.api.*;
 import tn.esprit.entities.Question;
+import tn.esprit.tools.MyConnection;
 
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,14 +16,57 @@ public class QuestionServiceTest {
 
     static QuestionService service;
     static Integer idTest;
-
-    // IMPORTANT :
-    // mets ici un evaluation_id qui existe déjà dans ta table evaluation
-    static final int EVALUATION_ID_EXISTANT = 1;
+    static int evaluationIdTest;
+    static final String EVALUATION_TITLE = "QuestionServiceTest-" + UUID.randomUUID();
 
     @BeforeAll
-    static void setup() {
+    static void setup() throws SQLException {
         service = new QuestionService();
+        evaluationIdTest = createEvaluationFixture();
+    }
+
+    @AfterAll
+    static void cleanup() throws SQLException {
+        if (evaluationIdTest > 0) {
+            Connection cn = MyConnection.getInstance().getConnection();
+
+            try (PreparedStatement ps = cn.prepareStatement("DELETE FROM question WHERE evaluation_id = ?")) {
+                ps.setInt(1, evaluationIdTest);
+                ps.executeUpdate();
+            }
+
+            try (PreparedStatement ps = cn.prepareStatement("DELETE FROM evaluation WHERE id = ?")) {
+                ps.setInt(1, evaluationIdTest);
+                ps.executeUpdate();
+            }
+        }
+    }
+
+    private static int createEvaluationFixture() throws SQLException {
+        String sql = "INSERT INTO evaluation " +
+                "(title, description, type, duration, total_score, created_at, docx_path, pdf_path) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        Connection cn = MyConnection.getInstance().getConnection();
+        try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, EVALUATION_TITLE);
+            ps.setString(2, "Fixture for question service tests");
+            ps.setString(3, "Exam");
+            ps.setInt(4, 60);
+            ps.setInt(5, 20);
+            ps.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setString(7, "question-service-test.docx");
+            ps.setString(8, "question-service-test.pdf");
+            ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+
+        throw new SQLException("Impossible de créer l'évaluation de test.");
     }
 
     private Question createQuestion() {
@@ -30,7 +76,7 @@ public class QuestionServiceTest {
                 "Explication test",
                 "QCM",
                 5,
-                EVALUATION_ID_EXISTANT
+                evaluationIdTest
         );
     }
 

@@ -4,6 +4,9 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import tn.esprit.controllers.AdminPanelController;
+import tn.esprit.tools.AppWindow;
+import tn.esprit.tools.ThemeManager;
 
 import java.util.Objects;
 
@@ -11,16 +14,15 @@ public class CourseAdminLauncher extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        System.out.println("CourseAdminLauncher.start() called");
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin/admin_shell.fxml"));
-        Scene scene = new Scene(loader.load(), 1240, 760);
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/atlantafx/base/theme/primer-light.css")).toExternalForm());
-        scene.getStylesheets().add(getClass().getResource("/styles/macos-theme.css").toExternalForm());
-        stage.setTitle("SkillORA");
-        stage.setMinWidth(1100);
-        stage.setMinHeight(680);
-        stage.setScene(scene);
-        stage.show();
+        AdminPanelController.setInitialView(AdminPanelController.InitialView.COURSES);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminPanel.fxml"));
+        Scene scene = AppWindow.createScene(loader.load());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/style.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/event.css")).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/styles/salle.css")).toExternalForm());
+        ThemeManager.applyTheme(scene);
+
+        AppWindow.show(stage, scene, "SkillORA - Course Admin", true);
     }
 
     public static void main(String[] args) {

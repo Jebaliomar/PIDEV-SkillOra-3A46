@@ -1,0 +1,24 @@
+# Twilio credentials are read from src/main/resources/twilio.properties first.
+# If that file is missing or a value is blank, the app falls back to environment variables.
+#
+# IMPORTANT:
+# twilio.from.number / TWILIO_PHONE_NUMBER must be a Twilio sender number owned by
+# the same account as twilio.account.sid / TWILIO_ACCOUNT_SID.
+#
+# Windows PowerShell:
+#   $env:TWILIO_ACCOUNT_SID="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#   $env:TWILIO_AUTH_TOKEN="your_auth_token"
+#   $env:TWILIO_PHONE_NUMBER="+1234567890"
+#
+# Linux/macOS:
+#   export TWILIO_ACCOUNT_SID="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+#   export TWILIO_AUTH_TOKEN="your_auth_token"
+#   export TWILIO_PHONE_NUMBER="+1234567890"
+#
+# Local development fallback:
+#   Copy this file to src/main/resources/twilio.properties.
+#   Keep twilio.properties out of Git.
+twilio.account.sid=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+twilio.auth.token=your_auth_token
+twilio.from.number=+1234567890
+twilio.default-country-code=+216

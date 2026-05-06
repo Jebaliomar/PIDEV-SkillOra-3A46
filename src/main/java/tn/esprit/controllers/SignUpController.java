@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.services.FaceIdService;
 import tn.esprit.services.UserService;
+import tn.esprit.tools.AppWindow;
 import tn.esprit.tools.FaceIdServer;
 import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
@@ -142,12 +143,7 @@ public class SignUpController implements Initializable {
                 return;
             }
 
-            // Open avatar picker first
-            String avatar = pickAvatar();
-            if (avatar == null) {
-                showError("Please select a 3D avatar to finish registration.");
-                return;
-            }
+            String avatar = "course-user";
 
             User user = new User();
             user.setEmail(email);
@@ -165,16 +161,11 @@ public class SignUpController implements Initializable {
                 }
             }
 
-            showSuccess("Account created successfully! Redirecting to sign in…");
+            showSuccess("Account created successfully! You can now sign in.");
             clearForm();
             pendingFaceDescriptor = null;
             faceIdStatus.setText("Not set");
             faceIdStatus.setStyle("-fx-text-fill: #6b7280; -fx-font-size: 12px;");
-
-            javafx.animation.PauseTransition delay =
-                    new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.2));
-            delay.setOnFinished(ev -> goToLogin());
-            delay.play();
 
         } catch (Exception e) {
             showError("Registration failed: " + e.getMessage());
@@ -189,7 +180,7 @@ public class SignUpController implements Initializable {
             Stage dialog = new Stage();
             dialog.initModality(Modality.APPLICATION_MODAL);
             dialog.setTitle("Select Your Avatar");
-            Scene scene = new Scene(root);
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             ThemeManager.applyTheme(scene);
             dialog.setScene(scene);
@@ -232,13 +223,12 @@ public class SignUpController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             ThemeManager.applyTheme(scene);
 
             Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Sign In - SkillORA");
+            AppWindow.show(stage, scene, "Sign In - SkillORA", false);
         } catch (IOException e) {
             e.printStackTrace();
         }

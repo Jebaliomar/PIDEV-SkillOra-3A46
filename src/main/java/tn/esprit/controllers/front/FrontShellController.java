@@ -64,6 +64,9 @@ public class FrontShellController {
     private Button topForumButton;
 
     @FXML
+    private Button topRendezVousButton;
+
+    @FXML
     private Button topAssessmentButton;
 
     private User activeUser;
@@ -116,7 +119,7 @@ public class FrontShellController {
     @FXML
     private void handleRendezVous() {
         setActiveModule(rendezVousNavButton);
-        showPlaceholder("Rendez-vous", "Rendez-vous tools will appear here.");
+        showRendezVous();
     }
 
     @FXML
@@ -145,6 +148,12 @@ public class FrontShellController {
             if (controller instanceof FrontMyLearningController) {
                 // No additional state required beyond current session.
             }
+        });
+    }
+
+    public void showRendezVous() {
+        setActiveModule(rendezVousNavButton);
+        loadContent("/tn/esprit/views/rendezvous/rendezvous-list.fxml", controller -> {
         });
     }
 
@@ -188,6 +197,11 @@ public class FrontShellController {
             alert.setContentText(e.getMessage());
             alert.showAndWait();
         }
+    }
+
+    @FXML
+    private void handleTopRendezVous() {
+        showRendezVous();
     }
 
     @FXML

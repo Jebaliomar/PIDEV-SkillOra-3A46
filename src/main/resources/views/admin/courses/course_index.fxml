@@ -22,12 +22,15 @@
                     <Label styleClass="page-subtitle" text="Create and manage courses (basic info only for now)."/>
                 </VBox>
                 <StackPane HBox.hgrow="ALWAYS"/>
-                <Button mnemonicParsing="false" onAction="#handleAddCourse" styleClass="hero-button" text="+ Add course"/>
+                <Button fx:id="addCourseButton" mnemonicParsing="false" onAction="#handleAddCourse" styleClass="hero-button" text="Add course"/>
             </HBox>
         </VBox>
     </top>
     <center>
         <VBox spacing="0.0" styleClass="courses-card">
+            <BorderPane.margin>
+                <Insets top="24.0"/>
+            </BorderPane.margin>
             <VBox spacing="6.0" styleClass="courses-card-header">
                 <padding>
                     <Insets top="28.0" right="34.0" bottom="22.0" left="34.0"/>
@@ -41,11 +44,11 @@
             </VBox>
             <TableView fx:id="courseTable" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="titleColumn" prefWidth="410.0" text="COURSE"/>
-                    <TableColumn fx:id="categoryColumn" prefWidth="280.0" text="CATEGORY"/>
-                    <TableColumn fx:id="statusColumn" prefWidth="170.0" text="STATUS"/>
-                    <TableColumn fx:id="createdAtColumn" prefWidth="180.0" text="CREATED"/>
-                    <TableColumn fx:id="actionsColumn" prefWidth="250.0" text="ACTIONS"/>
+                    <TableColumn fx:id="titleColumn" minWidth="320.0" prefWidth="420.0" text="COURSE"/>
+                    <TableColumn fx:id="categoryColumn" minWidth="220.0" prefWidth="280.0" text="CATEGORY"/>
+                    <TableColumn fx:id="statusColumn" minWidth="150.0" prefWidth="170.0" text="STATUS"/>
+                    <TableColumn fx:id="createdAtColumn" minWidth="190.0" prefWidth="210.0" text="CREATED"/>
+                    <TableColumn fx:id="actionsColumn" minWidth="330.0" prefWidth="340.0" text="ACTIONS"/>
                 </columns>
             </TableView>
         </VBox>

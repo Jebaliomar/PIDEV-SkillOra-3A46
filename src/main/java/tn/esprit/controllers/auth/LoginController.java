@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import tn.esprit.tools.AppWindow;
 import tn.esprit.services.AuthService;
 
 import java.io.IOException;
@@ -94,11 +95,7 @@ public class LoginController {
                 : "SkillOra - RendezVous";
 
         Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
-        stage.setScene(new Scene(root, 1160, 740));
-        stage.setTitle(title);
-        stage.setMinWidth(1000);
-        stage.setMinHeight(640);
-        stage.show();
+        AppWindow.show(stage, AppWindow.createScene(root), title, true);
     }
 
     private void showError(String message) {

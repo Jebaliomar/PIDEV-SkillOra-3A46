@@ -11,7 +11,9 @@ import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.services.FaceIdService;
 import tn.esprit.services.UserService;
+import tn.esprit.tools.AppWindow;
 import tn.esprit.tools.FaceIdServer;
+import tn.esprit.tools.AuthSession;
 import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
 import tn.esprit.tools.ThemeIcon;
@@ -82,6 +84,7 @@ public class LoginController implements Initializable {
 
                 // Route by role: students -> student layout, professors -> professor layout, admins -> admin panel
                 String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
+                AuthSession.setCurrentUser(user, normalizedRole);
                 boolean isStudent = normalizedRole.equals("student");
                 boolean isProfessor = normalizedRole.equals("professor");
 
@@ -98,9 +101,9 @@ public class LoginController implements Initializable {
                     AdminPanelController.setCurrentUser(user);
                 }
 
-                FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
+                FXMLLoader dashLoader = tn.esprit.tools.Loaders.loader(getClass(), fxmlPath);
                 Parent dashRoot = dashLoader.load();
-                Scene dashScene = new Scene(dashRoot);
+                Scene dashScene = AppWindow.createScene(dashRoot);
                 dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
                 if (!isStudent && !isProfessor) {
                     dashScene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
@@ -109,8 +112,7 @@ public class LoginController implements Initializable {
                 ThemeManager.applyTheme(dashScene);
 
                 Stage stage = (Stage) emailField.getScene().getWindow();
-                stage.setScene(dashScene);
-                stage.setTitle(title);
+                AppWindow.show(stage, dashScene, title, true);
             } else {
                 showError("Invalid email or password. Please try again.");
             }
@@ -160,6 +162,7 @@ public class LoginController implements Initializable {
 
             String role = userService.getUserRole(user.getId());
             String normalizedRole = role == null ? "student" : role.toLowerCase().replace("role_", "");
+            AuthSession.setCurrentUser(user, normalizedRole);
             boolean isStudent = normalizedRole.equals("student");
             boolean isProfessor = normalizedRole.equals("professor");
             String fxmlPath;
@@ -175,9 +178,9 @@ public class LoginController implements Initializable {
                 AdminPanelController.setCurrentUser(user);
             }
 
-            FXMLLoader dashLoader = new FXMLLoader(getClass().getResource(fxmlPath));
+            FXMLLoader dashLoader = tn.esprit.tools.Loaders.loader(getClass(), fxmlPath);
             Parent dashRoot = dashLoader.load();
-            Scene dashScene = new Scene(dashRoot);
+            Scene dashScene = AppWindow.createScene(dashRoot);
             dashScene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             if (!isStudent && !isProfessor) {
                 dashScene.getStylesheets().add(getClass().getResource("/styles/event.css").toExternalForm());
@@ -185,8 +188,7 @@ public class LoginController implements Initializable {
             }
             ThemeManager.applyTheme(dashScene);
             Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(dashScene);
-            stage.setTitle(title);
+            AppWindow.show(stage, dashScene, title, true);
         } catch (Exception e) {
             showError("Face login failed: " + e.getMessage());
         }
@@ -197,13 +199,12 @@ public class LoginController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ForgotPassword.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             ThemeManager.applyTheme(scene);
 
             Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Forgot password - SkillORA");
+            AppWindow.show(stage, scene, "Forgot password - SkillORA", false);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -214,13 +215,12 @@ public class LoginController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SignUp.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             ThemeManager.applyTheme(scene);
 
             Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Create Account - SkillORA");
+            AppWindow.show(stage, scene, "Create Account - SkillORA", false);
         } catch (IOException e) {
             e.printStackTrace();
         }

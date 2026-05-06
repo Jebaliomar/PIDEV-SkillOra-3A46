@@ -1,72 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="720.0" prefWidth="1400.0"
+<BorderPane prefHeight="720.0" prefWidth="1400.0"
             stylesheets="@style.css"
             xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.QuizController"
             styleClass="root">
 
-    <children>
+    <left>
+        <fx:include fx:id="adminSidebar" source="viewsadmin/common/AdminSidebar.fxml"/>
+    </left>
 
-        <!-- HEADER -->
-        <Label fx:id="titleLabel"
-               layoutX="35.0"
-               layoutY="28.0"
-               text="Quiz"
-               styleClass="label-title"/>
+    <center>
+        <VBox spacing="22.0" styleClass="main-content">
+            <padding>
+                <Insets top="28.0" right="28.0" bottom="28.0" left="28.0"/>
+            </padding>
 
-        <Label fx:id="subtitleLabel"
-               layoutX="35.0"
-               layoutY="72.0"
-               text="Gestion des questions et options"
-               styleClass="label-subtitle"/>
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                    <Label fx:id="titleLabel"
+                           text="Quiz"
+                           styleClass="label-title"
+                           wrapText="true"/>
 
-        <!-- BOUTONS -->
-        <Button text="Retour"
-                layoutX="780.0"
-                layoutY="35.0"
-                prefWidth="150.0"
-                prefHeight="40.0"
-                onAction="#retour"
-                styleClass="button-secondary"/>
+                    <Label fx:id="subtitleLabel"
+                           text="Gestion des questions et options"
+                           styleClass="label-subtitle"
+                           wrapText="true"/>
+                </VBox>
 
-        <Button text="+ Ajouter Question"
-                layoutX="950.0"
-                layoutY="35.0"
-                prefWidth="190.0"
-                prefHeight="40.0"
-                onAction="#ouvrirAjoutQuestion"
-                styleClass="button-primary"/>
+                <Button text="Retour"
+                        minWidth="110.0"
+                        prefWidth="150.0"
+                        prefHeight="40.0"
+                        onAction="#retour"
+                        styleClass="button-secondary"/>
 
-        <!-- =========================
-             ZONE CENTRÉE
-             ========================= -->
-        <StackPane layoutY="120.0"
-                   prefWidth="1400.0"
-                   prefHeight="580.0">
+                <Button text="+ Ajouter Question"
+                        minWidth="170.0"
+                        prefWidth="190.0"
+                        prefHeight="40.0"
+                        onAction="#ouvrirAjoutQuestion"
+                        styleClass="button-primary"/>
+            </HBox>
 
-            <children>
-
-                <ScrollPane fx:id="scrollPane"
-                            prefWidth="900.0"
-                            prefHeight="550.0"
-                            fitToWidth="true"
-                            styleClass="card-centered">
-
-                    <content>
-                        <VBox fx:id="questionContainer"
-                              spacing="20"
-                              styleClass="question-container"/>
-                    </content>
-
-                </ScrollPane>
-
-            </children>
-        </StackPane>
-
-    </children>
-</AnchorPane>
+            <ScrollPane fx:id="scrollPane"
+                        fitToWidth="true"
+                        hbarPolicy="NEVER"
+                        vbarPolicy="AS_NEEDED"
+                        VBox.vgrow="ALWAYS"
+                        styleClass="card-centered">
+                <content>
+                    <VBox fx:id="questionContainer"
+                          spacing="20.0"
+                          fillWidth="true"
+                          styleClass="question-container"/>
+                </content>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>

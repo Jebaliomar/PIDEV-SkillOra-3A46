@@ -9,21 +9,48 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ReplyService {
 
     private final Connection connection;
+    private final PostService postService;
+    private final ModerationService moderationService = new ModerationService();
+    private final SpamGuardService spamGuardService = new SpamGuardService();
+    private final LinkSecurityService linkSecurityService = new LinkSecurityService();
 
     public ReplyService() {
         this.connection = MyConnection.getInstance().getConnection();
+        this.postService = new PostService(this.connection);
+    }
+
+    public ReplyService(Connection connection) {
+        this.connection = connection;
+        this.postService = new PostService(connection);
     }
 
     public void add(Reply reply) throws SQLException {
         validateForCreate(reply);
+        validateTargetPostExists(reply);
+        normalizeReplyForWrite(reply, true);
+        validateParentReply(reply);
+
+        if (!spamGuardService.allowReply(reply.getUserId())) {
+            throw new IllegalStateException("You are replying too frequently. Please wait before replying again.");
+        }
+
+        if (moderationService.shouldBlock(reply.getContent())) {
+            throw new IllegalStateException("Your reply contains content that violates the moderation policy.");
+        }
+
+        linkSecurityService.validateContent(reply.getContent());
+
         if (existsDuplicate(reply)) {
             throw new IllegalStateException("You already posted the same reply on this post.");
         }
@@ -65,52 +92,6 @@ public class ReplyService {
         return replies;
     }
 
-    public void validateForCreate(Reply reply) {
-        if (reply == null) {
-            throw new IllegalArgumentException("Reply data is missing.");
-        }
-        if (reply.getPostId() == null || reply.getPostId() <= 0) {
-            throw new IllegalArgumentException("A valid post ID is required.");
-        }
-        if (isBlank(reply.getAuthorName())) {
-            throw new IllegalArgumentException("Reply author is required.");
-        }
-        if (isBlank(reply.getContent())) {
-            throw new IllegalArgumentException("Reply content is required.");
-        }
-        if (reply.getUserId() == null || reply.getUserId() <= 0) {
-            throw new IllegalArgumentException("A valid user ID is required.");
-        }
-        if (reply.getUpvotes() != null && reply.getUpvotes() < 0) {
-            throw new IllegalArgumentException("Reply upvotes must be a valid number.");
-        }
-        if (reply.getCreatedAt() == null || reply.getUpdatedAt() == null) {
-            throw new IllegalArgumentException("Reply dates are invalid.");
-        }
-    }
-
-    public boolean existsDuplicate(Reply reply) throws SQLException {
-        String sql = """
-                SELECT COUNT(*)
-                FROM reply
-                WHERE post_id = ?
-                  AND LOWER(TRIM(COALESCE(author_name, ''))) = ?
-                  AND LOWER(TRIM(COALESCE(content, ''))) = ?
-                  AND COALESCE(user_id, -1) = ?
-                """;
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, reply.getPostId());
-            preparedStatement.setString(2, normalizeComparableValue(reply.getAuthorName()));
-            preparedStatement.setString(3, normalizeComparableValue(reply.getContent()));
-            preparedStatement.setInt(4, reply.getUserId() == null ? -1 : reply.getUserId());
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.next() && resultSet.getInt(1) > 0;
-            }
-        }
-    }
-
     public Reply getById(int id) throws SQLException {
         String sql = "SELECT * FROM reply WHERE id = ?";
 
@@ -146,6 +127,10 @@ public class ReplyService {
 
     public boolean update(Reply reply) throws SQLException {
         validateForUpdate(reply);
+        validateTargetPostExists(reply);
+        normalizeReplyForWrite(reply, false);
+        validateParentReply(reply);
+
         if (existsDuplicateExcludingId(reply)) {
             throw new IllegalStateException("You already have the same reply on this post.");
         }
@@ -169,27 +154,34 @@ public class ReplyService {
     }
 
     public boolean delete(int id) throws SQLException {
+        if (id <= 0) {
+            throw new IllegalArgumentException("A valid reply ID is required.");
+        }
+
+        if (getById(id) == null) {
+            return false;
+        }
+
         boolean initialAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
 
         try {
             List<Integer> replyIds = collectReplyIdsForDeletion(id);
-            for (Integer replyId : replyIds) {
+
+            for (int index = replyIds.size() - 1; index >= 0; index--) {
+                Integer replyId = replyIds.get(index);
                 deleteRelatedRows("reaction", "reply_id", replyId);
                 deleteRelatedRows("vote", "reply_id", replyId);
-            }
+                deleteRelatedRows("report", "reply_id", replyId);
 
-            boolean deleted = false;
-            String sql = "DELETE FROM reply WHERE id = ?";
-            for (Integer replyId : replyIds) {
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM reply WHERE id = ?")) {
                     preparedStatement.setInt(1, replyId);
-                    deleted = preparedStatement.executeUpdate() > 0 || deleted;
+                    preparedStatement.executeUpdate();
                 }
             }
 
             connection.commit();
-            return deleted;
+            return true;
         } catch (SQLException exception) {
             connection.rollback();
             throw exception;
@@ -198,10 +190,59 @@ public class ReplyService {
         }
     }
 
+    public void validateForCreate(Reply reply) {
+        if (reply == null) {
+            throw new IllegalArgumentException("Reply data is missing.");
+        }
+        if (reply.getPostId() == null || reply.getPostId() <= 0) {
+            throw new IllegalArgumentException("A valid post ID is required.");
+        }
+        if (reply.getParentId() != null && reply.getParentId() <= 0) {
+            throw new IllegalArgumentException("A valid parent reply ID is required.");
+        }
+        if (isBlank(reply.getAuthorName())) {
+            throw new IllegalArgumentException("Reply author is required.");
+        }
+        if (isBlank(reply.getContent())) {
+            throw new IllegalArgumentException("Reply content is required.");
+        }
+        if (reply.getUserId() == null || reply.getUserId() <= 0) {
+            throw new IllegalArgumentException("A valid user ID is required.");
+        }
+        if (reply.getUpvotes() != null && reply.getUpvotes() < 0) {
+            throw new IllegalArgumentException("Reply upvotes must be a valid number.");
+        }
+        if (reply.getCreatedAt() == null || reply.getUpdatedAt() == null) {
+            throw new IllegalArgumentException("Reply dates are invalid.");
+        }
+    }
+
     public void validateForUpdate(Reply reply) {
         validateForCreate(reply);
         if (reply.getId() == null || reply.getId() <= 0) {
             throw new IllegalArgumentException("A valid reply ID is required for update.");
+        }
+    }
+
+    public boolean existsDuplicate(Reply reply) throws SQLException {
+        String sql = """
+                SELECT COUNT(*)
+                FROM reply
+                WHERE post_id = ?
+                  AND LOWER(TRIM(COALESCE(author_name, ''))) = ?
+                  AND LOWER(TRIM(COALESCE(content, ''))) = ?
+                  AND COALESCE(user_id, -1) = ?
+                """;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, reply.getPostId());
+            preparedStatement.setString(2, normalizeComparableValue(reply.getAuthorName()));
+            preparedStatement.setString(3, normalizeComparableValue(reply.getContent()));
+            preparedStatement.setInt(4, reply.getUserId() == null ? -1 : reply.getUserId());
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt(1) > 0;
+            }
         }
     }
 
@@ -235,31 +276,19 @@ public class ReplyService {
         reply.setPostId(resultSet.getInt("post_id"));
 
         int parentId = resultSet.getInt("parent_id");
-        if (resultSet.wasNull()) {
-            reply.setParentId(null);
-        } else {
-            reply.setParentId(parentId);
-        }
+        reply.setParentId(resultSet.wasNull() ? null : parentId);
 
         reply.setContent(resultSet.getString("content"));
         reply.setAuthorName(resultSet.getString("author_name"));
 
         int upvotes = resultSet.getInt("upvotes");
-        if (resultSet.wasNull()) {
-            reply.setUpvotes(null);
-        } else {
-            reply.setUpvotes(upvotes);
-        }
+        reply.setUpvotes(resultSet.wasNull() ? null : upvotes);
 
         reply.setCreatedAt(toLocalDateTime(resultSet.getTimestamp("created_at")));
         reply.setUpdatedAt(toLocalDateTime(resultSet.getTimestamp("updated_at")));
 
         int userId = resultSet.getInt("user_id");
-        if (resultSet.wasNull()) {
-            reply.setUserId(null);
-        } else {
-            reply.setUserId(userId);
-        }
+        reply.setUserId(resultSet.wasNull() ? null : userId);
 
         return reply;
     }
@@ -290,11 +319,16 @@ public class ReplyService {
 
     private List<Integer> collectReplyIdsForDeletion(int rootReplyId) throws SQLException {
         List<Integer> replyIds = new ArrayList<>();
+        Set<Integer> visited = new LinkedHashSet<>();
         Deque<Integer> pendingReplyIds = new ArrayDeque<>();
         pendingReplyIds.add(rootReplyId);
 
         while (!pendingReplyIds.isEmpty()) {
             Integer currentReplyId = pendingReplyIds.removeFirst();
+            if (!visited.add(currentReplyId)) {
+                continue;
+            }
+
             replyIds.add(currentReplyId);
 
             String sql = "SELECT id FROM reply WHERE parent_id = ?";
@@ -319,6 +353,54 @@ public class ReplyService {
             preparedStatement.setInt(1, foreignKeyValue);
             preparedStatement.executeUpdate();
         }
+    }
+
+    private void validateParentReply(Reply reply) throws SQLException {
+        if (reply.getParentId() == null) {
+            return;
+        }
+
+        Reply parent = getById(reply.getParentId());
+        if (parent == null) {
+            throw new IllegalArgumentException("The selected parent reply does not exist.");
+        }
+        if (!reply.getPostId().equals(parent.getPostId())) {
+            throw new IllegalArgumentException("A reply can only reference a parent from the same post.");
+        }
+    }
+
+    private void validateTargetPostExists(Reply reply) throws SQLException {
+        if (postService.getById(reply.getPostId()) == null) {
+            throw new IllegalArgumentException("The selected post does not exist.");
+        }
+    }
+
+    private void normalizeReplyForWrite(Reply reply, boolean isCreate) {
+        reply.setAuthorName(trimToNull(reply.getAuthorName()));
+        reply.setContent(trimToNull(reply.getContent()));
+
+        if (reply.getUpvotes() == null) {
+            reply.setUpvotes(0);
+        }
+
+        if (isCreate) {
+            if (reply.getCreatedAt() == null) {
+                reply.setCreatedAt(LocalDateTime.now());
+            }
+            if (reply.getUpdatedAt() == null) {
+                reply.setUpdatedAt(reply.getCreatedAt());
+            }
+        } else if (reply.getUpdatedAt() == null) {
+            reply.setUpdatedAt(LocalDateTime.now());
+        }
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private boolean isBlank(String value) {

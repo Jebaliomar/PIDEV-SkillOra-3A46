@@ -57,6 +57,7 @@
                 </padding>
                 <Label styleClass="front-topbar-title" text="SkillORA" />
                 <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="topRendezVousButton" mnemonicParsing="false" onAction="#handleTopRendezVous" styleClass="topbar-button" text="Rendez-vous" />
                 <Button fx:id="topForumButton" mnemonicParsing="false" onAction="#handleTopForum" styleClass="topbar-button" text="Forum" />
                 <Button fx:id="topAssessmentButton" mnemonicParsing="false" onAction="#handleTopAssessment" styleClass="topbar-button" text="Assessment" />
             </HBox>

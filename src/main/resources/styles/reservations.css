@@ -21,6 +21,33 @@
     -fx-border-radius: 22;
 }
 
+.reservation-sms-card {
+    -fx-background-color: #111a2e;
+    -fx-background-radius: 22;
+    -fx-border-color: #23314f;
+    -fx-border-radius: 22;
+}
+
+.sms-status-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-padding: 9 12;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+}
+
+.sms-status-success {
+    -fx-text-fill: #bbf7d0;
+    -fx-background-color: rgba(22, 163, 74, 0.18);
+    -fx-border-color: rgba(74, 222, 128, 0.45);
+}
+
+.sms-status-error {
+    -fx-text-fill: #fecaca;
+    -fx-background-color: rgba(220, 38, 38, 0.18);
+    -fx-border-color: rgba(248, 113, 113, 0.45);
+}
+
 .reservation-table-toolbar {
     -fx-padding: 2 2 8 2;
 }
@@ -73,7 +100,7 @@
 }
 
 .reservation-event-stat-value {
-    -fx-text-fill: #22d3ee;
+    -fx-text-fill: #93c5fd;
     -fx-font-size: 13px;
     -fx-font-weight: 700;
 }
@@ -182,8 +209,8 @@
 }
 
 .reservation-seats-chip {
-    -fx-background-color: rgba(8, 145, 178, 0.25);
-    -fx-border-color: rgba(34, 211, 238, 0.55);
+    -fx-background-color: rgba(37, 99, 235, 0.25);
+    -fx-border-color: rgba(96, 165, 250, 0.55);
     -fx-border-radius: 999;
 }
 
@@ -231,6 +258,58 @@
     -fx-padding: 18 6;
 }
 
+.reservation-pagination-row {
+    -fx-padding: 2 2 0 2;
+}
+
+.reservation-pagination-caption,
+.reservation-pagination-status {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+}
+
+.reservation-pagination-status {
+    -fx-text-fill: #e2e8f0;
+}
+
+.reservation-pagination-button,
+.reservation-pagination-page-button {
+    -fx-background-color: #1e293b;
+    -fx-border-color: rgba(148, 163, 184, 0.22);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: #dbeafe;
+    -fx-padding: 8 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-cursor: hand;
+}
+
+.reservation-pagination-page-button {
+    -fx-min-width: 34;
+    -fx-pref-width: 34;
+    -fx-padding: 8 0;
+}
+
+.reservation-pagination-button:hover,
+.reservation-pagination-page-button:hover {
+    -fx-background-color: #24334f;
+    -fx-border-color: rgba(34, 211, 238, 0.34);
+}
+
+.reservation-pagination-button:disabled,
+.reservation-pagination-page-button:disabled {
+    -fx-opacity: 0.45;
+    -fx-cursor: default;
+}
+
+.reservation-pagination-page-button-active {
+    -fx-background-color: linear-gradient(to right, #06b6d4, #0891b2);
+    -fx-border-color: transparent;
+    -fx-text-fill: #ffffff;
+}
+
 .theme-light .reservation-metric-card,
 .theme-light .reservation-chart-card {
     -fx-background-color: #ffffff;
@@ -255,8 +334,32 @@
 .theme-light .reservation-total-key,
 .theme-light .reservation-th,
 .theme-light .reservation-row-subtext,
-.theme-light .reservation-empty-state {
+.theme-light .reservation-empty-state,
+.theme-light .reservation-pagination-caption {
     -fx-text-fill: #667a9c;
+}
+
+.theme-light .reservation-pagination-status {
+    -fx-text-fill: #16233f;
+}
+
+.theme-light .reservation-pagination-button,
+.theme-light .reservation-pagination-page-button {
+    -fx-background-color: #f4f8ff;
+    -fx-border-color: #d8e2f0;
+    -fx-text-fill: #22314f;
+}
+
+.theme-light .reservation-pagination-button:hover,
+.theme-light .reservation-pagination-page-button:hover {
+    -fx-background-color: #E0F7FA;
+    -fx-border-color: #9bdde8;
+}
+
+.theme-light .reservation-pagination-page-button-active {
+    -fx-background-color: linear-gradient(to right, #06b6d4, #0891b2);
+    -fx-border-color: transparent;
+    -fx-text-fill: #ffffff;
 }
 
 .theme-light .reservation-event-stat-row,
@@ -269,6 +372,23 @@
 .theme-light .reservation-list-card {
     -fx-background-color: linear-gradient(to bottom, #ffffff, #f8fbff);
     -fx-border-color: #d8e2f0;
+}
+
+.theme-light .reservation-sms-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d8e2f0;
+}
+
+.theme-light .sms-status-success {
+    -fx-text-fill: #166534;
+    -fx-background-color: #ecfdf3;
+    -fx-border-color: #86efac;
+}
+
+.theme-light .sms-status-error {
+    -fx-text-fill: #991b1b;
+    -fx-background-color: #fef2f2;
+    -fx-border-color: #fecaca;
 }
 
 .theme-light .reservation-table-shell {
@@ -286,7 +406,7 @@
 }
 
 .theme-light .reservation-event-stat-value {
-    -fx-text-fill: #0e7490;
+    -fx-text-fill: #1d4ed8;
 }
 
 .reservation-edit-title {
@@ -325,12 +445,11 @@
 }
 
 .theme-light .reservation-seats-chip {
-    -fx-background-color: rgba(8, 145, 178, 0.12);
-    -fx-border-color: rgba(8, 145, 178, 0.35);
+    -fx-background-color: rgba(37, 99, 235, 0.12);
+    -fx-border-color: rgba(59, 130, 246, 0.35);
 }
 
 .theme-light .reservation-status-chip {
     -fx-background-color: rgba(148, 163, 184, 0.15);
     -fx-border-color: rgba(148, 163, 184, 0.35);
 }
-

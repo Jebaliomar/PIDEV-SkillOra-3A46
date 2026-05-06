@@ -1,19 +1,25 @@
 package tn.esprit.controllers.front.home;
 
 import javafx.collections.FXCollections;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
 import tn.esprit.entities.Course;
@@ -31,6 +37,9 @@ import java.util.stream.Collectors;
 
 public class FrontBrowseCoursesController implements FrontShellAware {
 
+    private static final double COURSE_CARD_WIDTH = 318;
+    private static final double COURSE_THUMBNAIL_HEIGHT = 132;
+
     private static final List<String> CATEGORY_OPTIONS = List.of(
             "Development",
             "Business",
@@ -46,10 +55,25 @@ public class FrontBrowseCoursesController implements FrontShellAware {
     private TextField searchField;
 
     @FXML
-    private ComboBox<String> sortComboBox;
+    private ChoiceBox<String> sortChoiceBox;
+
+    @FXML
+    private Button toggleFiltersButton;
+
+    @FXML
+    private Button clearFiltersButton;
+
+    @FXML
+    private Label activeFiltersLabel;
+
+    @FXML
+    private VBox filterPane;
 
     @FXML
     private VBox categoryFilterBox;
+
+    @FXML
+    private ScrollPane coursesScrollPane;
 
     @FXML
     private FlowPane coursesGrid;
@@ -61,17 +85,25 @@ public class FrontBrowseCoursesController implements FrontShellAware {
     private CourseService courseService;
     private List<Course> allCourses = List.of();
     private final List<CheckBox> categoryCheckBoxes = new ArrayList<>();
+    private boolean filtersVisible = true;
 
     @FXML
     public void initialize() {
-        sortComboBox.setItems(FXCollections.observableArrayList("Newest", "Oldest", "A-Z", "Z-A"));
-        sortComboBox.getSelectionModel().select("Newest");
-        sortComboBox.valueProperty().addListener((observable, oldValue, newValue) -> refreshCourses());
+        sortChoiceBox.setItems(FXCollections.observableArrayList("Newest", "Oldest", "A-Z", "Z-A"));
+        sortChoiceBox.setMinWidth(210);
+        sortChoiceBox.setPrefWidth(220);
+        sortChoiceBox.setValue("Newest");
+        Platform.runLater(() -> sortChoiceBox.setValue(sortChoiceBox.getValue() == null ? "Newest" : sortChoiceBox.getValue()));
+        sortChoiceBox.valueProperty().addListener((observable, oldValue, newValue) -> refreshCourses());
         searchField.textProperty().addListener((observable, oldValue, newValue) -> refreshCourses());
 
         coursesGrid.setHgap(18);
-        coursesGrid.setVgap(18);
-        coursesGrid.setPadding(new Insets(6, 0, 0, 0));
+        coursesGrid.setVgap(20);
+        coursesGrid.setPadding(new Insets(8, 0, 14, 0));
+        if (coursesScrollPane != null) {
+            coursesScrollPane.viewportBoundsProperty().addListener((observable, oldValue, newValue) ->
+                    coursesGrid.setPrefWrapLength(Math.max(420, newValue.getWidth() - 24)));
+        }
 
         CATEGORY_OPTIONS.forEach(category -> {
             CheckBox checkBox = new CheckBox(category);
@@ -81,6 +113,7 @@ public class FrontBrowseCoursesController implements FrontShellAware {
             categoryFilterBox.getChildren().add(checkBox);
         });
 
+        updateFilterPaneVisibility();
         loadCourses();
     }
 
@@ -95,7 +128,9 @@ public class FrontBrowseCoursesController implements FrontShellAware {
             refreshCourses();
         } catch (SQLException | IllegalStateException e) {
             coursesGrid.getChildren().setAll(buildStateCard("Unable to load courses", e.getMessage()));
-            resultsLabel.setText("0 courses");
+            if (resultsLabel != null) {
+                resultsLabel.setText("0 courses");
+            }
         }
     }
 
@@ -118,11 +153,14 @@ public class FrontBrowseCoursesController implements FrontShellAware {
         } else {
             filtered.forEach(course -> coursesGrid.getChildren().add(buildCourseCard(course)));
         }
-        resultsLabel.setText(filtered.size() + (filtered.size() == 1 ? " course" : " courses"));
+        if (resultsLabel != null) {
+            resultsLabel.setText(filtered.size() + (filtered.size() == 1 ? " course" : " courses"));
+        }
+        updateFilterSummary(searchTerm, selectedCategories.size());
     }
 
     private Comparator<Course> resolveComparator() {
-        String sort = sortComboBox.getValue();
+        String sort = sortChoiceBox.getValue();
         Comparator<Course> byCreatedAt = Comparator.comparing(Course::getCreatedAt, Comparator.nullsLast(LocalDateTime::compareTo));
         Comparator<Course> byTitle = Comparator.comparing(course -> safeValue(course.getTitle(), "").toLowerCase(Locale.ROOT));
         return switch (sort == null ? "Newest" : sort) {
@@ -142,19 +180,38 @@ public class FrontBrowseCoursesController implements FrontShellAware {
         titleLabel.getStyleClass().add("front-course-title");
         titleLabel.setWrapText(true);
 
-        Label descriptionLabel = new Label(truncate(safeValue(course.getDescription(), "No description yet."), 120));
+        Label descriptionLabel = new Label(truncate(safeValue(course.getDescription(), "No description yet."), 110));
         descriptionLabel.getStyleClass().add("front-course-description");
         descriptionLabel.setWrapText(true);
 
         Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        VBox card = new VBox(14, thumbnailPane, categoryLabel, titleLabel, descriptionLabel, spacer);
+        Label metaLabel = new Label(buildCardFooter(course));
+        metaLabel.getStyleClass().add("front-course-card-footer");
+
+        Button startButton = new Button("View Course");
+        startButton.getStyleClass().add("front-card-start-button");
+        startButton.setOnAction(event -> {
+            event.consume();
+            openCourse(course);
+        });
+
+        HBox footer = new HBox(12, metaLabel, spacer, startButton);
+        footer.setAlignment(Pos.CENTER_LEFT);
+        footer.getStyleClass().add("front-card-footer-row");
+
+        VBox body = new VBox(12, categoryLabel, titleLabel, descriptionLabel, footer);
+        body.getStyleClass().add("front-course-card-body");
+        VBox.setVgrow(body, Priority.ALWAYS);
+
+        VBox card = new VBox(thumbnailPane, body);
         card.getStyleClass().add("front-course-card");
         card.getStyleClass().add("front-course-card-clickable");
-        card.setPrefWidth(280);
-        card.setMinWidth(260);
-        card.setPrefHeight(270);
+        card.setPrefWidth(COURSE_CARD_WIDTH);
+        card.setMinWidth(COURSE_CARD_WIDTH);
+        card.setMaxWidth(COURSE_CARD_WIDTH);
+        card.setPrefHeight(350);
         card.setOnMouseClicked(event -> openCourse(course));
         return card;
     }
@@ -162,18 +219,25 @@ public class FrontBrowseCoursesController implements FrontShellAware {
     private StackPane buildThumbnailPane(Course course) {
         StackPane thumbnailPane = new StackPane();
         thumbnailPane.getStyleClass().add("front-course-thumbnail");
-        thumbnailPane.setPrefHeight(120);
-        thumbnailPane.setMinHeight(120);
-        thumbnailPane.setMaxWidth(Double.MAX_VALUE);
+        thumbnailPane.setPrefSize(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT);
+        thumbnailPane.setMinSize(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT);
+        thumbnailPane.setMaxSize(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT);
+        Rectangle clip = new Rectangle(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT);
+        clip.setArcWidth(40);
+        clip.setArcHeight(40);
+        thumbnailPane.setClip(clip);
 
         Image image = loadThumbnail(course.getThumbnail());
         if (image != null) {
             ImageView imageView = new ImageView(image);
-            imageView.setFitHeight(120);
-            imageView.setFitWidth(244);
+            imageView.setFitHeight(COURSE_THUMBNAIL_HEIGHT);
+            imageView.setFitWidth(COURSE_CARD_WIDTH);
             imageView.setPreserveRatio(false);
             imageView.setSmooth(true);
             imageView.setCache(true);
+            imageView.setManaged(false);
+            imageView.setMouseTransparent(true);
+            imageView.setClip(new Rectangle(COURSE_CARD_WIDTH, COURSE_THUMBNAIL_HEIGHT));
             thumbnailPane.getChildren().add(imageView);
         } else {
             Label placeholderLabel = new Label("No Thumbnail");
@@ -193,6 +257,58 @@ public class FrontBrowseCoursesController implements FrontShellAware {
         card.getStyleClass().add("placeholder-panel");
         card.setPrefWidth(360);
         return card;
+    }
+
+    @FXML
+    private void handleToggleFilters() {
+        filtersVisible = !filtersVisible;
+        updateFilterPaneVisibility();
+    }
+
+    @FXML
+    private void handleClearFilters() {
+        searchField.clear();
+        sortChoiceBox.getSelectionModel().select("Newest");
+        categoryCheckBoxes.forEach(checkBox -> checkBox.setSelected(false));
+        refreshCourses();
+    }
+
+    @FXML
+    private void handleBackHome() {
+        if (shellController != null) {
+            shellController.showHome();
+        }
+    }
+
+    private void updateFilterPaneVisibility() {
+        if (filterPane != null) {
+            filterPane.setVisible(filtersVisible);
+            filterPane.setManaged(filtersVisible);
+        }
+        if (toggleFiltersButton != null) {
+            toggleFiltersButton.setText(filtersVisible ? "Hide Filters" : "Show Filters");
+        }
+    }
+
+    private void updateFilterSummary(String searchTerm, int selectedCategoryCount) {
+        if (activeFiltersLabel == null || clearFiltersButton == null) {
+            return;
+        }
+        List<String> parts = new ArrayList<>();
+        if (!searchTerm.isBlank()) {
+            parts.add("Search active");
+        }
+        if (selectedCategoryCount > 0) {
+            parts.add(selectedCategoryCount + (selectedCategoryCount == 1 ? " category" : " categories"));
+        }
+        activeFiltersLabel.setText(parts.isEmpty() ? "No active filters" : String.join(" • ", parts));
+        clearFiltersButton.setDisable(parts.isEmpty());
+    }
+
+    private String buildCardFooter(Course course) {
+        String category = safeValue(course.getCategory(), "General");
+        String status = safeValue(course.getStatus(), "draft").toUpperCase(Locale.ROOT);
+        return category + " | " + status;
     }
 
     private String safeValue(String value, String fallback) {
@@ -231,4 +347,5 @@ public class FrontBrowseCoursesController implements FrontShellAware {
             shellController.showCourseShow(course);
         }
     }
+
 }

@@ -15,67 +15,42 @@
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="tn.esprit.controlles.SiteEventsController"
+            fx:controller="tn.esprit.controllers.SiteEventsController"
             prefWidth="1440" prefHeight="900" styleClass="site-root">
 
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="18" styleClass="site-header">
-            <padding>
-                <Insets top="12" right="24" bottom="12" left="24"/>
-            </padding>
-
-            <StackPane prefWidth="40" prefHeight="40" styleClass="site-logo-wrap">
-                <Label text="⚓" styleClass="site-logo-text"/>
-            </StackPane>
-            <Label text="SkillHarbor" styleClass="site-brand"/>
-
-            <Button text="Browse" styleClass="site-nav-button"/>
-            <Button text="My Learning" styleClass="site-nav-button"/>
-            <Button text="Community" styleClass="site-nav-button"/>
-            <Button text="Events" styleClass="site-nav-button site-nav-button-active"/>
-            <Button text="Rendez-vous" styleClass="site-nav-button"/>
-            <Button text="Teach" styleClass="site-nav-button"/>
-
-            <Region HBox.hgrow="ALWAYS"/>
-
-            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="site-search-shell">
-                <Label text="⌕" styleClass="site-search-icon"/>
-                <TextField fx:id="heroSearchField" promptText="Search courses..." styleClass="site-search-field" HBox.hgrow="ALWAYS"/>
-            </HBox>
-
-            <Button text="Admin" onAction="#onBackToAdmin" styleClass="site-admin-chip"/>
-            <Button fx:id="themeToggleButton" text="☀" onAction="#onToggleTheme" styleClass="site-icon-button"/>
-            <Button text="🔔" styleClass="site-icon-button"/>
-            <StackPane prefWidth="52" prefHeight="44" styleClass="site-avatar">
-                <Label text="AS" styleClass="site-avatar-text"/>
-            </StackPane>
-        </HBox>
+        <fx:include fx:id="navbar" source="../../views/front/common/SkilloraNavbar.fxml"/>
     </top>
 
     <center>
         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="site-scroll">
             <content>
-                <VBox spacing="28" styleClass="site-content">
+                <VBox spacing="24" styleClass="site-content">
                     <padding>
-                        <Insets top="26" right="32" bottom="32" left="32"/>
+                        <Insets top="22" right="34" bottom="34" left="34"/>
                     </padding>
 
-                    <VBox spacing="20" styleClass="site-hero-card">
+                    <VBox alignment="CENTER" spacing="16" styleClass="site-hero-card">
                         <padding>
-                            <Insets top="28" right="28" bottom="24" left="28"/>
+                            <Insets top="24" right="28" bottom="24" left="28"/>
                         </padding>
 
-                        <VBox alignment="CENTER" spacing="12">
+                        <VBox alignment="CENTER" spacing="8">
                             <Label text="Events" styleClass="site-hero-title"/>
                             <Label text="Discover upcoming events and their salles, then narrow down the list with smart filters." styleClass="site-hero-subtitle"/>
                         </VBox>
 
-                        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="site-filter-shell">
-                            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <HBox alignment="CENTER" maxWidth="920" spacing="14" styleClass="site-filter-shell">
+                            <VBox maxWidth="650" prefWidth="630" spacing="8" HBox.hgrow="ALWAYS">
                                 <Label text="Search" styleClass="site-field-label"/>
-                                <TextField fx:id="searchField" promptText="Search by event title or salle name" styleClass="site-input" HBox.hgrow="ALWAYS"/>
+                                <HBox alignment="CENTER_LEFT" spacing="8" styleClass="site-voice-search-row">
+                                    <TextField fx:id="searchField" promptText="Search by event title or description" styleClass="site-input" HBox.hgrow="ALWAYS"/>
+                                    <Button fx:id="micButton" text="🎤" onAction="#onStartVoiceSearch" styleClass="site-mic-button"/>
+                                    <Button fx:id="stopListeningButton" text="Stop" onAction="#onStopVoiceSearch" managed="false" visible="false" styleClass="site-stop-listening-button"/>
+                                </HBox>
+                                <Label fx:id="voiceStatusLabel" text="" managed="false" visible="false" styleClass="site-voice-status"/>
                             </VBox>
-                            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                            <VBox maxWidth="230" prefWidth="220" spacing="8">
                                 <Label text="Filter by type" styleClass="site-field-label"/>
                                 <ComboBox fx:id="typeFilterCombo" promptText="All types" styleClass="site-combo" HBox.hgrow="ALWAYS"/>
                             </VBox>

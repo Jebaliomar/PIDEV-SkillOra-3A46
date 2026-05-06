@@ -20,16 +20,6 @@
                 <Insets top="14.0" right="16.0" bottom="8.0" left="16.0" />
             </padding>
 
-            <HBox spacing="12.0" styleClass="top-shell">
-                <Label text="SkillHarbor" styleClass="brand-label" />
-                <Button mnemonicParsing="false" onAction="#goToEvents" text="Events"
-                        styleClass="nav-btn" />
-                <Button mnemonicParsing="false" onAction="#goToRendezVous" text="Rendez-vous"
-                        styleClass="nav-btn" />
-                <Button mnemonicParsing="false" onAction="#goToSlots" text="Slots"
-                        styleClass="nav-btn nav-btn-active" />
-            </HBox>
-
             <VBox spacing="8.0" styleClass="hero-panel">
                 <Label text="Calendrier des créneaux"
                        styleClass="hero-title" />

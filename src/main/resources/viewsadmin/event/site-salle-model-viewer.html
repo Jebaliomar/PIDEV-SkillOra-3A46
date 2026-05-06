@@ -1,116 +1,237 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Salle 3D Viewer</title>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    <title>3D Viewer</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@babylonjs/viewer/dist/babylon-viewer.esm.min.js"></script>
     <style>
         :root {
             color-scheme: dark;
         }
 
-        html, body {
+        html,
+        body {
+            width: 100%;
+            height: 100%;
             margin: 0;
-            width: 100%;
-            height: 100%;
             overflow: hidden;
-            font-family: Arial, sans-serif;
-            background:
-                radial-gradient(circle at top, rgba(59,130,246,0.14), transparent 28%),
-                linear-gradient(180deg, #101827 0%, #111c31 100%);
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+            background: #090d16;
         }
 
-        #viewerShell {
-            position: relative;
+        .viewer-shell {
             width: 100%;
             height: 100%;
+            display: grid;
+            grid-template-columns: 190px minmax(0, 1fr);
+            background:
+                radial-gradient(circle at 72% 18%, rgba(66, 133, 244, 0.16), transparent 30%),
+                linear-gradient(135deg, #101725 0%, #0a0f19 58%, #111827 100%);
+            color: #e5edf8;
+        }
+
+        .side-panel {
             box-sizing: border-box;
-            padding: 14px;
+            padding: 16px 14px;
+            border-right: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(8, 13, 23, 0.78);
         }
 
-        #viewerFrame {
+        .panel-title {
+            margin: 0 0 14px;
+            color: #f8fbff;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .option-group {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .option-label {
+            color: #91a3bd;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .option-chip {
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 8px;
+            padding: 8px 10px;
+            background: rgba(15, 23, 42, 0.9);
+            color: #dbe7fb;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .option-chip.active {
+            border-color: rgba(45, 212, 191, 0.46);
+            background: rgba(20, 184, 166, 0.16);
+            color: #99f6e4;
+        }
+
+        .viewer-stage {
+            position: relative;
+            min-width: 0;
+            min-height: 0;
+            padding: 14px;
+            box-sizing: border-box;
+        }
+
+        .viewer-card {
             position: relative;
             width: 100%;
             height: 100%;
-            border-radius: 24px;
             overflow: hidden;
-            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.22);
             background:
-                radial-gradient(circle at top, rgba(96, 165, 250, 0.14), transparent 26%),
-                linear-gradient(180deg, #13203a 0%, #0f172a 100%);
+                radial-gradient(circle at center, rgba(30, 64, 175, 0.20), transparent 38%),
+                linear-gradient(180deg, #151d2f 0%, #090f1a 100%);
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
         }
 
-        model-viewer {
+        babylon-viewer {
             width: 100%;
             height: 100%;
+            display: block;
+            border-radius: 16px;
             background: transparent;
-            --poster-color: transparent;
         }
 
-        #emptyState {
+        .viewer-status,
+        .viewer-loading {
             position: absolute;
-            inset: 18px;
+            inset: 0;
             display: none;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            gap: 10px;
-            border-radius: 20px;
-            border: 1px dashed rgba(148, 163, 184, 0.35);
-            color: #c8d7f0;
-            background: rgba(11, 19, 35, 0.62);
             text-align: center;
-            padding: 24px;
+            padding: 28px;
             box-sizing: border-box;
+            background: rgba(9, 15, 26, 0.72);
+            color: #cbd8ec;
         }
 
-        .empty-title {
-            font-size: 30px;
-            font-weight: 800;
+        .viewer-loading {
+            display: flex;
+        }
+
+        .status-box {
+            max-width: 420px;
+        }
+
+        .status-title {
+            margin-bottom: 8px;
             color: #f8fbff;
+            font-size: 24px;
+            font-weight: 900;
         }
 
-        .empty-copy {
-            font-size: 14px;
-            line-height: 1.6;
-            max-width: 520px;
+        .status-copy {
+            color: #aebdd4;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        @media (max-width: 720px) {
+            .viewer-shell {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto minmax(0, 1fr);
+            }
+
+            .side-panel {
+                display: flex;
+                gap: 10px;
+                overflow-x: auto;
+                border-right: 0;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+                padding: 10px;
+            }
+
+            .panel-title,
+            .option-label {
+                display: none;
+            }
+
+            .option-group {
+                display: flex;
+                gap: 8px;
+                margin: 0;
+            }
+
+            .option-chip {
+                white-space: nowrap;
+            }
         }
     </style>
 </head>
 <body>
-<div id="viewerShell">
-    <div id="viewerFrame">
-        <model-viewer id="viewer"
-                      alt="Salle 3D model"
-                      camera-controls
-                      auto-rotate
-                      shadow-intensity="1"
-                      exposure="1"
-                      interaction-prompt="auto"
-                      ar>
-        </model-viewer>
-        <div id="emptyState">
-            <div class="empty-title">No 3D model available</div>
-            <div id="emptyCopy" class="empty-copy">This salle does not have a valid .glb or .gltf model yet.</div>
+<main class="viewer-shell">
+    <aside class="side-panel" aria-label="Viewer options">
+        <p class="panel-title">Lighting</p>
+        <div class="option-group">
+            <span class="option-label">Environment</span>
+            <span class="option-chip active">Studio HDR</span>
+            <span class="option-chip">Soft shadows</span>
+            <span class="option-chip">Smooth orbit</span>
         </div>
-    </div>
-</div>
+        <div class="option-group">
+            <span class="option-label">Controls</span>
+            <span class="option-chip active">Rotate</span>
+            <span class="option-chip active">Zoom</span>
+            <span class="option-chip active">Pan</span>
+        </div>
+    </aside>
+
+    <section class="viewer-stage">
+        <div class="viewer-card">
+            <babylon-viewer id="viewer"
+                            source=""
+                            environment="auto"
+                            camera-orbit="0deg 65deg 4m"
+                            style="width:100%; height:100%; border-radius:12px;">
+            </babylon-viewer>
+            <div id="loadingState" class="viewer-loading">
+                <div class="status-box">
+                    <div class="status-title">Loading 3D Viewer</div>
+                    <div class="status-copy">Preparing Babylon controls, lighting, and model rotation.</div>
+                </div>
+            </div>
+            <div id="emptyState" class="viewer-status">
+                <div class="status-box">
+                    <div class="status-title">No 3D model available</div>
+                    <div id="emptyCopy" class="status-copy">This salle does not have a valid .glb or .gltf model yet.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
 
 <script>
     const viewer = document.getElementById('viewer');
+    const loadingState = document.getElementById('loadingState');
     const emptyState = document.getElementById('emptyState');
     const emptyCopy = document.getElementById('emptyCopy');
 
+    function setVisible(node, visible) {
+        node.style.display = visible ? 'flex' : 'none';
+    }
+
     function showEmpty(message) {
-        viewer.removeAttribute('src');
-        emptyState.style.display = 'flex';
+        viewer.setAttribute('source', '');
+        setVisible(loadingState, false);
+        setVisible(emptyState, true);
         emptyCopy.textContent = message || 'This salle does not have a valid .glb or .gltf model yet.';
     }
 
     function showViewer() {
-        emptyState.style.display = 'none';
+        setVisible(emptyState, false);
+        setVisible(loadingState, false);
     }
 
     window.setModelSource = function(source, fileName) {
@@ -119,20 +240,18 @@
             return;
         }
 
-        showViewer();
-        viewer.src = source;
-        viewer.alt = fileName ? ('3D model ' + fileName) : 'Salle 3D model';
+        setVisible(emptyState, false);
+        setVisible(loadingState, true);
+        viewer.setAttribute('source', source);
+        viewer.setAttribute('alt', fileName ? ('3D model ' + fileName) : 'Salle 3D model');
+        window.setTimeout(showViewer, 900);
     };
 
-    viewer.addEventListener('error', function() {
-        showEmpty('Unable to render this 3D model inside JavaFX. Verify the .glb/.gltf file.');
-    });
-
-    viewer.addEventListener('load', function() {
-        showViewer();
-    });
-
     window.showEmpty = showEmpty;
+
+    window.addEventListener('error', function() {
+        showEmpty('Unable to render this model. Verify that the file is a valid standalone .glb or .gltf model.');
+    });
 </script>
 </body>
 </html>

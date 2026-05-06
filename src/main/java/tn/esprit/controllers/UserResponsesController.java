@@ -10,6 +10,7 @@ import tn.esprit.entities.Evaluation;
 import tn.esprit.entities.Question;
 import tn.esprit.entities.UserEvaluation;
 import tn.esprit.services.AnswerService;
+import tn.esprit.services.ExamEvaluationPayload;
 import tn.esprit.services.QuestionService;
 import tn.esprit.services.UserEvaluationService;
 
@@ -144,10 +145,8 @@ public class UserResponsesController {
         sb.append("Utilisateur : ").append(getUserFullName(ue.getUserId())).append("\n");
         sb.append("Date de soumission : ")
                 .append(ue.getSubmittedAt() != null ? ue.getSubmittedAt().format(formatter) : "-")
-                .append("\n");
-        sb.append("Score : ").append(ue.getScore() != null ? ue.getScore() : 0).append("\n\n");
-        sb.append("Réponse soumise :\n\n");
-        sb.append(ue.getAiFeedback() != null ? ue.getAiFeedback() : "Aucune réponse");
+                .append("\n\n");
+        sb.append(ExamEvaluationPayload.parse(ue.getAiFeedback()).formatForAdmin(ue.getScore()));
 
         textArea.setText(sb.toString());
         alert.getDialogPane().setContent(textArea);

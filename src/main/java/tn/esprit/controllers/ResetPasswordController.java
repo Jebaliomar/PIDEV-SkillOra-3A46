@@ -12,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.services.PasswordResetService;
+import tn.esprit.tools.AppWindow;
 import tn.esprit.tools.PasswordToggle;
 import tn.esprit.tools.RightPanelAnimator;
 import tn.esprit.tools.ThemeManager;
@@ -107,12 +108,11 @@ public class ResetPasswordController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = AppWindow.createScene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
             ThemeManager.applyTheme(scene);
             Stage stage = (Stage) emailField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("Sign in - SkillORA");
+            AppWindow.show(stage, scene, "Sign in - SkillORA", false);
         } catch (IOException e) {
             e.printStackTrace();
         }

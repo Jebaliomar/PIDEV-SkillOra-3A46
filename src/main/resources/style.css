@@ -4,46 +4,6 @@
 }
 
 /* =========================
-   SIDEBAR
-   ========================= */
-.sidebar {
-    -fx-background-color: #06101f;
-    -fx-border-color: #1b2a44;
-    -fx-border-width: 0 1 0 0;
-}
-
-.sidebar-logo {
-    -fx-text-fill: white;
-    -fx-font-size: 25px;
-    -fx-font-weight: bold;
-}
-
-.sidebar-button,
-.sidebar-button-active {
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-background-radius: 16;
-    -fx-border-radius: 16;
-    -fx-cursor: hand;
-    -fx-pref-height: 48;
-}
-
-.sidebar-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #b8c7e6;
-}
-
-.sidebar-button:hover {
-    -fx-background-color: #132443;
-    -fx-text-fill: white;
-}
-
-.sidebar-button-active {
-    -fx-background-color: linear-gradient(to right, #2f6df6, #2557d6);
-    -fx-text-fill: white;
-}
-
-/* =========================
    MAIN PAGE
    ========================= */
 .main-content {
@@ -693,4 +653,177 @@
 .form-combo.error {
     -fx-border-color: #ff4d5a;
     -fx-effect: dropshadow(gaussian, rgba(255,77,90,0.25), 6, 0.2, 0, 0);
+}
+
+/* =========================
+   LIGHT ADMIN OVERRIDES
+   ========================= */
+.root,
+.main-content {
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-background-color: #f4f7fb;
+}
+
+.label-title,
+.label-title-large,
+.section-title,
+.page-big-title,
+.quiz-title {
+    -fx-text-fill: #16233f;
+}
+
+.label-subtitle,
+.section-subtitle,
+.quiz-subtitle,
+.hero-subtitle,
+.label-muted,
+.card-description,
+.card-duration {
+    -fx-text-fill: #667a9c;
+}
+
+.card,
+.filter-section,
+.assessment-card,
+.form-card,
+.quiz-card,
+.create-card,
+.question-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d8e2f0;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 18, 0.14, 0, 6);
+}
+
+.assessment-card:hover {
+    -fx-background-color: #f8fbff;
+    -fx-border-color: #b8d7e2;
+}
+
+.card-title,
+.question-label {
+    -fx-text-fill: #17233c;
+}
+
+.label-form,
+.form-label,
+.radio-button {
+    -fx-text-fill: #334155;
+}
+
+.text-field,
+.password-field,
+.text-area,
+.combo-box,
+.date-picker,
+.search-field,
+.form-input,
+.form-textarea,
+.form-combo {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #17233c;
+    -fx-prompt-text-fill: #8da0bd;
+    -fx-border-color: #d5deec;
+}
+
+.text-area .content,
+.form-textarea .content {
+    -fx-background-color: #ffffff;
+}
+
+.combo-box .list-cell,
+.form-combo .list-cell {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #17233c;
+}
+
+.combo-box-popup .list-view,
+.combo-box-popup .list-cell {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #17233c;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #edf7f5;
+}
+
+.table-view,
+.table-view .column-header-background,
+.table-row-cell,
+.table-view .virtual-flow .scroll-bar:vertical,
+.table-view .virtual-flow .scroll-bar:horizontal {
+    -fx-background-color: #ffffff;
+}
+
+.table-view {
+    -fx-border-color: #d8e2f0;
+}
+
+.table-view .column-header {
+    -fx-border-color: transparent transparent #d8e2f0 transparent;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #415675;
+}
+
+.table-row-cell {
+    -fx-border-color: transparent transparent #edf2f8 transparent;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #f8fbff;
+}
+
+.table-row-cell:filled:selected,
+.table-row-cell:focused {
+    -fx-background-color: #CCFBF1;
+}
+
+.table-cell {
+    -fx-text-fill: #17233c;
+}
+
+.table-view .virtual-flow .thumb {
+    -fx-background-color: #c9d7e8;
+}
+
+.button-secondary,
+.secondary-button,
+.button-cancel {
+    -fx-background-color: #E0F7FA;
+    -fx-text-fill: #22314f;
+    -fx-border-color: #b8d7e2;
+}
+
+.button-secondary:hover,
+.secondary-button:hover,
+.button-cancel:hover {
+    -fx-background-color: #CCFBF1;
+}
+
+.button-danger {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #b91c1c;
+    -fx-border-color: #fecaca;
+}
+
+.button-danger:hover {
+    -fx-background-color: #fecaca;
+}
+
+.hero-section {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d8e2f0;
+    -fx-border-radius: 22;
+}
+
+.hero-title {
+    -fx-text-fill: #16233f;
+}
+
+.hero-badge,
+.timer-label {
+    -fx-background-color: #CCFBF1;
+    -fx-text-fill: #0e7490;
+    -fx-border-color: transparent;
 }

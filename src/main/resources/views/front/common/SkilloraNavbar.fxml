@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.front.SkilloraNavbarController"
+      styleClass="student-header" alignment="CENTER_LEFT" spacing="18">
+    <padding>
+        <Insets top="22" right="36" bottom="22" left="36"/>
+    </padding>
+
+    <Label text="SkillORA" styleClass="logo-text"/>
+    <Region styleClass="nav-vrule" prefWidth="1" maxWidth="1" prefHeight="24" maxHeight="24"/>
+    <Label text="STUDENT · N° 001" styleClass="pf-eyebrow"/>
+
+    <Region HBox.hgrow="ALWAYS"/>
+
+    <Button text="HOME" onAction="#showHome" fx:id="navHome" styleClass="student-nav-btn"/>
+    <Button text="COURSES" onAction="#showCourses" fx:id="navCourses" styleClass="student-nav-btn"/>
+    <Button text="MY LEARNING" onAction="#showMyLearning" fx:id="navMyLearning" styleClass="student-nav-btn"/>
+    <Button text="EVENT" onAction="#showEvents" fx:id="navEvents" styleClass="student-nav-btn"/>
+    <Button text="RENDEZ-VOUS" onAction="#showRendezVous" fx:id="navRendezVous" styleClass="student-nav-btn"/>
+    <Button text="SLOTS" onAction="#showSlots" fx:id="navSlots" styleClass="student-nav-btn"/>
+    <Button text="FORUM" onAction="#showForum" fx:id="navForum" styleClass="student-nav-btn"/>
+    <Button text="ASSESSMENT" onAction="#showAssessment" fx:id="navAssessment" styleClass="student-nav-btn"/>
+
+    <Region prefWidth="14"/>
+    <Region styleClass="nav-vrule" prefWidth="1" maxWidth="1" prefHeight="22" maxHeight="22"/>
+    <Region prefWidth="14"/>
+
+    <Button fx:id="notificationButton" text="🔔" prefWidth="58" prefHeight="44" onAction="#showNotifications" styleClass="theme-toggle"/>
+    <Button fx:id="themeToggleBtn" text="" prefWidth="52" prefHeight="44" onAction="#toggleTheme" styleClass="theme-toggle"/>
+    <MenuButton fx:id="userMenu" text="" prefWidth="74" prefHeight="46" contentDisplay="GRAPHIC_ONLY" styleClass="header-username">
+        <items>
+            <MenuItem fx:id="menuProfile" text="Profile" onAction="#showProfile"/>
+            <MenuItem fx:id="menuSettings" text="Settings" onAction="#showSettings"/>
+        </items>
+    </MenuButton>
+    <Button text="SIGN OUT" onAction="#handleLogout" styleClass="nav-signout"/>
+</HBox>

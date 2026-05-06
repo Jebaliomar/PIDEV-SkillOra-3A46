@@ -17,7 +17,7 @@
 
     <top>
         <HBox styleClass="top-shell">
-            <Label text="SkillHarbor" styleClass="brand-label" />
+            <Label text="SkillORA" styleClass="brand-label" />
         </HBox>
     </top>
 

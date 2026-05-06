@@ -18,6 +18,7 @@
             <Region HBox.hgrow="ALWAYS"/>
 
             <Button text="%common.home" onAction="#showHome" fx:id="navHome" styleClass="student-nav-btn"/>
+            <Button text="%prof.nav.appHome" onAction="#showAppHome" styleClass="student-nav-btn"/>
             <Button text="%prof.nav.courses" onAction="#showCourses" fx:id="navCourses" styleClass="student-nav-btn"/>
             <Button text="%prof.nav.students" onAction="#showStudents" fx:id="navStudents" styleClass="student-nav-btn"/>
 

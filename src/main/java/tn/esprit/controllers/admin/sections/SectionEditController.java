@@ -63,7 +63,7 @@ public class SectionEditController implements AdminShellAware {
             section.setUpdatedAt(LocalDateTime.now());
             getCourseSectionService().update(section);
             if (shellController != null && course != null) {
-                shellController.showSectionIndex(course);
+                shellController.showCourseShow(course);
             }
         } catch (SQLException e) {
             showError("Unable to update the section.", e);
@@ -103,7 +103,7 @@ public class SectionEditController implements AdminShellAware {
     @FXML
     private void handleCancel() {
         if (shellController != null && course != null) {
-            shellController.showSectionIndex(course);
+            shellController.showCourseShow(course);
         }
     }
 

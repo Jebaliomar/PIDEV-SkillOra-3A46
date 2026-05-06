@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="780.0" prefWidth="1200.0"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.HangmanAssessmentController"
+            styleClass="root">
+    <stylesheets>
+        <URL value="@styles/style.css"/>
+        <URL value="@user-assessment.css"/>
+    </stylesheets>
+
+    <top>
+        <fx:include fx:id="navbar" source="views/front/common/SkilloraNavbar.fxml"/>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true"
+                    styleClass="main-scroll">
+
+            <content>
+                <VBox spacing="26" prefWidth="1180.0" styleClass="page-container">
+                    <padding>
+                        <Insets top="24" right="24" bottom="24" left="24"/>
+                    </padding>
+
+                    <children>
+                        <!-- Top blue mini-game block -->
+                        <VBox spacing="24" styleClass="hero-section">
+                            <children>
+                                <Label text="MINI GAME" styleClass="hero-badge"/>
+
+                                <HBox spacing="24">
+                                    <children>
+                                        <VBox spacing="10">
+                                            <children>
+                                                <Label text="Hangman" styleClass="hero-title"/>
+
+                                                <Label text="Launch a new game by topic and difficulty, then continue your active sessions."
+                                                       wrapText="true"
+                                                       maxWidth="420"
+                                                       styleClass="hero-subtitle"/>
+                                            </children>
+                                        </VBox>
+
+                                        <Region HBox.hgrow="ALWAYS"/>
+
+                                        <HBox spacing="14" alignment="CENTER_LEFT">
+                                            <children>
+                                                <ComboBox fx:id="topicComboBox"
+                                                          prefWidth="250"
+                                                          prefHeight="50"
+                                                          promptText="Select topic"/>
+
+                                                <ComboBox fx:id="levelComboBox"
+                                                          prefWidth="250"
+                                                          prefHeight="50"
+                                                          promptText="Select level"/>
+
+                                                <Button fx:id="btnNewGame"
+                                                        text="New Game"
+                                                        onAction="#handleNewGame"
+                                                        prefWidth="220"
+                                                        prefHeight="50"
+                                                        styleClass="hero-button"/>
+
+                                                <Button text="Back"
+                                                        onAction="#handleBackToAssessments"
+                                                        prefWidth="140"
+                                                        prefHeight="50"
+                                                        styleClass="filter-button"/>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <!-- small info line -->
+                        <Label fx:id="lblInfo"
+                               text="Choose a topic and difficulty, then click New Game."
+                               styleClass="section-subtitle"/>
+
+                        <!-- Your Games header -->
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Your Games"
+                                       styleClass="section-title"/>
+
+                                <Region HBox.hgrow="ALWAYS"/>
+
+                                <Label fx:id="lblSessionCount"
+                                       text="0 SESSION(S)"
+                                       styleClass="badge badge-todo"/>
+                            </children>
+                        </HBox>
+
+                        <!-- Cards container -->
+                        <FlowPane fx:id="gamesFlowPane"
+                                  hgap="18"
+                                  vgap="18"
+                                  prefWrapLength="1080"
+                                  style="-fx-background-color: transparent;"/>
+
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

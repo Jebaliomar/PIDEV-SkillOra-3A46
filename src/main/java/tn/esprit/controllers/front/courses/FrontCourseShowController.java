@@ -1,9 +1,11 @@
 package tn.esprit.controllers.front.courses;
 
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Accordion;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
@@ -11,19 +13,39 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.ColumnConstraints;
 import tn.esprit.controllers.front.FrontShellAware;
 import tn.esprit.controllers.front.FrontShellController;
+import tn.esprit.entities.Certificate;
 import tn.esprit.entities.Course;
+import tn.esprit.entities.CoursePrice;
 import tn.esprit.entities.CourseSection;
+import tn.esprit.entities.Enrollment;
 import tn.esprit.entities.Lesson;
+import tn.esprit.entities.User;
+import tn.esprit.services.CertificateService;
+import tn.esprit.services.CourseInsightsService;
+import tn.esprit.services.CoursePaymentService;
 import tn.esprit.services.CourseSectionService;
+import tn.esprit.services.CourseProgressService;
+import tn.esprit.services.EnrollmentService;
 import tn.esprit.services.LessonService;
+import tn.esprit.tools.AuthSession;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.net.URI;
+import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FrontCourseShowController implements FrontShellAware {
@@ -38,10 +60,7 @@ public class FrontCourseShowController implements FrontShellAware {
     private Label descriptionLabel;
 
     @FXML
-    private Label sectionsCountLabel;
-
-    @FXML
-    private Label lessonsCountLabel;
+    private Label priceLabel;
 
     @FXML
     private ImageView thumbnailImageView;
@@ -50,19 +69,61 @@ public class FrontCourseShowController implements FrontShellAware {
     private Label thumbnailFallbackLabel;
 
     @FXML
-    private Button startCourseButton;
-
-    @FXML
-    private Accordion sectionsAccordion;
+    private VBox sectionsAccordion;
 
     @FXML
     private ScrollPane rootScrollPane;
 
+    @FXML
+    private Label progressLabel;
+
+    @FXML
+    private Label completedLessonsLabel;
+
+    @FXML
+    private ProgressBar courseProgressBar;
+
+    @FXML
+    private Button continueButton;
+
+    @FXML
+    private Button certificateButton;
+
+    @FXML
+    private Button loadInsightsButton;
+
+    @FXML
+    private VBox insightsLoadingBox;
+
+    @FXML
+    private Label insightsErrorLabel;
+
+    @FXML
+    private VBox insightsResultBox;
+
+    @FXML
+    private Label insightsKeywordLabel;
+
+    @FXML
+    private VBox insightsCardsBox;
+
+    @FXML
+    private VBox insightsChartBox;
+
     private FrontShellController shellController;
     private CourseSectionService courseSectionService;
     private LessonService lessonService;
+    private EnrollmentService enrollmentService;
+    private CourseProgressService courseProgressService;
+    private CertificateService certificateService;
+    private CourseInsightsService courseInsightsService;
+    private CoursePaymentService coursePaymentService;
     private Course course;
-    private List<Lesson> orderedLessons = List.of();
+    private Enrollment enrollment;
+    private Certificate certificate;
+    private Set<Integer> completedLessonIds = Set.of();
+    private CourseInsightsService.CourseInsights loadedInsights;
+    private boolean paymentInProgress;
 
     @Override
     public void setShellController(FrontShellController shellController) {
@@ -72,7 +133,9 @@ public class FrontCourseShowController implements FrontShellAware {
     public void setCourse(Course course) {
         this.course = course;
         populateCourseHeader();
+        loadLearningState();
         loadCurriculum();
+        resetInsightsUi();
     }
 
     private void populateCourseHeader() {
@@ -82,61 +145,176 @@ public class FrontCourseShowController implements FrontShellAware {
         courseTitleLabel.setText(safeValue(course.getTitle(), "Untitled Course"));
         categoryLabel.setText(safeValue(course.getCategory(), "Uncategorized"));
         descriptionLabel.setText(safeValue(course.getDescription(), "No description is available for this course yet."));
+        updatePriceLabel();
         Image image = loadThumbnail(course.getThumbnail());
         thumbnailImageView.setImage(image);
         thumbnailImageView.setVisible(image != null);
         thumbnailImageView.setManaged(image != null);
         thumbnailFallbackLabel.setVisible(image == null);
         thumbnailFallbackLabel.setManaged(image == null);
-        sectionsCountLabel.setText("0 sections");
-        lessonsCountLabel.setText("0 lessons");
-        startCourseButton.setDisable(true);
+    }
+
+    @FXML
+    private void handleContinueCourse() {
+        if (paymentInProgress) {
+            return;
+        }
+        if (enrollment == null) {
+            startCheckoutThen(() -> openNextLessonAfterEnrollment());
+            return;
+        }
+        openNextLessonAfterEnrollment();
+    }
+
+    private void openNextLessonAfterEnrollment() {
+        try {
+            if (enrollment == null) {
+                showInfo("Payment required", "Complete checkout before opening this course.");
+                return;
+            }
+            Lesson nextLesson = getCourseProgressService().getNextUncompletedLesson(enrollment, course);
+            if (nextLesson == null) {
+                showInfo("No lessons available", "This course does not contain any lesson content yet.");
+                return;
+            }
+            openLesson(nextLesson);
+        } catch (SQLException | IllegalStateException e) {
+            showError("Unable to open this course.", e);
+        }
+    }
+
+    @FXML
+    private void handleOpenCertificate() {
+        if (certificate == null) {
+            return;
+        }
+        try {
+            Path pdfPath = getCertificateService().ensurePdfGenerated(certificate);
+            Desktop.getDesktop().open(pdfPath.toFile());
+        } catch (Exception e) {
+            showError("Unable to open the certificate.", e);
+        }
+    }
+
+    @FXML
+    private void handleLoadInsights() {
+        if (course == null) {
+            return;
+        }
+        if (loadedInsights != null) {
+            renderInsights(loadedInsights);
+            return;
+        }
+
+        setInsightsLoading(true);
+        insightsErrorLabel.setVisible(false);
+        insightsErrorLabel.setManaged(false);
+        insightsResultBox.setVisible(false);
+        insightsResultBox.setManaged(false);
+
+        Task<CourseInsightsService.CourseInsights> task = new Task<>() {
+            @Override
+            protected CourseInsightsService.CourseInsights call() {
+                return getCourseInsightsService().getInsightsForCourse(course);
+            }
+        };
+        task.setOnSucceeded(event -> {
+            loadedInsights = task.getValue();
+            setInsightsLoading(false);
+            renderInsights(loadedInsights);
+        });
+        task.setOnFailed(event -> {
+            setInsightsLoading(false);
+            Throwable error = task.getException();
+            showInsightsError(error == null || error.getMessage() == null
+                    ? "Unable to load insights right now. Please try again."
+                    : error.getMessage());
+        });
+
+        Thread thread = new Thread(task, "course-insights-loader");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void loadLearningState() {
+        enrollment = null;
+        certificate = null;
+        completedLessonIds = Set.of();
+        updateProgressUi(0, 0, 0);
+        certificateButton.setVisible(false);
+        certificateButton.setManaged(false);
+        continueButton.setText("Buy Course");
+
+        User user = AuthSession.getCurrentUser();
+        if (course == null || course.getId() == null || user == null || user.getId() == null) {
+            return;
+        }
+
+        try {
+            enrollment = getEnrollmentService().findOneByUserAndCourse(user.getId(), course.getId());
+            int totalLessons = getCourseProgressService().getTotalLessons(course);
+            int completedLessons = enrollment == null ? 0 : getCourseProgressService().getCompletedLessons(enrollment);
+            if (enrollment != null) {
+                getCourseProgressService().recalculateEnrollmentProgress(enrollment, course);
+                completedLessonIds = getCourseProgressService().findCompletedLessonIds(enrollment);
+                certificate = getCertificateService().findOneByEnrollment(enrollment.getId());
+                if (certificate == null && enrollment.getProgressPercent() != null && enrollment.getProgressPercent() >= 100) {
+                    certificate = getCertificateService().issueIfEligible(enrollment, user, course, totalLessons);
+                }
+                continueButton.setText(completedLessons >= totalLessons && totalLessons > 0 ? "Review Course" : "Continue Course");
+            } else {
+                CoursePrice price = getCoursePaymentService().getOrCreatePrice(course);
+                continueButton.setText("Buy Course · " + getCoursePaymentService().formatPrice(price));
+            }
+            updateProgressUi(enrollment == null ? 0 : enrollment.getProgressPercent(), completedLessons, totalLessons);
+            updateCertificateButton();
+        } catch (Exception e) {
+            updateProgressUi(0, 0, 0);
+        }
     }
 
     private void loadCurriculum() {
-        sectionsAccordion.getPanes().clear();
-        orderedLessons = List.of();
+        sectionsAccordion.getChildren().clear();
         if (course == null || course.getId() == null) {
             return;
         }
 
         try {
-            List<CourseSection> sections = getCourseSectionService().getByCourseId(course.getId());
-            sectionsCountLabel.setText(sections.size() + (sections.size() == 1 ? " section" : " sections"));
+            List<CourseSection> sections = getCourseSectionService().getAll().stream()
+                    .filter(section -> course.getId().equals(section.getCourseId()))
+                    .sorted(Comparator.comparing(CourseSection::getPosition, Comparator.nullsLast(Integer::compareTo))
+                            .thenComparing(CourseSection::getId, Comparator.nullsLast(Integer::compareTo)))
+                    .toList();
 
             if (sections.isEmpty()) {
-                lessonsCountLabel.setText("0 lessons");
-                sectionsAccordion.getPanes().add(buildEmptyPane("No sections yet", "This course does not contain any sections."));
+                sectionsAccordion.getChildren().add(buildEmptyPane("No sections yet", "This course does not contain any sections."));
                 return;
             }
 
             Map<Integer, List<Lesson>> lessonsBySection = loadLessonsForSections(sections);
-            orderedLessons = sections.stream()
-                    .flatMap(section -> lessonsBySection.getOrDefault(section.getId(), List.<Lesson>of()).stream())
-                    .toList();
-            lessonsCountLabel.setText(orderedLessons.size() + (orderedLessons.size() == 1 ? " lesson" : " lessons"));
-            startCourseButton.setDisable(orderedLessons.isEmpty());
-
             for (int index = 0; index < sections.size(); index++) {
                 CourseSection section = sections.get(index);
                 TitledPane pane = buildSectionPane(section, lessonsBySection.getOrDefault(section.getId(), List.of()));
-                sectionsAccordion.getPanes().add(pane);
+                sectionsAccordion.getChildren().add(pane);
                 if (index == 0) {
-                    sectionsAccordion.setExpandedPane(pane);
+                    pane.setExpanded(true);
                 }
             }
         } catch (SQLException | IllegalStateException e) {
-            sectionsAccordion.getPanes().add(buildEmptyPane("Unable to load curriculum", e.getMessage()));
+            sectionsAccordion.getChildren().add(buildEmptyPane("Unable to load curriculum", e.getMessage()));
         }
     }
 
     private Map<Integer, List<Lesson>> loadLessonsForSections(List<CourseSection> sections) throws SQLException {
-        List<Integer> sectionIds = sections.stream()
+        Set<Integer> sectionIds = sections.stream()
                 .map(CourseSection::getId)
-                .toList();
+                .collect(Collectors.toSet());
 
-        return getLessonService().getBySectionIds(sectionIds).stream()
-                .collect(Collectors.groupingBy(Lesson::getSectionId, Collectors.toList()));
+        return getLessonService().getAll().stream()
+                .filter(lesson -> lesson.getSectionId() != null && sectionIds.contains(lesson.getSectionId()))
+                .sorted(Comparator.comparing(Lesson::getPosition, Comparator.nullsLast(Integer::compareTo))
+                        .thenComparing(Lesson::getId, Comparator.nullsLast(Integer::compareTo)))
+                .collect(Collectors.groupingBy(Lesson::getSectionId, Collectors.mapping(Function.identity(), Collectors.toList())));
     }
 
     private TitledPane buildSectionPane(CourseSection section, List<Lesson> lessons) {
@@ -151,8 +329,7 @@ public class FrontCourseShowController implements FrontShellAware {
             lessons.forEach(lesson -> lessonList.getChildren().add(buildLessonRow(lesson)));
         }
 
-        String paneTitle = safeValue(section.getTitle(), "Untitled Section") + "  •  " + lessons.size() + (lessons.size() == 1 ? " lesson" : " lessons");
-        TitledPane pane = new TitledPane(paneTitle, lessonList);
+        TitledPane pane = new TitledPane(section.getTitle(), lessonList);
         pane.getStyleClass().add("front-section-pane");
         pane.setAnimated(true);
         return pane;
@@ -168,11 +345,15 @@ public class FrontCourseShowController implements FrontShellAware {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label actionLabel = new Label("Open");
+        boolean completed = lesson.getId() != null && completedLessonIds.contains(lesson.getId());
+        Label actionLabel = new Label(completed ? "Completed" : "Open");
         actionLabel.getStyleClass().add("front-lesson-action");
 
         HBox row = new HBox(12, iconLabel, titleLabel, spacer, actionLabel);
         row.getStyleClass().add("front-lesson-row");
+        if (completed) {
+            row.getStyleClass().add("front-lesson-row-completed");
+        }
         row.setOnMouseClicked(event -> openLesson(lesson));
         return row;
     }
@@ -189,22 +370,270 @@ public class FrontCourseShowController implements FrontShellAware {
 
     private void openLesson(Lesson lesson) {
         if (shellController != null && course != null && lesson != null) {
-            shellController.showCourseConsume(course, lesson);
+            if (enrollment == null) {
+                startCheckoutThen(() -> shellController.showCourseConsume(course, lesson));
+            } else {
+                shellController.showCourseConsume(course, lesson);
+            }
         }
     }
 
-    @FXML
-    private void handleBackToBrowse() {
-        if (shellController != null) {
-            shellController.showBrowseCourses();
+    private void startCheckoutThen(Runnable afterEnrollment) {
+        User user = AuthSession.getCurrentUser();
+        if (user == null || user.getId() == null) {
+            showInfo("Sign in required", "Please sign in before buying this course.");
+            return;
+        }
+        if (course == null || course.getId() == null) {
+            showInfo("No course selected", "Choose a course before starting checkout.");
+            return;
+        }
+
+        paymentInProgress = true;
+        continueButton.setDisable(true);
+        continueButton.setText("Opening checkout...");
+
+        Task<Enrollment> task = new Task<>() {
+            @Override
+            protected Enrollment call() throws Exception {
+                return getCoursePaymentService().checkoutAndEnroll(user, course);
+            }
+        };
+        task.setOnSucceeded(event -> {
+            paymentInProgress = false;
+            continueButton.setDisable(false);
+            enrollment = task.getValue();
+            loadLearningState();
+            loadCurriculum();
+            showInfo("Course unlocked", "Payment confirmed. You can start learning now.");
+            if (afterEnrollment != null) {
+                afterEnrollment.run();
+            }
+        });
+        task.setOnFailed(event -> {
+            paymentInProgress = false;
+            continueButton.setDisable(false);
+            loadLearningState();
+            Throwable error = task.getException();
+            showError("Payment was not completed.", error instanceof Exception exception ? exception : new Exception(error));
+        });
+
+        Thread thread = new Thread(task, "skillora-course-checkout");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void updatePriceLabel() {
+        if (priceLabel == null || course == null || course.getId() == null) {
+            return;
+        }
+        try {
+            CoursePrice price = getCoursePaymentService().getOrCreatePrice(course);
+            priceLabel.setText(getCoursePaymentService().formatPrice(price));
+        } catch (Exception e) {
+            priceLabel.setText("Price unavailable");
         }
     }
 
-    @FXML
-    private void handleStartCourse() {
-        if (!orderedLessons.isEmpty()) {
-            openLesson(orderedLessons.get(0));
+    private void updateProgressUi(Number progressValue, int completedLessons, int totalLessons) {
+        int progress = progressValue == null ? 0 : Math.max(0, Math.min(100, progressValue.intValue()));
+        progressLabel.setText(progress + "% complete");
+        completedLessonsLabel.setText(completedLessons + " / " + totalLessons + (totalLessons == 1 ? " lesson" : " lessons"));
+        courseProgressBar.setProgress(progress / 100.0);
+    }
+
+    private void updateCertificateButton() {
+        boolean hasCertificate = certificate != null;
+        certificateButton.setVisible(hasCertificate);
+        certificateButton.setManaged(hasCertificate);
+    }
+
+    private void resetInsightsUi() {
+        loadedInsights = null;
+        if (loadInsightsButton != null) {
+            loadInsightsButton.setDisable(false);
+            loadInsightsButton.setText("Show Insights");
         }
+        setManagedVisible(insightsLoadingBox, false);
+        setManagedVisible(insightsResultBox, false);
+        if (insightsErrorLabel != null) {
+            insightsErrorLabel.setText("");
+            insightsErrorLabel.setVisible(false);
+            insightsErrorLabel.setManaged(false);
+        }
+        if (insightsCardsBox != null) {
+            insightsCardsBox.getChildren().clear();
+        }
+        if (insightsChartBox != null) {
+            insightsChartBox.getChildren().clear();
+        }
+    }
+
+    private void setInsightsLoading(boolean loading) {
+        if (loadInsightsButton != null) {
+            loadInsightsButton.setDisable(loading);
+            loadInsightsButton.setText(loading ? "Loading..." : "Show Insights");
+        }
+        setManagedVisible(insightsLoadingBox, loading);
+    }
+
+    private void showInsightsError(String message) {
+        if (insightsErrorLabel == null) {
+            return;
+        }
+        insightsErrorLabel.setText(message == null || message.isBlank() ? "Unable to load insights right now. Please try again." : message);
+        insightsErrorLabel.setVisible(true);
+        insightsErrorLabel.setManaged(true);
+    }
+
+    private void renderInsights(CourseInsightsService.CourseInsights insights) {
+        if (insights == null) {
+            return;
+        }
+
+        insightsKeywordLabel.setText(insights.keyword());
+        insightsCardsBox.getChildren().setAll(buildReasonGrid(insights.reasons()));
+        renderStrengthChart(insights.chart());
+        setManagedVisible(insightsResultBox, true);
+    }
+
+    private GridPane buildReasonGrid(List<CourseInsightsService.InsightReason> reasons) {
+        GridPane grid = new GridPane();
+        grid.getStyleClass().add("course-insights-card-grid");
+        grid.setHgap(14);
+        grid.setVgap(14);
+        grid.setMaxWidth(Double.MAX_VALUE);
+
+        ColumnConstraints firstColumn = new ColumnConstraints();
+        firstColumn.setPercentWidth(50);
+        firstColumn.setHgrow(Priority.ALWAYS);
+        ColumnConstraints secondColumn = new ColumnConstraints();
+        secondColumn.setPercentWidth(50);
+        secondColumn.setHgrow(Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(firstColumn, secondColumn);
+
+        for (int index = 0; index < reasons.size(); index++) {
+            VBox card = buildReasonCard(reasons.get(index));
+            GridPane.setHgrow(card, Priority.ALWAYS);
+            GridPane.setFillWidth(card, true);
+            grid.add(card, index % 2, index / 2);
+        }
+        return grid;
+    }
+
+    private VBox buildReasonCard(CourseInsightsService.InsightReason reason) {
+        Label title = new Label(safeValue(reason.title(), "Insight").toUpperCase(Locale.ROOT));
+        title.getStyleClass().add("course-insights-card-kicker");
+
+        Label value = new Label(safeValue(reason.value(), "Unavailable"));
+        value.getStyleClass().add("course-insights-card-value");
+        value.setWrapText(true);
+        value.setMinWidth(0);
+        value.setMaxWidth(Double.MAX_VALUE);
+
+        Label detail = new Label(safeValue(reason.detail(), "No detail available."));
+        detail.getStyleClass().add("course-insights-card-detail");
+        detail.setWrapText(true);
+        detail.setMinWidth(0);
+        detail.setMaxWidth(Double.MAX_VALUE);
+
+        VBox card = new VBox(8, title, value, detail);
+        card.getStyleClass().add("course-insights-reason-card");
+        card.setMinWidth(0);
+        card.setMaxWidth(Double.MAX_VALUE);
+
+        String link = reason.link();
+        if (link != null && !link.isBlank()) {
+            Button linkButton = new Button("Learn more");
+            linkButton.setFocusTraversable(false);
+            linkButton.getStyleClass().add("course-insights-link");
+            linkButton.setOnAction(event -> openExternalLink(link));
+            card.getChildren().add(linkButton);
+        }
+        return card;
+    }
+
+    private void renderStrengthChart(CourseInsightsService.InsightChart chart) {
+        insightsChartBox.getChildren().clear();
+        if (chart == null || chart.labels().isEmpty()) {
+            Label empty = new Label("No chart data available yet.");
+            empty.getStyleClass().add("front-section-empty");
+            insightsChartBox.getChildren().add(empty);
+            return;
+        }
+
+        for (int index = 0; index < chart.labels().size(); index++) {
+            String labelText = chart.labels().get(index);
+            int normalized = safeInt(chart.normalized(), index);
+            int raw = safeInt(chart.values(), index);
+
+            Label label = new Label(labelText);
+            label.getStyleClass().add("course-insights-bar-label");
+
+            Label value = new Label(formatNumber(raw));
+            value.getStyleClass().add("course-insights-bar-value");
+
+            Region track = new Region();
+            track.getStyleClass().add("course-insights-bar-track");
+            track.setMinHeight(12);
+            track.setPrefHeight(12);
+            track.setMaxHeight(12);
+            track.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(track, Priority.ALWAYS);
+
+            Region fill = new Region();
+            fill.getStyleClass().addAll("course-insights-bar-fill", "course-insights-bar-fill-" + ((index % 4) + 1));
+            fill.setMinHeight(12);
+            fill.setPrefHeight(12);
+            fill.setMaxHeight(12);
+            fill.setMaxWidth(Region.USE_PREF_SIZE);
+            fill.prefWidthProperty().bind(track.widthProperty().multiply(Math.max(0, Math.min(100, normalized)) / 100.0));
+
+            StackPane bar = new StackPane();
+            bar.getStyleClass().add("course-insights-bar-shell");
+            bar.setMaxWidth(Double.MAX_VALUE);
+            StackPane.setAlignment(fill, javafx.geometry.Pos.CENTER_LEFT);
+            bar.getChildren().addAll(track, fill);
+
+            HBox header = new HBox(10, label, new Region(), value);
+            HBox.setHgrow(header.getChildren().get(1), Priority.ALWAYS);
+            header.getStyleClass().add("course-insights-bar-header");
+
+            VBox row = new VBox(6, header, bar);
+            row.getStyleClass().add("course-insights-bar-row");
+            insightsChartBox.getChildren().add(row);
+        }
+    }
+
+    private void openExternalLink(String link) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(URI.create(link));
+            }
+        } catch (Exception ignored) {
+            // External links are helpful, but the insights remain useful if the OS blocks opening them.
+        }
+    }
+
+    private void setManagedVisible(javafx.scene.Node node, boolean visible) {
+        if (node != null) {
+            node.setVisible(visible);
+            node.setManaged(visible);
+        }
+    }
+
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showError(String message, Exception e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(message);
+        alert.setContentText(e == null || e.getMessage() == null ? "Unexpected error." : e.getMessage());
+        alert.showAndWait();
     }
 
     private String typeBadge(String type) {
@@ -238,6 +667,14 @@ public class FrontCourseShowController implements FrontShellAware {
         return value == null || value.isBlank() ? fallback : value;
     }
 
+    private int safeInt(List<Integer> values, int index) {
+        return values == null || index < 0 || index >= values.size() || values.get(index) == null ? 0 : values.get(index);
+    }
+
+    private String formatNumber(int value) {
+        return String.format(Locale.US, "%,d", value);
+    }
+
     private CourseSectionService getCourseSectionService() {
         if (courseSectionService == null) {
             courseSectionService = new CourseSectionService();
@@ -250,5 +687,40 @@ public class FrontCourseShowController implements FrontShellAware {
             lessonService = new LessonService();
         }
         return lessonService;
+    }
+
+    private EnrollmentService getEnrollmentService() {
+        if (enrollmentService == null) {
+            enrollmentService = new EnrollmentService();
+        }
+        return enrollmentService;
+    }
+
+    private CourseProgressService getCourseProgressService() {
+        if (courseProgressService == null) {
+            courseProgressService = new CourseProgressService();
+        }
+        return courseProgressService;
+    }
+
+    private CertificateService getCertificateService() {
+        if (certificateService == null) {
+            certificateService = new CertificateService();
+        }
+        return certificateService;
+    }
+
+    private CourseInsightsService getCourseInsightsService() {
+        if (courseInsightsService == null) {
+            courseInsightsService = new CourseInsightsService();
+        }
+        return courseInsightsService;
+    }
+
+    private CoursePaymentService getCoursePaymentService() {
+        if (coursePaymentService == null) {
+            coursePaymentService = new CoursePaymentService();
+        }
+        return coursePaymentService;
     }
 }

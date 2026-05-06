@@ -11,70 +11,178 @@
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.forum.CreatePostController"
             stylesheets="@forum.css"
             styleClass="root">
+
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="header">
+        <HBox alignment="CENTER_LEFT" spacing="12"
+              style="-fx-background-color: rgba(255,255,255,0.64); -fx-border-color: rgba(255,255,255,0.76); -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(gaussian, rgba(30,41,59,0.08), 12, 0.12, 0, 3);">
             <padding>
-                <Insets top="18" right="28" bottom="18" left="28"/>
+                <Insets top="16" right="24" bottom="16" left="24"/>
             </padding>
-            <Button text="← Back to Posts" onAction="#handleBack" styleClass="btn-secondary"/>
-            <VBox spacing="3">
-                <Label fx:id="screenTitleLabel" text="Create Post" styleClass="label-title-large"/>
-                <Label fx:id="screenSubtitleLabel" text="Share your thoughts with the community." styleClass="label-subtitle"/>
-                <Label fx:id="currentUserLabel" styleClass="label-user-alt"/>
+
+            <Button text="← Back" onAction="#handleBack"
+                    style="-fx-background-color: #f8fafc; -fx-text-fill: #334155; -fx-font-weight: 800;
+                           -fx-font-size: 12px; -fx-background-radius: 12; -fx-border-color: #e2e8f0;
+                           -fx-border-radius: 12; -fx-cursor: hand; -fx-padding: 10 14 10 14;"/>
+
+            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                <Label fx:id="screenTitleLabel" text="Create Post"
+                       style="-fx-text-fill: #0f172a; -fx-font-size: 18px; -fx-font-weight: 900;"/>
+                <Label fx:id="screenSubtitleLabel" text="Share your thoughts with the community."
+                       style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
             </VBox>
-            <Region HBox.hgrow="ALWAYS"/>
+
+            <Label fx:id="currentUserLabel"
+                   style="-fx-background-color: rgba(29,78,216,0.10); -fx-text-fill: #1d4ed8;
+                          -fx-background-radius: 999; -fx-padding: 8 14 8 14; -fx-font-size: 12px; -fx-font-weight: 800;"/>
         </HBox>
     </top>
+
     <center>
-        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+        <ScrollPane fitToWidth="true" pannable="true"
+                    style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
             <content>
-                <VBox spacing="0" alignment="TOP_CENTER">
+                <VBox alignment="TOP_CENTER" spacing="14">
                     <padding>
-                        <Insets top="32" right="40" bottom="40" left="40"/>
+                        <Insets top="16" right="20" bottom="24" left="20"/>
                     </padding>
-                    <VBox spacing="20" maxWidth="680" styleClass="card">
-                        <padding>
-                            <Insets top="28" right="28" bottom="28" left="28"/>
-                        </padding>
 
-                        <!-- Type Field -->
-                        <VBox spacing="7">
-                            <Label text="Post Type" styleClass="label-field"/>
-                            <TextField fx:id="typeField" promptText="e.g. Discussion, Question, Announcement" styleClass="input-field"/>
+                    <VBox spacing="14" maxWidth="920"
+                          style="-fx-background-color: rgba(255,255,255,0.64); -fx-background-radius: 20; -fx-border-color: rgba(255,255,255,0.82); -fx-border-radius: 20; -fx-border-width: 1; -fx-padding: 18; -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.12), 24, 0.14, 0, 8);">
+
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                <Label text="Create a polished post"
+                                       style="-fx-text-fill: #0f172a; -fx-font-size: 20px; -fx-font-weight: 900;"/>
+                                <Label text="Fill the fields below then publish when ready."
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                            </VBox>
+                            <Label text="Draft mode"
+                                   style="-fx-background-color: rgba(29,78,216,0.10); -fx-text-fill: #1d4ed8; -fx-font-size: 12px; -fx-font-weight: 800; -fx-background-radius: 999; -fx-padding: 7 12 7 12;"/>
+                        </HBox>
+
+                        <VBox spacing="12"
+                              style="-fx-background-color: rgba(255,255,255,0.74); -fx-background-radius: 16; -fx-border-color: rgba(226,232,240,0.92); -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 14;">
+                            <Label text="Post type"
+                                   style="-fx-text-fill: #0f172a; -fx-font-size: 14px; -fx-font-weight: 900;"/>
+                            <HBox spacing="10" alignment="CENTER">
+                                <Button fx:id="typeQuestionBtn" onAction="#handleTypeQuestionSelect"
+                                        HBox.hgrow="ALWAYS" prefHeight="92" maxWidth="1.7976931348623157E308"
+                                        style="-fx-background-color: rgba(29,78,216,0.08); -fx-background-radius: 14; -fx-border-color: #1d4ed8; -fx-border-radius: 14; -fx-border-width: 2; -fx-cursor: hand; -fx-padding: 0 14 0 14;">
+                                    <graphic>
+                                        <HBox alignment="CENTER_LEFT" spacing="12">
+                                            <VBox alignment="CENTER" prefWidth="38" prefHeight="38" minWidth="38" minHeight="38" maxWidth="38" maxHeight="38"
+                                                  style="-fx-background-color: linear-gradient(to bottom right, #3b82f6, #2563eb); -fx-background-radius: 11;">
+                                                <Label text="Q" style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: 900;"/>
+                                            </VBox>
+                                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                                <Label text="Question" style="-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #0f172a;"/>
+                                                <Label text="Ask for help" style="-fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                                            </VBox>
+                                        </HBox>
+                                    </graphic>
+                                </Button>
+
+                                <Button fx:id="typeDiscussionBtn" onAction="#handleTypeDiscussionSelect"
+                                        HBox.hgrow="ALWAYS" prefHeight="92" maxWidth="1.7976931348623157E308"
+                                        style="-fx-background-color: rgba(255,255,255,0.82); -fx-background-radius: 14; -fx-border-color: rgba(226,232,240,0.95); -fx-border-radius: 14; -fx-border-width: 1.5; -fx-cursor: hand; -fx-padding: 0 14 0 14;">
+                                    <graphic>
+                                        <HBox alignment="CENTER_LEFT" spacing="12">
+                                            <VBox alignment="CENTER" prefWidth="38" prefHeight="38" minWidth="38" minHeight="38" maxWidth="38" maxHeight="38"
+                                                  style="-fx-background-color: linear-gradient(to bottom right, #34d399, #10b981); -fx-background-radius: 11;">
+                                                <Label text="D" style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: 900;"/>
+                                            </VBox>
+                                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                                <Label text="Discussion" style="-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #0f172a;"/>
+                                                <Label text="Start a conversation" style="-fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                                            </VBox>
+                                        </HBox>
+                                    </graphic>
+                                </Button>
+
+                                <Button fx:id="typeArticleBtn" onAction="#handleTypeArticleSelect"
+                                        HBox.hgrow="ALWAYS" prefHeight="92" maxWidth="1.7976931348623157E308"
+                                        style="-fx-background-color: rgba(255,255,255,0.82); -fx-background-radius: 14; -fx-border-color: rgba(226,232,240,0.95); -fx-border-radius: 14; -fx-border-width: 1.5; -fx-cursor: hand; -fx-padding: 0 14 0 14;">
+                                    <graphic>
+                                        <HBox alignment="CENTER_LEFT" spacing="12">
+                                            <VBox alignment="CENTER" prefWidth="38" prefHeight="38" minWidth="38" minHeight="38" maxWidth="38" maxHeight="38"
+                                                  style="-fx-background-color: linear-gradient(to bottom right, #6366f1, #4f46e5); -fx-background-radius: 11;">
+                                                <Label text="A" style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: 900;"/>
+                                            </VBox>
+                                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                                <Label text="Article" style="-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #0f172a;"/>
+                                                <Label text="Share knowledge" style="-fx-font-size: 11px; -fx-text-fill: #64748b;"/>
+                                            </VBox>
+                                        </HBox>
+                                    </graphic>
+                                </Button>
+                            </HBox>
+
+                            <TextField fx:id="typeField" managed="false" visible="false" prefHeight="0" maxHeight="0"/>
                         </VBox>
 
-                        <!-- Title Field -->
-                        <VBox spacing="7">
-                            <Label text="Title" styleClass="label-field"/>
-                            <TextField fx:id="titleField" promptText="Give your post a clear, descriptive title" styleClass="input-field"/>
+                        <HBox spacing="12" alignment="TOP_LEFT">
+                            <VBox spacing="8" HBox.hgrow="ALWAYS"
+                                  style="-fx-background-color: rgba(255,255,255,0.74); -fx-background-radius: 16; -fx-border-color: rgba(226,232,240,0.92); -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 14;">
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="Title *" style="-fx-text-fill: #0f172a; -fx-font-size: 13px; -fx-font-weight: 900;"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="titleCharCountLabel" text="0/255" style="-fx-text-fill: #94a3b8; -fx-font-size: 11px;"/>
+                                </HBox>
+                                <TextField fx:id="titleField" promptText="Write a concise, descriptive title"
+                                           style="-fx-background-color: rgba(255,255,255,0.90); -fx-border-color: rgba(226,232,240,0.95); -fx-border-radius: 11; -fx-background-radius: 11; -fx-border-width: 1.5; -fx-padding: 11 13 11 13; -fx-font-size: 14px; -fx-text-fill: #0f172a; -fx-prompt-text-fill: #94a3b8;"/>
+                            </VBox>
+
+                            <VBox spacing="8" prefWidth="270" minWidth="250"
+                                  style="-fx-background-color: rgba(255,255,255,0.74); -fx-background-radius: 16; -fx-border-color: rgba(226,232,240,0.92); -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 14;">
+                                <Label text="Topic" style="-fx-text-fill: #0f172a; -fx-font-size: 13px; -fx-font-weight: 900;"/>
+                                <TextField fx:id="topicField" promptText="Add a topic or tag"
+                                           style="-fx-background-color: rgba(255,255,255,0.90); -fx-border-color: rgba(226,232,240,0.95); -fx-border-radius: 11; -fx-background-radius: 11; -fx-border-width: 1.5; -fx-padding: 11 13 11 13; -fx-font-size: 14px; -fx-text-fill: #0f172a; -fx-prompt-text-fill: #94a3b8;"/>
+                            </VBox>
+                        </HBox>
+
+                        <VBox spacing="8"
+                              style="-fx-background-color: rgba(255,255,255,0.74); -fx-background-radius: 16; -fx-border-color: rgba(226,232,240,0.92); -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 14;">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label text="Content *" style="-fx-text-fill: #0f172a; -fx-font-size: 13px; -fx-font-weight: 900;"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="contentCharCountLabel" text="0 characters" style="-fx-text-fill: #94a3b8; -fx-font-size: 11px;"/>
+                            </HBox>
+                            <TextArea fx:id="contentArea" promptText="Write the content of your post here..."
+                                      prefRowCount="9" wrapText="true"
+                                      style="-fx-background-color: rgba(255,255,255,0.90); -fx-border-color: rgba(226,232,240,0.95); -fx-border-radius: 11; -fx-background-radius: 11; -fx-border-width: 1.5; -fx-padding: 11 13 11 13; -fx-font-size: 14px; -fx-text-fill: #0f172a; -fx-prompt-text-fill: #94a3b8;"/>
                         </VBox>
 
-                        <!-- Topic Field -->
-                        <VBox spacing="7">
-                            <Label text="Topic" styleClass="label-field"/>
-                            <TextField fx:id="topicField" promptText="Tag a topic area (e.g. Technology, Health)" styleClass="input-field"/>
+                        <VBox spacing="8"
+                              style="-fx-background-color: rgba(255,255,255,0.74); -fx-background-radius: 16; -fx-border-color: rgba(226,232,240,0.92); -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 14;">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label text="Image" style="-fx-text-fill: #0f172a; -fx-font-size: 13px; -fx-font-weight: 900;"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="imageStatusLabel" text="No image selected"
+                                       style="-fx-text-fill: #94a3b8; -fx-font-size: 11px;"/>
+                            </HBox>
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <Button fx:id="uploadImageButton" text="Upload Image" onAction="#handleUploadImage"
+                                        style="-fx-background-color: rgba(16,185,129,0.12); -fx-text-fill: #047857; -fx-font-weight: 800; -fx-font-size: 12px; -fx-background-radius: 12; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 10 16 10 16;"/>
+                                <Label text="Attach an optional image to make the post more visual."
+                                       wrapText="true"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                            </HBox>
                         </VBox>
 
-                        <!-- Content Field -->
-                        <VBox spacing="7">
-                            <Label text="Content" styleClass="label-field"/>
-                            <TextArea fx:id="contentArea" promptText="Write your post content here..." prefRowCount="8" styleClass="text-area"/>
-                        </VBox>
+                        <Label fx:id="postErrorLabel" managed="false" visible="false" wrapText="true"
+                               style="-fx-text-fill: #dc2626; -fx-font-size: 13px; -fx-font-weight: 700; -fx-background-color: rgba(220,38,38,0.08); -fx-background-radius: 12; -fx-padding: 10 14 10 14; -fx-border-color: rgba(220,38,38,0.18); -fx-border-radius: 12; -fx-border-width: 1;"/>
 
-                        <Label fx:id="postErrorLabel" managed="false" visible="false" wrapText="true" styleClass="label-error"/>
-
-                        <!-- Divider -->
-                        <Region styleClass="divider"/>
-
-                        <!-- Action row -->
-                        <HBox alignment="CENTER_RIGHT">
-                            <Button fx:id="savePostButton" text="Publish Post" onAction="#handleSavePost" styleClass="btn-primary"/>
+                        <HBox alignment="CENTER_RIGHT" spacing="10">
+                            <Button text="Cancel" onAction="#handleBack"
+                                    style="-fx-background-color: rgba(255,255,255,0.86); -fx-text-fill: #334155; -fx-font-weight: 800; -fx-font-size: 13px; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-cursor: hand; -fx-padding: 11 20 11 20;"/>
+                            <Button fx:id="savePostButton" text="Publish Post" onAction="#handleSavePost"
+                                    style="-fx-background-color: linear-gradient(to right, #1d4ed8, #2563eb); -fx-text-fill: white; -fx-font-weight: 900; -fx-font-size: 13px; -fx-background-radius: 12; -fx-border-color: transparent; -fx-cursor: hand; -fx-padding: 11 24 11 24;"/>
                         </HBox>
                     </VBox>
                 </VBox>

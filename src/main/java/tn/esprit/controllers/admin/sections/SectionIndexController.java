@@ -11,14 +11,17 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import tn.esprit.controllers.admin.AdminShellAware;
 import tn.esprit.controllers.admin.AdminShellController;
 import tn.esprit.entities.Course;
 import tn.esprit.entities.CourseSection;
 import tn.esprit.services.CourseSectionService;
+import tn.esprit.tools.AppIcons;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -49,13 +52,13 @@ public class SectionIndexController implements AdminShellAware {
     private TableColumn<CourseSection, LocalDateTime> createdAtColumn;
 
     @FXML
-    private Button editButton;
+    private TableColumn<CourseSection, Void> actionsColumn;
 
     @FXML
-    private Button deleteButton;
+    private Button backButton;
 
     @FXML
-    private Button manageLessonsButton;
+    private Button addSectionButton;
 
     private final ObservableList<CourseSection> sections = FXCollections.observableArrayList();
     private AdminShellController shellController;
@@ -64,6 +67,9 @@ public class SectionIndexController implements AdminShellAware {
 
     @FXML
     public void initialize() {
+        setButtonIcon(backButton, AppIcons.back());
+        setButtonIcon(addSectionButton, AppIcons.plus());
+        sectionTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         positionColumn.setCellValueFactory(new PropertyValueFactory<>("position"));
         positionColumn.setCellFactory(column -> new TableCell<>() {
@@ -82,10 +88,52 @@ public class SectionIndexController implements AdminShellAware {
                 setText(empty ? null : formatDateTime(item));
             }
         });
+        actionsColumn.setCellFactory(column -> new TableCell<>() {
+            private final Button openButton = createActionButton("Open", "manage-action-button");
+            private final Button editButton = createActionButton("Edit", "icon-action-button");
+            private final Button deleteButton = createActionButton("Delete", "icon-action-danger");
+            private final HBox actionsBox = new HBox(10, openButton, editButton, deleteButton);
+
+            {
+                actionsBox.setAlignment(Pos.CENTER_RIGHT);
+                openButton.setOnAction(event -> openSectionFromRow());
+                editButton.setOnAction(event -> editSectionFromRow());
+                deleteButton.setOnAction(event -> deleteSectionFromRow());
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : actionsBox);
+            }
+
+            private void openSectionFromRow() {
+                CourseSection section = getTableRow() == null ? null : (CourseSection) getTableRow().getItem();
+                openSection(section);
+            }
+
+            private void editSectionFromRow() {
+                CourseSection section = getTableRow() == null ? null : (CourseSection) getTableRow().getItem();
+                editSection(section);
+            }
+
+            private void deleteSectionFromRow() {
+                CourseSection section = getTableRow() == null ? null : (CourseSection) getTableRow().getItem();
+                deleteSection(section);
+            }
+        });
         sectionTable.setItems(sections);
-        editButton.disableProperty().bind(Bindings.isNull(sectionTable.getSelectionModel().selectedItemProperty()));
-        deleteButton.disableProperty().bind(Bindings.isNull(sectionTable.getSelectionModel().selectedItemProperty()));
-        manageLessonsButton.disableProperty().bind(Bindings.isNull(sectionTable.getSelectionModel().selectedItemProperty()));
+        sectionTable.setRowFactory(table -> {
+            TableRow<CourseSection> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty() && event.getClickCount() == 2) {
+                    openSection(row.getItem());
+                } else if (!row.isEmpty() && event.getClickCount() == 1) {
+                    sectionTable.getSelectionModel().select(row.getItem());
+                }
+            });
+            return row;
+        });
         searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilter());
     }
 
@@ -117,18 +165,36 @@ public class SectionIndexController implements AdminShellAware {
     @FXML
     private void handleEditSection() {
         CourseSection section = sectionTable.getSelectionModel().getSelectedItem();
-        if (section != null && shellController != null && course != null) {
-            shellController.showSectionEdit(course, section);
-        }
+        editSection(section);
     }
 
     @FXML
     private void handleDeleteSection() {
         CourseSection section = sectionTable.getSelectionModel().getSelectedItem();
+        deleteSection(section);
+    }
+
+    @FXML
+    private void handleManageLessons() {
+        CourseSection section = sectionTable.getSelectionModel().getSelectedItem();
+        openSection(section);
+    }
+
+    private void editSection(CourseSection section) {
+        if (section != null && shellController != null && course != null) {
+            shellController.showSectionEdit(course, section);
+        }
+    }
+
+    private void deleteSection(CourseSection section) {
         if (section == null) {
             return;
         }
-        if (!confirmDelete(section)) {
+        if (!confirmDeletion(
+                "Delete section",
+                "Delete \"" + (section.getTitle() == null || section.getTitle().isBlank() ? "this section" : section.getTitle()) + "\"?",
+                "This will permanently delete the section and all lessons inside it."
+        )) {
             return;
         }
         try {
@@ -142,9 +208,7 @@ public class SectionIndexController implements AdminShellAware {
         }
     }
 
-    @FXML
-    private void handleManageLessons() {
-        CourseSection section = sectionTable.getSelectionModel().getSelectedItem();
+    private void openSection(CourseSection section) {
         if (section != null && shellController != null && course != null) {
             shellController.showSectionShow(course, section);
         }
@@ -195,20 +259,46 @@ public class SectionIndexController implements AdminShellAware {
         return courseSectionService;
     }
 
+    private Button createActionButton(String text, String styleClass) {
+        Button button = new Button(text);
+        button.getStyleClass().add(styleClass);
+        button.setGraphic(switch (text) {
+            case "Open" -> AppIcons.lessons();
+            case "Edit" -> AppIcons.edit();
+            case "Delete" -> AppIcons.trash();
+            default -> null;
+        });
+        setGraphicScale(button, 0.78);
+        button.setGraphicTextGap(7);
+        return button;
+    }
+
+    private void setButtonIcon(Button button, javafx.scene.Node icon) {
+        if (button != null) {
+            button.setGraphic(icon);
+            setGraphicScale(button, 0.88);
+            button.setGraphicTextGap(8);
+        }
+    }
+
+    private void setGraphicScale(Button button, double scale) {
+        if (button != null && button.getGraphic() != null) {
+            button.getGraphic().setScaleX(scale);
+            button.getGraphic().setScaleY(scale);
+        }
+    }
+
     private String formatDateTime(LocalDateTime value) {
         return value == null ? "--" : DATE_TIME_FORMATTER.format(value);
     }
 
-    private boolean confirmDelete(CourseSection section) {
-        Alert alert = new Alert(
-                Alert.AlertType.CONFIRMATION,
-                "Delete section \"" + (section.getTitle() == null ? "Untitled section" : section.getTitle()) + "\" and all its lessons and lesson completions?",
-                ButtonType.YES,
-                ButtonType.CANCEL
-        );
-        alert.setHeaderText("Confirm section deletion");
+    private boolean confirmDeletion(String title, String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
         Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.YES;
+        return result.isPresent() && result.get() == ButtonType.OK;
     }
 
     private void showError(String message, Exception exception) {

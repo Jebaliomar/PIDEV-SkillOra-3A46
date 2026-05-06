@@ -108,7 +108,7 @@ public class PasswordResetService {
 
     private void sendResetEmail(User user, String code) throws Exception {
         String name = user.getFirstName() != null ? user.getFirstName() : "there";
-        String html = "<!DOCTYPE html><html><body style=\"font-family:Segoe UI,Arial,sans-serif;background:#f5f7fb;padding:32px;\">"
+        String html = "<!DOCTYPE html><html><body style=\"font-family:'Helvetica Neue Medium', 'Helvetica Neue', HelveticaNeue, 'Segoe UI', Arial, sans-serif;background:#f5f7fb;padding:32px;\">"
                 + "<div style=\"max-width:520px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,0.06);\">"
                 + "<div style=\"text-align:center;margin-bottom:24px;\">"
                 + "<div style=\"display:inline-block;background:linear-gradient(135deg,#22d3ee,#7C3AED);color:#fff;font-weight:700;font-size:22px;width:48px;height:48px;line-height:48px;border-radius:12px;\">S</div>"

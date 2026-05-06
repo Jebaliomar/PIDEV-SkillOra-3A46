@@ -12,6 +12,7 @@ public class Post {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Integer userId;
+    private String imageUrl;
 
     public Post() {
     }
@@ -91,10 +92,18 @@ public class Post {
         this.userId = userId;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     @Override
     public String toString() {
         return "Post{" +
-                "id=" + id + ", " + "type=" + type + ", " + "title=" + title + ", " + "topic=" + topic + ", " + "content=" + content + ", " + "createdAt=" + createdAt + ", " + "updatedAt=" + updatedAt + ", " + "userId=" + userId +
+                "id=" + id + ", " + "type=" + type + ", " + "title=" + title + ", " + "topic=" + topic + ", " + "content=" + content + ", " + "createdAt=" + createdAt + ", " + "updatedAt=" + updatedAt + ", " + "userId=" + userId + ", " + "imageUrl=" + imageUrl +
                 "}";
     }
 }

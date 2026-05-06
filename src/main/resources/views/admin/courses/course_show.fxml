@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -10,83 +13,185 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Arc?>
+<?import javafx.scene.shape.Circle?>
 
 <BorderPane prefHeight="780.0" prefWidth="1120.0" styleClass="module-page"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="tn.esprit.controllers.admin.courses.CourseShowController">
     <top>
         <HBox alignment="CENTER_LEFT" spacing="12.0">
-            <Button mnemonicParsing="false" onAction="#handleBack" styleClass="secondary-button" text="Back"/>
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" styleClass="secondary-button" text="Back"/>
             <VBox spacing="4.0">
                 <Label fx:id="headerTitleLabel" styleClass="page-title" text="Course"/>
                 <Label styleClass="page-subtitle" text="Read-only detail view. Editing is only available in the dedicated edit screen."/>
             </VBox>
             <StackPane HBox.hgrow="ALWAYS"/>
-            <Button mnemonicParsing="false" onAction="#handleManageSections" styleClass="secondary-button" text="Manage Sections"/>
-            <Button mnemonicParsing="false" onAction="#handleEdit" styleClass="secondary-button" text="Edit"/>
-            <Button mnemonicParsing="false" onAction="#handleDelete" styleClass="danger-button" text="🗑 Delete"/>
+            <Button fx:id="editButton" mnemonicParsing="false" onAction="#handleEdit" styleClass="secondary-button" text="Edit"/>
+            <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDelete" styleClass="danger-button" text="Delete"/>
         </HBox>
     </top>
     <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="front-scroll-pane">
+            <content>
         <VBox spacing="22.0">
+            <padding>
+                <Insets top="24.0" right="8.0" bottom="24.0" left="0.0"/>
+            </padding>
             <HBox spacing="22.0">
-                <VBox spacing="14.0" styleClass="detail-card" HBox.hgrow="ALWAYS">
-                    <Label styleClass="section-title" text="Overview"/>
-
-                    <VBox spacing="8.0">
-                        <Label styleClass="detail-label" text="Title"/>
-                        <Label fx:id="titleValueLabel" styleClass="detail-value-title" text="-"/>
-                    </VBox>
-
-                    <HBox spacing="20.0">
-                        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-                            <Label styleClass="detail-label" text="Category"/>
-                            <Label fx:id="categoryValueLabel" styleClass="detail-value" text="-"/>
+                <VBox spacing="18.0" styleClass="admin-overview-card" HBox.hgrow="ALWAYS">
+                    <HBox alignment="CENTER_LEFT" spacing="14.0">
+                        <VBox alignment="CENTER" styleClass="admin-avatar-tile">
+                            <Label fx:id="courseInitialLabel" styleClass="admin-avatar-letter" text="C"/>
                         </VBox>
-                        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
-                            <Label styleClass="detail-label" text="Status"/>
-                            <Label fx:id="statusValueLabel" styleClass="status-pill" text="-"/>
+                        <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="detail-label" text="COURSE PROFILE"/>
+                            <Label fx:id="titleValueLabel" styleClass="admin-view-title" text="-"/>
+                        </VBox>
+                        <Label fx:id="statusValueLabel" styleClass="status-pill" text="-"/>
+                    </HBox>
+
+                    <HBox spacing="12.0" styleClass="admin-metric-strip">
+                        <VBox spacing="5.0" styleClass="admin-mini-stat" HBox.hgrow="ALWAYS">
+                            <Label styleClass="meta-label" text="Category"/>
+                            <Label fx:id="categoryValueLabel" styleClass="meta-value" text="-"/>
+                        </VBox>
+                        <VBox spacing="5.0" styleClass="admin-mini-stat" HBox.hgrow="ALWAYS">
+                            <Label styleClass="meta-label" text="Sections"/>
+                            <Label fx:id="sectionCountLabel" styleClass="meta-value" text="0"/>
                         </VBox>
                     </HBox>
 
-                    <VBox spacing="8.0">
-                        <Label styleClass="detail-label" text="Description"/>
+                    <VBox spacing="8.0" styleClass="admin-description-box">
+                        <Label styleClass="detail-label" text="DESCRIPTION"/>
                         <Label fx:id="descriptionValueLabel" styleClass="detail-body" text="-" wrapText="true"/>
                     </VBox>
                 </VBox>
 
-                <VBox spacing="14.0" styleClass="detail-card" prefWidth="280.0">
+                <VBox spacing="14.0" styleClass="admin-side-card" prefWidth="330.0">
                     <Label styleClass="section-title" text="Metadata"/>
-                    <HBox>
+                    <VBox spacing="6.0">
                         <Label styleClass="meta-label" text="Created"/>
-                        <StackPane HBox.hgrow="ALWAYS"/>
                         <Label fx:id="createdAtValueLabel" styleClass="meta-value" text="-"/>
-                    </HBox>
+                    </VBox>
                     <Separator/>
-                    <HBox>
+                    <VBox spacing="6.0">
                         <Label styleClass="meta-label" text="Updated"/>
-                        <StackPane HBox.hgrow="ALWAYS"/>
                         <Label fx:id="updatedAtValueLabel" styleClass="meta-value" text="-"/>
-                    </HBox>
+                    </VBox>
                     <Separator/>
-                    <HBox>
+                    <VBox spacing="6.0">
                         <Label styleClass="meta-label" text="Thumbnail"/>
-                        <StackPane HBox.hgrow="ALWAYS"/>
-                        <Label fx:id="thumbnailValueLabel" styleClass="meta-value" text="-" wrapText="true"/>
-                    </HBox>
+                        <Label fx:id="thumbnailValueLabel" styleClass="meta-value admin-truncated-value" text="-" wrapText="true"/>
+                    </VBox>
                 </VBox>
             </HBox>
 
-            <VBox spacing="10.0" styleClass="detail-card" VBox.vgrow="ALWAYS">
-                <Label styleClass="section-title" text="Sections"/>
+            <VBox spacing="14.0" styleClass="courses-card admin-table-card" VBox.vgrow="ALWAYS">
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <VBox spacing="4.0">
+                        <Label styleClass="section-title" text="Sections"/>
+                        <Label styleClass="card-subtitle" text="Open a section directly from this table."/>
+                    </VBox>
+                    <StackPane HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="addSectionButton" mnemonicParsing="false" onAction="#handleAddSection" styleClass="hero-button" text="Add Section"/>
+                </HBox>
                 <TableView fx:id="sectionTable" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="sectionTitleColumn" prefWidth="500.0" text="Title"/>
-                        <TableColumn fx:id="positionColumn" prefWidth="150.0" text="Position"/>
-                        <TableColumn fx:id="sectionCreatedAtColumn" prefWidth="220.0" text="Created"/>
+                        <TableColumn fx:id="sectionTitleColumn" minWidth="360.0" prefWidth="470.0" text="TITLE"/>
+                        <TableColumn fx:id="positionColumn" minWidth="140.0" prefWidth="150.0" text="POSITION"/>
+                        <TableColumn fx:id="sectionCreatedAtColumn" minWidth="210.0" prefWidth="230.0" text="CREATED"/>
+                        <TableColumn fx:id="sectionActionsColumn" minWidth="330.0" prefWidth="340.0" text="ACTIONS"/>
                     </columns>
                 </TableView>
             </VBox>
+
+            <VBox spacing="22.0" styleClass="admin-analytics-card">
+                <VBox spacing="5.0">
+                    <Label styleClass="analytics-title" text="Learning Analytics"/>
+                    <Label styleClass="analytics-subtitle" text="Live stats for enrollments and completions in this course."/>
+                </VBox>
+
+                <HBox spacing="18.0">
+                    <VBox spacing="7.0" styleClass="analytics-stat-card" HBox.hgrow="ALWAYS">
+                        <Label styleClass="analytics-stat-label" text="ENROLLMENTS"/>
+                        <Label fx:id="enrollmentCountLabel" text="0">
+                            <styleClass>
+                                <String fx:value="analytics-stat-value"/>
+                                <String fx:value="analytics-blue-text"/>
+                            </styleClass>
+                        </Label>
+                    </VBox>
+                    <VBox spacing="7.0" styleClass="analytics-stat-card" HBox.hgrow="ALWAYS">
+                        <Label styleClass="analytics-stat-label" text="COMPLETED"/>
+                        <Label fx:id="completionCountLabel" text="0">
+                            <styleClass>
+                                <String fx:value="analytics-stat-value"/>
+                                <String fx:value="analytics-green-text"/>
+                            </styleClass>
+                        </Label>
+                    </VBox>
+                    <VBox spacing="7.0" styleClass="analytics-stat-card" HBox.hgrow="ALWAYS">
+                        <Label styleClass="analytics-stat-label" text="IN PROGRESS"/>
+                        <Label fx:id="activeCountLabel" styleClass="analytics-stat-value" text="0"/>
+                    </VBox>
+                </HBox>
+
+                <HBox alignment="CENTER" spacing="34.0" styleClass="analytics-visual-row">
+                    <StackPane minHeight="214.0" minWidth="240.0" prefHeight="214.0" prefWidth="270.0">
+                        <Circle radius="78.0" styleClass="analytics-ring-track"/>
+                        <Arc fx:id="completionRateArc" length="0.0" radiusX="78.0" radiusY="78.0" startAngle="90.0" styleClass="analytics-ring-fill"/>
+                        <VBox alignment="CENTER" spacing="2.0">
+                            <Label styleClass="analytics-ring-label" text="COMPLETION"/>
+                            <Label fx:id="completionRateLabel" styleClass="analytics-ring-value" text="0%"/>
+                        </VBox>
+                    </StackPane>
+
+                    <VBox spacing="18.0" HBox.hgrow="ALWAYS">
+                        <VBox spacing="7.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="analytics-bar-label" text="Total Enrollments"/>
+                                <StackPane HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="analyticsTotalValueLabel" styleClass="analytics-bar-value" text="0"/>
+                            </HBox>
+                            <ProgressBar fx:id="analyticsTotalProgressBar" maxWidth="Infinity" progress="0.0">
+                                <styleClass>
+                                    <String fx:value="analytics-progress"/>
+                                    <String fx:value="analytics-progress-blue"/>
+                                </styleClass>
+                            </ProgressBar>
+                        </VBox>
+                        <VBox spacing="7.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="analytics-bar-label" text="Completions"/>
+                                <StackPane HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="analyticsCompletionValueLabel" styleClass="analytics-bar-value" text="0"/>
+                            </HBox>
+                            <ProgressBar fx:id="analyticsCompletionProgressBar" maxWidth="Infinity" progress="0.0">
+                                <styleClass>
+                                    <String fx:value="analytics-progress"/>
+                                    <String fx:value="analytics-progress-green"/>
+                                </styleClass>
+                            </ProgressBar>
+                        </VBox>
+                        <VBox spacing="7.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="analytics-bar-label" text="Still In Progress"/>
+                                <StackPane HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="analyticsActiveValueLabel" styleClass="analytics-bar-value" text="0"/>
+                            </HBox>
+                            <ProgressBar fx:id="analyticsActiveProgressBar" maxWidth="Infinity" progress="0.0">
+                                <styleClass>
+                                    <String fx:value="analytics-progress"/>
+                                    <String fx:value="analytics-progress-coral"/>
+                                </styleClass>
+                            </ProgressBar>
+                        </VBox>
+                    </VBox>
+                </HBox>
+            </VBox>
         </VBox>
+            </content>
+        </ScrollPane>
     </center>
 </BorderPane>

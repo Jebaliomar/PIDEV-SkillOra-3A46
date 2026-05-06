@@ -9,9 +9,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
+import tn.esprit.controllers.front.SkilloraNavbarController;
 import tn.esprit.entities.Evaluation;
 import tn.esprit.entities.UserEvaluation;
-import tn.esprit.services.IUserEvaluationService;
 import tn.esprit.services.QuestionService;
 import tn.esprit.services.UserEvaluationService;
 
@@ -43,20 +43,39 @@ public class UserAssessmentController {
     @FXML
     private Label pageLabel;
 
-    private final IUserEvaluationService service = new UserEvaluationService();
+    @FXML
+    private SkilloraNavbarController navbarController;
+
+    private final UserEvaluationService service = new UserEvaluationService();
     private List<Object[]> allData = new ArrayList<>();
     private List<Object[]> filteredData = new ArrayList<>();
 
-    private final int connectedUserId = 1;
+    private int connectedUserId;
     private int currentPage = 1;
     private final int itemsPerPage = 4;
     private Evaluation selectedEvaluation;
 
     @FXML
     public void initialize() {
+        if (navbarController != null) {
+            navbarController.setActivePage(SkilloraNavbarController.ActivePage.ASSESSMENT);
+        }
+        if (!resolveConnectedUser()) {
+            return;
+        }
         loadData();
         setActiveButton(btnAll);
         applyFilter("ALL");
+    }
+
+    private boolean resolveConnectedUser() {
+        try {
+            connectedUserId = service.resolveAuthenticatedUserId();
+            return true;
+        } catch (SQLException e) {
+            showError(UserEvaluationService.USER_NOT_FOUND_MESSAGE);
+            return false;
+        }
     }
 
     @FXML
@@ -67,6 +86,24 @@ public class UserAssessmentController {
             evaluationContainer.getScene().setRoot(root);
         } catch (IOException e) {
             showError("Erreur retour dashboard : " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void openHangmanAssessments() {
+        if (connectedUserId <= 0 && !resolveConnectedUser()) {
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HangmanAssessment.fxml"));
+            Parent root = loader.load();
+
+            HangmanAssessmentController controller = loader.getController();
+            controller.setUserId(connectedUserId);
+
+            evaluationContainer.getScene().setRoot(root);
+        } catch (IOException e) {
+            showError("Erreur ouverture Hangman : " + e.getMessage());
         }
     }
 
@@ -84,7 +121,7 @@ public class UserAssessmentController {
 
         for (Object[] row : allData) {
             Evaluation ev = (Evaluation) row[0];
-            if (ev != null && ev.getId() == evaluation.getId()) {
+            if (ev != null && ev.getId() != null && evaluation.getId() != null && ev.getId().intValue() == evaluation.getId().intValue()) {
                 filteredData.add(row);
             }
         }
@@ -93,10 +130,13 @@ public class UserAssessmentController {
     }
 
     private void loadData() {
+        if (connectedUserId <= 0) {
+            return;
+        }
         try {
             allData = service.getUserEvaluationsWithEvaluation(connectedUserId);
         } catch (SQLException e) {
-            showError("Erreur chargement évaluations : " + e.getMessage());
+            showError(service.isUserNotFound(e) ? UserEvaluationService.USER_NOT_FOUND_MESSAGE : "Erreur chargement évaluations : " + e.getMessage());
         }
     }
 
@@ -159,7 +199,10 @@ public class UserAssessmentController {
                 continue;
             }
 
-            if (selectedEvaluation != null && evaluation.getId() != selectedEvaluation.getId()) {
+            if (selectedEvaluation != null
+                    && selectedEvaluation.getId() != null
+                    && evaluation.getId() != null
+                    && evaluation.getId().intValue() != selectedEvaluation.getId().intValue()) {
                 continue;
             }
 
@@ -292,7 +335,7 @@ public class UserAssessmentController {
 
         if ("COMPLETED".equals(status) && userEvaluation != null) {
             int totalQuestions = getQuestionCountForEvaluation(evaluation.getId());
-            int score = userEvaluation.getScore() != null ? userEvaluation.getScore().intValue() : 0;
+            int score = userEvaluation.getScore() != null ? userEvaluation.getScore() : 0;
 
             Label scoreLabel = new Label("Score: " + score + "/" + totalQuestions);
             scoreLabel.getStyleClass().add("card-score");
@@ -318,7 +361,7 @@ public class UserAssessmentController {
             if ("TO DO".equals(status)) {
                 openAssessmentPage(evaluation);
             } else {
-                openResultPage(evaluation, userEvaluation);
+                openResultPage(evaluation);
             }
         });
 
@@ -329,6 +372,9 @@ public class UserAssessmentController {
     }
 
     private void openAssessmentPage(Evaluation evaluation) {
+        if (connectedUserId <= 0 && !resolveConnectedUser()) {
+            return;
+        }
         try {
             if ("QUIZ".equalsIgnoreCase(evaluation.getType())) {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserQuizPassView.fxml"));
@@ -345,17 +391,21 @@ public class UserAssessmentController {
                 Parent root = loader.load();
 
                 UserExamPassController controller = loader.getController();
-                controller.setEvaluation(evaluation);
                 controller.setUserId(connectedUserId);
+                controller.setEvaluation(evaluation);
 
                 evaluationContainer.getScene().setRoot(root);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             showError("Erreur ouverture évaluation : " + e.getMessage());
         }
     }
 
-    private void openResultPage(Evaluation evaluation, UserEvaluation userEvaluation) {
+    private void openResultPage(Evaluation evaluation) {
+        if (connectedUserId <= 0 && !resolveConnectedUser()) {
+            return;
+        }
         try {
             if ("QUIZ".equalsIgnoreCase(evaluation.getType())) {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/UserQuizResultView.fxml"));
@@ -378,7 +428,8 @@ public class UserAssessmentController {
                 evaluationContainer.getScene().setRoot(root);
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             showError("Erreur ouverture résultat : " + e.getMessage());
         }
     }
@@ -400,6 +451,6 @@ public class UserAssessmentController {
         alert.setTitle("Erreur");
         alert.setHeaderText(null);
         alert.setContentText(msg);
-        alert.show();
+        alert.showAndWait();
     }
 }

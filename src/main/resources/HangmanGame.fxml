@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Line?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.HangmanGameController">
+
+    <children>
+        <BorderPane AnchorPane.topAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0"
+                    AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0">
+
+            <top>
+                <VBox spacing="10" style="-fx-background-color: #f5f7fb;">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20"/>
+                    </padding>
+
+                    <Label text="Hangman Game"
+                           style="-fx-font-size: 26px; -fx-font-weight: bold;"/>
+
+                    <HBox spacing="20">
+                        <children>
+                            <Label fx:id="lblTopic" text="Topic : -"/>
+                            <Label fx:id="lblLevel" text="Level : -"/>
+                            <Label fx:id="lblQuestionIndex" text="Question 1 / 1"/>
+                        </children>
+                    </HBox>
+                </VBox>
+            </top>
+
+            <center>
+                <VBox spacing="20" alignment="TOP_CENTER">
+                    <padding>
+                        <Insets top="25" right="20" bottom="20" left="20"/>
+                    </padding>
+
+                    <Label fx:id="lblQuestionTitle"
+                           text="Question title"
+                           wrapText="true"
+                           maxWidth="700"
+                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1f2937;"/>
+
+                    <Pane prefWidth="280" prefHeight="220" maxWidth="280" maxHeight="220"
+                          style="-fx-background-color: white; -fx-border-color: #d9d9d9; -fx-border-radius: 10; -fx-background-radius: 10;">
+                        <children>
+                            <Line startX="55" startY="195" endX="180" endY="195" strokeWidth="5" stroke="black"/>
+                            <Line startX="90" startY="195" endX="90" endY="35" strokeWidth="5" stroke="black"/>
+                            <Line startX="90" startY="35" endX="185" endY="35" strokeWidth="5" stroke="black"/>
+                            <Line startX="185" startY="35" endX="185" endY="58" strokeWidth="4" stroke="black"/>
+
+                            <Circle fx:id="headCircle"
+                                    centerX="185" centerY="80" radius="19"
+                                    visible="false"
+                                    fill="transparent"
+                                    stroke="black"
+                                    strokeWidth="3.5"/>
+
+                            <Line fx:id="bodyLine"
+                                  startX="185" startY="99" endX="185" endY="145"
+                                  stroke="black"
+                                  strokeWidth="3.5"
+                                  visible="false"/>
+
+                            <Line fx:id="leftArmLine"
+                                  startX="185" startY="112" endX="160" endY="132"
+                                  stroke="black"
+                                  strokeWidth="3.5"
+                                  visible="false"/>
+
+                            <Line fx:id="rightArmLine"
+                                  startX="185" startY="112" endX="210" endY="132"
+                                  stroke="black"
+                                  strokeWidth="3.5"
+                                  visible="false"/>
+
+                            <Line fx:id="leftLegLine"
+                                  startX="185" startY="145" endX="164" endY="178"
+                                  stroke="black"
+                                  strokeWidth="3.5"
+                                  visible="false"/>
+
+                            <Line fx:id="rightLegLine"
+                                  startX="185" startY="145" endX="206" endY="178"
+                                  stroke="black"
+                                  strokeWidth="3.5"
+                                  visible="false"/>
+                        </children>
+                    </Pane>
+
+                    <Label fx:id="lblHint"
+                           text="Hint : -"
+                           wrapText="true"
+                           maxWidth="500"
+                           style="-fx-font-size: 16px; -fx-text-fill: #555555;"/>
+
+                    <Label fx:id="lblMistakes"
+                           text="Mistakes : 0 / 6"
+                           style="-fx-font-size: 16px; -fx-text-fill: #c0392b;"/>
+
+                    <Label fx:id="lblWord"
+                           text="_ _ _ _ _"
+                           maxWidth="700"
+                           style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: black; -fx-alignment: center;"/>
+
+                    <HBox spacing="12" alignment="CENTER">
+                        <children>
+                            <Button fx:id="btnHint"
+                                    text="Show Hint"
+                                    onAction="#handleHint"
+                                    prefWidth="140"/>
+
+                            <Button fx:id="btnNext"
+                                    text="Next Question"
+                                    onAction="#handleNextQuestion"
+                                    prefWidth="140"/>
+
+                            <Button text="Back"
+                                    onAction="#handleBackThemes"
+                                    prefWidth="140"/>
+                        </children>
+                    </HBox>
+
+                    <GridPane fx:id="keyboardGrid"
+                              hgap="8"
+                              vgap="8"
+                              maxWidth="500"/>
+                </VBox>
+            </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

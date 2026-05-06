@@ -17,36 +17,37 @@
     <top>
         <VBox spacing="20.0">
             <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Button mnemonicParsing="false" onAction="#handleBack" styleClass="secondary-button" text="Back"/>
+                <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" styleClass="secondary-button" text="Back"/>
                 <VBox spacing="6.0">
                     <Label fx:id="pageTitleLabel" styleClass="page-title" text="Sections"/>
                     <Label styleClass="page-subtitle" text="Organize course structure and manage lessons inside each section."/>
                 </VBox>
                 <StackPane HBox.hgrow="ALWAYS"/>
-                <Button mnemonicParsing="false" onAction="#handleAddSection" styleClass="hero-button" text="+ Add Section"/>
+                <Button fx:id="addSectionButton" mnemonicParsing="false" onAction="#handleAddSection" styleClass="hero-button" text="Add Section"/>
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="toolbar-card">
                 <TextField fx:id="searchField" promptText="Search sections by title" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="manageLessonsButton" mnemonicParsing="false" onAction="#handleManageLessons" styleClass="secondary-button" text="Manage Lessons"/>
-                <Button fx:id="editButton" mnemonicParsing="false" onAction="#handleEditSection" styleClass="secondary-button" text="Edit"/>
-                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDeleteSection" styleClass="danger-button" text="🗑 Delete"/>
             </HBox>
         </VBox>
     </top>
     <center>
         <VBox spacing="0.0" styleClass="courses-card">
+            <BorderPane.margin>
+                <Insets top="24.0"/>
+            </BorderPane.margin>
             <VBox spacing="6.0" styleClass="courses-card-header">
                 <padding>
                     <Insets top="22.0" right="28.0" bottom="18.0" left="28.0"/>
                 </padding>
                 <Label styleClass="card-title" text="Course Sections"/>
-                <Label styleClass="card-subtitle" text="Select a section to edit it or manage its lessons."/>
+                <Label styleClass="card-subtitle" text="Click a section row to manage its lessons, or use the row actions."/>
             </VBox>
             <TableView fx:id="sectionTable" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="titleColumn" prefWidth="520.0" text="TITLE"/>
-                    <TableColumn fx:id="positionColumn" prefWidth="180.0" text="POSITION"/>
-                    <TableColumn fx:id="createdAtColumn" prefWidth="260.0" text="CREATED"/>
+                    <TableColumn fx:id="titleColumn" minWidth="360.0" prefWidth="470.0" text="TITLE"/>
+                    <TableColumn fx:id="positionColumn" minWidth="140.0" prefWidth="150.0" text="POSITION"/>
+                    <TableColumn fx:id="createdAtColumn" minWidth="210.0" prefWidth="230.0" text="CREATED"/>
+                    <TableColumn fx:id="actionsColumn" minWidth="330.0" prefWidth="340.0" text="ACTIONS"/>
                 </columns>
             </TableView>
         </VBox>

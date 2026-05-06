@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class CourseSectionService {
@@ -71,8 +70,8 @@ public class CourseSectionService {
         return null;
     }
 
-    public List<CourseSection> getByCourseId(int courseId) throws SQLException {
-        String sql = "SELECT * FROM `course_section` WHERE `course_id` = ?";
+    public List<CourseSection> findByCourse(int courseId) throws SQLException {
+        String sql = "SELECT * FROM `course_section` WHERE `course_id` = ? ORDER BY `position` ASC, `id` ASC";
         List<CourseSection> courseSections = new ArrayList<>();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -85,8 +84,6 @@ public class CourseSectionService {
             }
         }
 
-        courseSections.sort(Comparator.comparing(CourseSection::getPosition, Comparator.nullsLast(Integer::compareTo))
-                .thenComparing(CourseSection::getId, Comparator.nullsLast(Integer::compareTo)));
         return courseSections;
     }
 
@@ -106,29 +103,34 @@ public class CourseSectionService {
     }
 
     public boolean delete(int id) throws SQLException {
-        boolean originalAutoCommit = connection.getAutoCommit();
+        boolean previousAutoCommit = connection.getAutoCommit();
+
         try {
             connection.setAutoCommit(false);
-            executeDelete(
-                    "DELETE FROM `lesson_completion` WHERE `lesson_id` IN (SELECT `id` FROM `lesson` WHERE `section_id` = ?)",
-                    id
-            );
-            executeDelete("DELETE FROM `lesson` WHERE `section_id` = ?", id);
-            boolean deleted = executeDelete("DELETE FROM `course_section` WHERE `id` = ?", id) > 0;
+            deleteLessonsBySection(id);
+
+            boolean deleted;
+            try (PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM `course_section` WHERE `id` = ?")) {
+                preparedStatement.setInt(1, id);
+                deleted = preparedStatement.executeUpdate() > 0;
+            }
+
             connection.commit();
             return deleted;
-        } catch (SQLException exception) {
+        } catch (SQLException e) {
             connection.rollback();
-            throw exception;
+            throw e;
         } finally {
-            connection.setAutoCommit(originalAutoCommit);
+            connection.setAutoCommit(previousAutoCommit);
         }
     }
 
-    private int executeDelete(String sql, int id) throws SQLException {
+    private void deleteLessonsBySection(int sectionId) throws SQLException {
+        String sql = "DELETE FROM `lesson` WHERE `section_id` = ?";
+
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate();
+            preparedStatement.setInt(1, sectionId);
+            preparedStatement.executeUpdate();
         }
     }
 

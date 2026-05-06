@@ -2,6 +2,10 @@ target/
 avatars/
 src/main/resources/avatars/
 src/main/resources/mail.properties
+app.properties
+groq.properties
+src/main/resources/app.properties
+src/main/resources/groq.properties
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

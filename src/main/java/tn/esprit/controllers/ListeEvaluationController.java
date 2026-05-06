@@ -128,20 +128,29 @@ public class ListeEvaluationController {
         actionCol.setCellValueFactory(data -> new SimpleStringProperty("Actions"));
 
         actionCol.setCellFactory(param -> new TableCell<>() {
+            private final Button btnGenererIA = new Button("Générer IA");
             private final Button btnVoirReponses = new Button("Voir réponses");
             private final Button btnModifier = new Button("Modifier");
             private final Button btnSupprimer = new Button("Supprimer");
 
             private final HBox finishedBox = new HBox(10, btnVoirReponses, btnSupprimer);
-            private final HBox notFinishedBox = new HBox(10, btnModifier, btnSupprimer);
+            private final HBox quizBox = new HBox(10, btnGenererIA, btnModifier, btnSupprimer);
+            private final HBox examBox = new HBox(10, btnModifier, btnSupprimer);
 
             {
                 finishedBox.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 8;");
-                notFinishedBox.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 8;");
+                quizBox.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 8;");
+                examBox.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 8;");
 
+                btnGenererIA.getStyleClass().add("button-primary");
                 btnVoirReponses.getStyleClass().add("button-primary");
                 btnModifier.getStyleClass().add("button-secondary");
                 btnSupprimer.getStyleClass().add("button-danger");
+
+                btnGenererIA.setOnAction(event -> {
+                    Evaluation evaluation = getTableView().getItems().get(getIndex());
+                    ouvrirGenerationIAQuiz(evaluation);
+                });
 
                 btnVoirReponses.setOnAction(event -> {
                     Evaluation evaluation = getTableView().getItems().get(getIndex());
@@ -176,11 +185,19 @@ public class ListeEvaluationController {
                     if (finished) {
                         setGraphic(finishedBox);
                     } else {
-                        setGraphic(notFinishedBox);
+                        if ("QUIZ".equalsIgnoreCase(evaluation.getType())) {
+                            setGraphic(quizBox);
+                        } else {
+                            setGraphic(examBox);
+                        }
                     }
 
                 } catch (SQLException e) {
-                    setGraphic(notFinishedBox);
+                    if ("QUIZ".equalsIgnoreCase(evaluation.getType())) {
+                        setGraphic(quizBox);
+                    } else {
+                        setGraphic(examBox);
+                    }
                 }
             }
         });
@@ -304,6 +321,21 @@ public class ListeEvaluationController {
 
         } catch (IOException e) {
             showError("Erreur ouverture quiz : " + e.getMessage());
+        }
+    }
+
+    private void ouvrirGenerationIAQuiz(Evaluation evaluation) {
+        try {
+            QuizQuestionController.setEvaluationSelectionnee(evaluation);
+            QuizQuestionController.setQuestionAModifier(null);
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjouterQuizQuestion.fxml"));
+            Parent root = loader.load();
+
+            evaluationTable.getScene().setRoot(root);
+
+        } catch (IOException e) {
+            showError("Erreur ouverture génération IA quiz : " + e.getMessage());
         }
     }
 

@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import tn.esprit.controllers.admin.AdminSidebarController;
 import tn.esprit.entities.Answer;
 import tn.esprit.entities.Evaluation;
 import tn.esprit.entities.Question;
@@ -27,6 +28,9 @@ public class QuizController {
     @FXML
     private VBox questionContainer;
 
+    @FXML
+    private AdminSidebarController adminSidebarController;
+
     private static Evaluation evaluationSelectionnee;
 
     private final QuestionService questionService = new QuestionService();
@@ -38,6 +42,10 @@ public class QuizController {
 
     @FXML
     public void initialize() {
+        if (adminSidebarController != null) {
+            adminSidebarController.setActive(AdminSidebarController.ActiveItem.EVALUATIONS);
+        }
+
         if (evaluationSelectionnee == null) {
             showError("Aucun quiz sélectionné.");
             return;
@@ -75,6 +83,7 @@ public class QuizController {
 
     private VBox creerCarteQuestion(Question q, int numero) throws SQLException {
         VBox box = new VBox(10);
+        box.setMaxWidth(Double.MAX_VALUE);
         box.setStyle(
                 "-fx-background-color:#0b1730;" +
                         "-fx-padding:18;" +

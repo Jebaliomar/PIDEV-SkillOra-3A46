@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.forum.ReportManagementController"
+            stylesheets="@forum.css"
+            prefWidth="1440" prefHeight="900" styleClass="root-bg">
+
+    <left>
+        <fx:include fx:id="adminSidebar" source="../../../viewsadmin/common/AdminSidebar.fxml"/>
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" pannable="true"
+                    style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+            <content>
+                <VBox spacing="18" styleClass="main-content-wrap">
+                    <padding>
+                        <Insets top="22" right="24" bottom="20" left="24"/>
+                    </padding>
+
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Content Reports" styleClass="page-title"/>
+                            <Label text="Review and moderate reported community content." styleClass="page-subtitle"/>
+                            <Label fx:id="currentUserLabel" styleClass="page-subtitle"/>
+                        </VBox>
+
+                        <Button text="Back to Posts" onAction="#handleBack" styleClass="btn-secondary"/>
+                        <Button text="Refresh" onAction="#handleRefresh" styleClass="btn-primary"/>
+                    </HBox>
+
+                    <VBox spacing="8"
+                          style="-fx-background-color: rgba(255,255,255,0.58); -fx-background-radius: 16; -fx-border-color: rgba(255,255,255,0.76); -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 12 14 12 14;">
+                        <Label text="Quick filters"
+                               style="-fx-text-fill: #334155; -fx-font-size: 12px; -fx-font-weight: 800;"/>
+                        <HBox spacing="10" fx:id="statsContainer"/>
+                    </VBox>
+
+                    <VBox spacing="0"
+                             style="-fx-background-color: rgba(255,255,255,0.62); -fx-background-radius: 18;
+                                 -fx-border-color: rgba(255,255,255,0.78); -fx-border-radius: 18; -fx-border-width: 1;
+                                 -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.09), 20, 0.12, 0, 6);">
+                        <HBox alignment="CENTER_LEFT"
+                              style="-fx-padding: 18 20 14 20; -fx-border-color: transparent transparent #e2e8f0 transparent; -fx-border-width: 0 0 1 0;">
+                            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                <Label text="All Reports"
+                                       style="-fx-text-fill: #0f172a; -fx-font-size: 16px; -fx-font-weight: 900;"/>
+                                <Label text="Filter, review, dismiss, or delete reported content"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 12px;"/>
+                            </VBox>
+                            <Label fx:id="postCountLabel"
+                                   style="-fx-text-fill: #94a3b8; -fx-font-size: 12px; -fx-font-weight: 700;"/>
+                        </HBox>
+
+                        <Label text="Review each report, then mark reviewed, dismiss, or delete the related content."
+                               style="-fx-text-fill: #64748b; -fx-font-size: 12px; -fx-padding: 10 20 8 20;"/>
+
+                        <VBox fx:id="postsContainer" spacing="10" style="-fx-padding: 10 12 14 12;"/>
+                    </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

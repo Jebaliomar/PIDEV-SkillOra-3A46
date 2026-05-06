@@ -3,11 +3,26 @@
 /* Root background */
 .root {
     -fx-font-family: "Segoe UI", "Helvetica Neue", sans-serif;
-    -fx-background-color: #F8F9FB;
+    -skillora-ink: #182033;
+    -skillora-muted: #64748b;
+    -skillora-soft: #f7f9fc;
+    -skillora-card: #ffffff;
+    -skillora-line: #dbe3ef;
+    -skillora-blue: #2563eb;
+    -skillora-cyan: #0891b2;
+    -skillora-emerald: #059669;
+    -skillora-rose: #dc2626;
+    -fx-background-color:
+        radial-gradient(center 12% 8%, radius 70%, rgba(224,242,254,0.86), transparent 58%),
+        radial-gradient(center 92% 5%, radius 76%, rgba(237,233,254,0.78), transparent 55%),
+        linear-gradient(to bottom right, #f7f9fc, #eef3f9 58%, #f8fbff);
 }
 
 .root-alt {
-    -fx-background-color: #F8F9FB;
+    -fx-background-color:
+        radial-gradient(center 12% 8%, radius 70%, rgba(224,242,254,0.86), transparent 58%),
+        radial-gradient(center 92% 5%, radius 76%, rgba(237,233,254,0.78), transparent 55%),
+        linear-gradient(to bottom right, #f7f9fc, #eef3f9 58%, #f8fbff);
 }
 
 /* Header styles */
